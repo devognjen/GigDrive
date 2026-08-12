@@ -1,0 +1,52 @@
+# GigDrive — Implementation Progress
+
+Tracks implementation progress of all GigDrive features extracted from [PRD.md](../PRD.md).
+Each feature has a specification file in [docs/features/](docs/features/).
+**Status is tracked only in this file** (single source of truth) — update it as work proceeds.
+
+**Status legend:** ⬜ Not started · 🔶 In progress · ✅ Done · ⏸️ Deferred/dropped
+
+Last updated: 2026-08-12
+
+## Tier 0 — MVP (must have)
+
+| # | Feature | Spec | Milestone | Status | Notes |
+|---|---------|------|-----------|--------|-------|
+| 1 | Infrastructure, Docker & seed data | [01-infrastructure.md](docs/features/01-infrastructure.md) | M0 | ⬜ | |
+| 2 | Authentication & user profiles | [02-auth-and-users.md](docs/features/02-auth-and-users.md) | M1 | ⬜ | |
+| 3 | Concert discovery, cache & manual creation | [03-concerts.md](docs/features/03-concerts.md) | M2, M7 | ⬜ | |
+| 4 | Vehicle management | [04-vehicles.md](docs/features/04-vehicles.md) | M3 | ⬜ | |
+| 5 | Trip offers & dynamic shared pricing | [05-trips.md](docs/features/05-trips.md) | M3, M8, M9 | ⬜ | |
+| 6 | Booking flow | [06-bookings.md](docs/features/06-bookings.md) | M3, M10 | ⬜ | |
+| 7 | Email notifications | [07-email-notifications.md](docs/features/07-email-notifications.md) | M4 | ⬜ | |
+| 8 | Driver & passenger dashboards | [08-dashboards.md](docs/features/08-dashboards.md) | M10 | ⬜ | |
+| 9 | Reviews & driver ratings | [09-reviews.md](docs/features/09-reviews.md) | M11 | ⬜ | |
+
+## Tier 1 — Committed (behind feature flags)
+
+| # | Feature | Spec | Milestone | Status | Notes |
+|---|---------|------|-----------|--------|-------|
+| 10 | In-app trip chat | [10-trip-chat.md](docs/features/10-trip-chat.md) | M12 | ⬜ | Feature-flagged |
+| 11 | Signal group automation | [11-signal-automation.md](docs/features/11-signal-automation.md) | M12 | ⬜ | Flag `FEATURE_SIGNAL`; drop first if time runs short |
+
+## Tier 2 — If time allows (priority order)
+
+| # | Feature | Spec | Milestone | Status | Notes |
+|---|---------|------|-----------|--------|-------|
+| 12 | Pickup-stop maps (Leaflet + OSM) | [12-pickup-stop-maps.md](docs/features/12-pickup-stop-maps.md) | M13 | ⬜ | |
+| 13 | Concert-day weather widget (Open-Meteo) | [13-weather-widget.md](docs/features/13-weather-widget.md) | M13 | ⬜ | |
+| 14 | Waitlist on full trips | [14-waitlist.md](docs/features/14-waitlist.md) | M13 | ⬜ | FR-BOOK-05 |
+| 15 | CSV passenger manifest export | [15-csv-export.md](docs/features/15-csv-export.md) | M13 | ⬜ | |
+
+## Summary
+
+- **Total:** 15 features · ✅ Done: 0 · 🔶 In progress: 0 · ⬜ Not started: 15 · ⏸️ Deferred: 0
+- **Current focus:** —
+
+## Working agreements
+
+- Implementation order follows the PRD §13 milestones (M0 → M13); Tier-1/2 items only after the MVP is complete.
+- Scope ladder (PRD §13): if time shrinks, drop in order: Signal → chat; if time grows, add Tier 2 in listed order.
+- Every feature ships with unit tests (per AGENTS.md) and clean-code conventions (feature modules, DTOs + class-validator, no entities exposed from controllers).
+- Cross-cutting frontend wiring (Angular shell, routing, interceptor, guards — M5; NgRx store/entities/effects — M6) is part of features 2–9 as they land.
+- When a feature's status changes, update the table, the summary counts, and the "Last updated" date.
