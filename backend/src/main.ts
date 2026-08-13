@@ -19,7 +19,8 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, document);
+  // Note: Swagger does not follow the global prefix, so the path includes it.
+  SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(process.env.BACKEND_PORT ?? 3000);
 }
