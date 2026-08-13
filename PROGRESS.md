@@ -6,13 +6,13 @@ Each feature has a specification file in [docs/features/](docs/features/).
 
 **Status legend:** ⬜ Not started · 🔶 In progress · ✅ Done · ⏸️ Deferred/dropped
 
-Last updated: 2026-08-12
+Last updated: 2026-08-13
 
 ## Tier 0 — MVP (must have)
 
 | # | Feature | Spec | Milestone | Status | Notes |
 |---|---------|------|-----------|--------|-------|
-| 1 | Infrastructure, Docker & seed data | [01-infrastructure.md](docs/features/01-infrastructure.md) | M0 | ⬜ | |
+| 1 | Infrastructure, Docker & seed data | [01-infrastructure.md](docs/features/01-infrastructure.md) | M0 | ✅ | Stack boots via compose; migrations + idempotent seed verified |
 | 2 | Authentication & user profiles | [02-auth-and-users.md](docs/features/02-auth-and-users.md) | M1 | ⬜ | |
 | 3 | Concert discovery, cache & manual creation | [03-concerts.md](docs/features/03-concerts.md) | M2, M7 | ⬜ | |
 | 4 | Vehicle management | [04-vehicles.md](docs/features/04-vehicles.md) | M3 | ⬜ | |
@@ -40,8 +40,8 @@ Last updated: 2026-08-12
 
 ## Summary
 
-- **Total:** 15 features · ✅ Done: 0 · 🔶 In progress: 0 · ⬜ Not started: 15 · ⏸️ Deferred: 0
-- **Current focus:** —
+- **Total:** 15 features · ✅ Done: 1 · 🔶 In progress: 0 · ⬜ Not started: 14 · ⏸️ Deferred: 0
+- **Current focus:** Feature 2 — Authentication & user profiles (M1)
 
 ## Working agreements
 
