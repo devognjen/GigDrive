@@ -1,0 +1,63 @@
+name: gigdrive
+
+services:
+  db:
+    image: docker.io/library/postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-gigdrive}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gigdrive}
+      POSTGRES_DB: ${POSTGRES_DB:-gigdrive}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      - '${DB_PORT:-5432}:5432'
+
+  backend:
+    build: ./backend
+    env_file:
+      # Optional: sensible defaults above/below cover a clean checkout.
+      - path: .env
+        required: false
+    environment:
+      # Inside the compose network the DB is reachable under its service name.
+      DB_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/health || exit 1']
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+    ports:
+      - '${BACKEND_PORT:-3000}:3000'
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - '${FRONTEND_PORT:-4200}:80'
+
+  # Experimental Signal automation (feature 11). Start explicitly with:
+  #   docker compose --profile signal up
+  signal-cli:
+    image: docker.io/bbernhard/signal-cli-rest-api:latest
+    profiles: ['signal']
+    environment:
+      MODE: json-rpc
+    volumes:
+      - signal-cli-data:/home/.local/share/signal-cli
+    ports:
+      - '8080:8080'
+
+volumes:
+  db-data:
+  signal-cli-data:

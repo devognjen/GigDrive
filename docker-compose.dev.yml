@@ -1,0 +1,23 @@
+# Development override: hot-reload for both apps.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# Backend/frontend sources are bind-mounted; the images' node_modules stay
+# intact — rebuild a service image after adding dependencies:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml build backend
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./backend/src:/app/src
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    ports:
+      # ng serve listens on 4200 inside the container (nginx serves :80 in prod).
+      - '${FRONTEND_PORT:-4200}:4200'
