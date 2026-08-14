@@ -6,14 +6,14 @@ Each feature has a specification file in [docs/features/](docs/features/).
 
 **Status legend:** ⬜ Not started · 🔶 In progress · ✅ Done · ⏸️ Deferred/dropped
 
-Last updated: 2026-08-13
+Last updated: 2026-08-14
 
 ## Tier 0 — MVP (must have)
 
 | # | Feature | Spec | Milestone | Status | Notes |
 |---|---------|------|-----------|--------|-------|
 | 1 | Infrastructure, Docker & seed data | [01-infrastructure.md](docs/features/01-infrastructure.md) | M0 | ✅ | Stack boots via compose; migrations + idempotent seed verified |
-| 2 | Authentication & user profiles | [02-auth-and-users.md](docs/features/02-auth-and-users.md) | M1 | ⬜ | |
+| 2 | Authentication & user profiles | [02-auth-and-users.md](docs/features/02-auth-and-users.md) | M1 | ✅ | Passport local→JWT, global guard + `@Public()`, profile edit + public profile (rating empty state until #9); frontend interceptor, guards, auth/profile pages |
 | 3 | Concert discovery, cache & manual creation | [03-concerts.md](docs/features/03-concerts.md) | M2, M7 | ⬜ | |
 | 4 | Vehicle management | [04-vehicles.md](docs/features/04-vehicles.md) | M3 | ⬜ | |
 | 5 | Trip offers & dynamic shared pricing | [05-trips.md](docs/features/05-trips.md) | M3, M8, M9 | ⬜ | |
@@ -40,8 +40,8 @@ Last updated: 2026-08-13
 
 ## Summary
 
-- **Total:** 15 features · ✅ Done: 1 · 🔶 In progress: 0 · ⬜ Not started: 14 · ⏸️ Deferred: 0
-- **Current focus:** Feature 2 — Authentication & user profiles (M1)
+- **Total:** 15 features · ✅ Done: 2 · 🔶 In progress: 0 · ⬜ Not started: 13 · ⏸️ Deferred: 0
+- **Current focus:** Feature 3 — Concert discovery, cache & manual creation (M2)
 
 ## Working agreements
 
