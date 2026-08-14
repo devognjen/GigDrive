@@ -8,6 +8,7 @@ export default () => ({
     name: process.env.POSTGRES_DB ?? 'gigdrive',
   },
   jwtSecret: process.env.JWT_SECRET ?? 'dev-only-secret',
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '1d',
   seed: {
     demoPassword: process.env.SEED_DEMO_PASSWORD ?? 'demo1234',
   },
