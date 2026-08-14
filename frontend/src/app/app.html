@@ -4,8 +4,14 @@
     <a routerLink="/concerts" routerLinkActive="active">Concerts</a>
     <a routerLink="/trips" routerLinkActive="active">Trips</a>
     <a routerLink="/bookings" routerLinkActive="active">My bookings</a>
-    <a routerLink="/profile" routerLinkActive="active">Profile</a>
-    <a routerLink="/auth/login" routerLinkActive="active">Log in</a>
+    @if (authService.currentUser(); as user) {
+      <a routerLink="/profile" routerLinkActive="active">Profile</a>
+      <span class="user-name">{{ user.firstName }}</span>
+      <button type="button" class="logout" (click)="logout()">Log out</button>
+    } @else {
+      <a routerLink="/auth/login" routerLinkActive="active">Log in</a>
+      <a routerLink="/auth/register" routerLinkActive="active">Register</a>
+    }
   </nav>
 </header>
 

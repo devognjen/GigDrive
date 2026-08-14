@@ -19,6 +19,7 @@
 
   nav {
     display: flex;
+    align-items: center;
     gap: 1rem;
 
     a {
@@ -29,6 +30,19 @@
         font-weight: 600;
         text-decoration: underline;
       }
+    }
+
+    .user-name {
+      font-weight: 600;
+    }
+
+    button.logout {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
     }
   }
 }
