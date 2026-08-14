@@ -26,5 +26,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadChildren: () => import('./features/profile/profile.routes'),
   },
+  {
+    path: 'users/:id',
+    loadComponent: () =>
+      import('./features/profile/public-profile/public-profile').then((m) => m.PublicProfile),
+  },
   { path: '**', redirectTo: 'concerts' },
 ];

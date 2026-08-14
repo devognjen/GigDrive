@@ -1,1 +1,42 @@
-<p>profile works!</p>
+<div class="profile-card">
+  <h1>Your profile</h1>
+
+  @if (saved()) {
+    <p class="success" role="status">Profile saved.</p>
+  }
+  @if (serverError()) {
+    <p class="error" role="alert">{{ serverError() }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="field">
+      <label for="firstName">First name</label>
+      <input id="firstName" type="text" formControlName="firstName" autocomplete="given-name" />
+      @if (form.controls.firstName.touched && form.controls.firstName.hasError('required')) {
+        <p class="error">First name is required.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="lastName">Last name</label>
+      <input id="lastName" type="text" formControlName="lastName" autocomplete="family-name" />
+      @if (form.controls.lastName.touched && form.controls.lastName.hasError('required')) {
+        <p class="error">Last name is required.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="phone">Phone</label>
+      <input id="phone" type="tel" formControlName="phone" autocomplete="tel" />
+    </div>
+
+    <div class="field checkbox">
+      <input id="emailNotifications" type="checkbox" formControlName="emailNotifications" />
+      <label for="emailNotifications">Email notifications</label>
+    </div>
+
+    <button type="submit" [disabled]="form.pristine || form.invalid || pending()">
+      {{ pending() ? 'Saving…' : 'Save' }}
+    </button>
+  </form>
+</div>

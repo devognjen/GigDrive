@@ -1,0 +1,24 @@
+.public-profile-card {
+  max-width: 24rem;
+  margin: 2rem auto;
+
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+
+    .review-count {
+      color: #666;
+      font-size: 0.9rem;
+    }
+  }
+
+  .empty-state {
+    color: #666;
+  }
+}
