@@ -1,0 +1,77 @@
+<div class="vehicles-card">
+  <h2>Your vehicles</h2>
+
+  @if (serverError()) {
+    <p class="error" role="alert">{{ serverError() }}</p>
+  }
+
+  @if (loading()) {
+    <p>Loading vehicles…</p>
+  } @else if (vehicles().length === 0) {
+    <p>No vehicles yet. Add one below to offer trips as a driver.</p>
+  } @else {
+    <ul>
+      @for (vehicle of vehicles(); track vehicle.id) {
+        <li>
+          <span>
+            {{ vehicle.make }} {{ vehicle.model }} · {{ vehicle.type }} ·
+            {{ vehicle.seats }} {{ vehicle.seats === 1 ? 'seat' : 'seats' }}
+          </span>
+          <button type="button" (click)="edit(vehicle)">Edit</button>
+          <button type="button" class="danger" (click)="delete(vehicle)">Delete</button>
+        </li>
+      }
+    </ul>
+  }
+
+  <h3>{{ editingId() ? 'Edit vehicle' : 'Add a vehicle' }}</h3>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="field">
+      <label for="vehicleType">Type</label>
+      <select id="vehicleType" formControlName="type">
+        @for (option of typeOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="vehicleMake">Make</label>
+      <input id="vehicleMake" type="text" formControlName="make" autocomplete="off" />
+      @if (form.controls.make.touched && form.controls.make.hasError('required')) {
+        <p class="error">Make is required.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="vehicleModel">Model</label>
+      <input id="vehicleModel" type="text" formControlName="model" autocomplete="off" />
+      @if (form.controls.model.touched && form.controls.model.hasError('required')) {
+        <p class="error">Model is required.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="vehicleSeats">Passenger seats</label>
+      <input id="vehicleSeats" type="number" min="1" step="1" formControlName="seats" />
+      @if (form.controls.seats.touched && form.controls.seats.hasError('min')) {
+        <p class="error">A vehicle needs at least one passenger seat.</p>
+      }
+      @if (form.controls.seats.touched && form.controls.seats.hasError('required')) {
+        <p class="error">Seats are required.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="vehicleNotes">Notes (optional)</label>
+      <textarea id="vehicleNotes" rows="2" formControlName="notes"></textarea>
+    </div>
+
+    <button type="submit" [disabled]="form.invalid || pending()">
+      {{ pending() ? 'Saving…' : editingId() ? 'Save changes' : 'Add vehicle' }}
+    </button>
+    @if (editingId()) {
+      <button type="button" class="secondary" (click)="resetForm()">Cancel</button>
+    }
+  </form>
+</div>

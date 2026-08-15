@@ -37,6 +37,9 @@ describe('Profile', () => {
 
     fixture = TestBed.createComponent(Profile);
     component = fixture.componentInstance;
+    // The embedded Vehicles component loads the user's vehicles on init.
+    fixture.detectChanges();
+    httpTesting.expectOne('/api/vehicles').flush([]);
     await fixture.whenStable();
   });
 
