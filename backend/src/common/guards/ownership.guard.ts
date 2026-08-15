@@ -14,7 +14,7 @@ import { User } from '../../users/entities/user.entity';
  * authenticated user.
  */
 export abstract class OwnershipGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context
       .switchToHttp()
       .getRequest<Request & { user?: User }>();
@@ -22,11 +22,13 @@ export abstract class OwnershipGuard implements CanActivate {
     if (!user) {
       throw new UnauthorizedException();
     }
-    if (this.getOwnerId(request) !== user.id) {
+    if ((await this.getOwnerId(request)) !== user.id) {
       throw new ForbiddenException();
     }
     return true;
   }
 
-  protected abstract getOwnerId(request: Request & { user?: User }): string;
+  protected abstract getOwnerId(
+    request: Request & { user?: User },
+  ): string | Promise<string>;
 }
