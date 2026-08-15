@@ -1,1 +1,64 @@
-<p>concert-search works!</p>
+<div class="concert-search">
+  <h1>Find concerts</h1>
+
+  <form [formGroup]="filters" class="filters">
+    <div class="field">
+      <label for="q">Keyword</label>
+      <input id="q" type="text" formControlName="q" placeholder="Artist or title" />
+    </div>
+
+    <div class="field">
+      <label for="city">City</label>
+      <input id="city" type="text" formControlName="city" />
+    </div>
+
+    <div class="field">
+      <label for="dateFrom">From</label>
+      <input id="dateFrom" type="date" formControlName="dateFrom" />
+    </div>
+
+    <div class="field">
+      <label for="dateTo">To</label>
+      <input id="dateTo" type="date" formControlName="dateTo" />
+    </div>
+
+    <div class="field">
+      <label for="genre">Genre</label>
+      <input id="genre" type="text" formControlName="genre" />
+    </div>
+  </form>
+
+  @if (authService.isAuthenticated()) {
+    <p class="add-manual">
+      Can't find your concert? <a routerLink="/concerts/new">Add it manually</a>
+    </p>
+  }
+
+  @if (loading()) {
+    <p class="state">Searching…</p>
+  } @else if (results().length === 0) {
+    <p class="state">No concerts found. Try adjusting your filters.</p>
+  } @else {
+    <ul class="results">
+      @for (concert of results(); track concert.id) {
+        <li>
+          <a class="result" [routerLink]="['/concerts', concert.id]">
+            <span class="headline">
+              <strong>{{ concert.artist }}</strong> — {{ concert.title }}
+            </span>
+            <span class="meta">
+              {{ concert.venue }}, {{ concert.city }}, {{ concert.country }} ·
+              {{ concert.startAt | date: 'mediumDate' }}
+            </span>
+            @if (concert.genre) {
+              <span class="badge genre">{{ concert.genre }}</span>
+            }
+            @if (concert.userSubmitted) {
+              <span class="badge user-submitted">user-submitted</span>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</div>

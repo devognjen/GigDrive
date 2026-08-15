@@ -1,0 +1,65 @@
+<div class="concert-details">
+  @if (loading()) {
+    <p class="state">Loading…</p>
+  } @else if (notFound()) {
+    <div class="state">
+      <h1>Concert not found</h1>
+      <p>The concert you are looking for does not exist or has been removed.</p>
+      <a routerLink="/concerts">Back to search</a>
+    </div>
+  } @else if (details(); as data) {
+    <article>
+      @if (data.concert.imageUrl) {
+        <img class="cover" [src]="data.concert.imageUrl" [alt]="data.concert.title" />
+      }
+
+      <header>
+        <h1>{{ data.concert.artist }}</h1>
+        <h2>{{ data.concert.title }}</h2>
+        @if (data.concert.genre) {
+          <span class="badge genre">{{ data.concert.genre }}</span>
+        }
+        @if (data.concert.userSubmitted) {
+          <span class="badge user-submitted">user-submitted</span>
+        }
+      </header>
+
+      <dl class="info">
+        <dt>Date</dt>
+        <dd>{{ data.concert.startAt | date: 'medium' }}</dd>
+        <dt>Venue</dt>
+        <dd>{{ data.concert.venue }}</dd>
+        <dt>City</dt>
+        <dd>{{ data.concert.city }}, {{ data.concert.country }}</dd>
+      </dl>
+
+      @if (data.concert.ticketUrl) {
+        <p>
+          <a class="tickets" [href]="data.concert.ticketUrl" target="_blank" rel="noopener">
+            Buy tickets
+          </a>
+        </p>
+      }
+
+      <section class="trips">
+        <h3>Trips to this concert</h3>
+        @if (data.trips.length === 0) {
+          <p class="state">No trips yet</p>
+        } @else {
+          <ul>
+            @for (trip of data.trips; track trip.id) {
+              <li>
+                <span class="driver">{{ trip.driverName }}</span>
+                <span class="badge status">{{ trip.status }}</span>
+                <span class="meta">
+                  Departs {{ trip.departureAt | date: 'medium' }} ·
+                  {{ trip.minPassengers }}–{{ trip.maxPassengers }} passengers
+                </span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </article>
+  }
+</div>

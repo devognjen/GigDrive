@@ -1,0 +1,94 @@
+<div class="form-card">
+  <h1>Add a concert</h1>
+
+  @if (serverError()) {
+    <p class="error server-error" role="alert">{{ serverError() }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="field">
+      <label for="artist">Artist</label>
+      <input id="artist" type="text" formControlName="artist" />
+      @if (form.controls.artist.touched && form.controls.artist.hasError('required')) {
+        <p class="error">Artist is required.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="title">Title</label>
+      <input id="title" type="text" formControlName="title" />
+      @if (form.controls.title.touched && form.controls.title.hasError('required')) {
+        <p class="error">Title is required.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="venue">Venue</label>
+      <input id="venue" type="text" formControlName="venue" />
+      @if (form.controls.venue.touched && form.controls.venue.hasError('required')) {
+        <p class="error">Venue is required.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="city">City</label>
+      <input id="city" type="text" formControlName="city" />
+      @if (form.controls.city.touched && form.controls.city.hasError('required')) {
+        <p class="error">City is required.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="country">Country</label>
+      <input id="country" type="text" formControlName="country" />
+      @if (form.controls.country.touched && form.controls.country.hasError('required')) {
+        <p class="error">Country is required.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="startAt">Date and time</label>
+      <input id="startAt" type="datetime-local" formControlName="startAt" />
+      @if (form.controls.startAt.touched && form.controls.startAt.hasError('required')) {
+        <p class="error">Date and time are required.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="genre">Genre (optional)</label>
+      <input id="genre" type="text" formControlName="genre" />
+    </div>
+
+    <div class="field">
+      <label for="imageUrl">Image URL (optional)</label>
+      <input id="imageUrl" type="url" formControlName="imageUrl" />
+      @if (form.controls.imageUrl.touched && form.controls.imageUrl.hasError('pattern')) {
+        <p class="error">Enter a valid URL (starting with http:// or https://).</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="ticketUrl">Ticket URL (optional)</label>
+      <input id="ticketUrl" type="url" formControlName="ticketUrl" />
+      @if (form.controls.ticketUrl.touched && form.controls.ticketUrl.hasError('pattern')) {
+        <p class="error">Enter a valid URL (starting with http:// or https://).</p>
+      }
+    </div>
+
+    <div class="coordinates">
+      <div class="field">
+        <label for="lat">Latitude (optional)</label>
+        <input id="lat" type="number" step="any" formControlName="lat" />
+      </div>
+
+      <div class="field">
+        <label for="lng">Longitude (optional)</label>
+        <input id="lng" type="number" step="any" formControlName="lng" />
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="form.invalid || pending()">
+      {{ pending() ? 'Saving…' : 'Save concert' }}
+    </button>
+  </form>
+</div>
