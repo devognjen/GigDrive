@@ -1,4 +1,8 @@
 import { Module } from '@nestjs/common';
+import { TicketmasterService } from './ticketmaster/ticketmaster.service';
 
-@Module({})
+@Module({
+  providers: [TicketmasterService],
+  exports: [TicketmasterService],
+})
 export class IntegrationsModule {}

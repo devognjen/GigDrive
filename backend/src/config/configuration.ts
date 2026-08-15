@@ -9,6 +9,12 @@ export default () => ({
   },
   jwtSecret: process.env.JWT_SECRET ?? 'dev-only-secret',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '1d',
+  ticketmaster: {
+    apiKey: process.env.TICKETMASTER_API_KEY ?? '',
+    baseUrl:
+      process.env.TICKETMASTER_BASE_URL ??
+      'https://app.ticketmaster.com/discovery/v2',
+  },
   seed: {
     demoPassword: process.env.SEED_DEMO_PASSWORD ?? 'demo1234',
   },
