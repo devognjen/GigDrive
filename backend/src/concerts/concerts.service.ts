@@ -1,0 +1,136 @@
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import {
+  ProviderConcert,
+  TicketmasterService,
+} from '../integrations/ticketmaster/ticketmaster.service';
+import { Trip } from '../trips/entities/trip.entity';
+import { ConcertDetailsDto } from './dto/concert-details.dto';
+import { ConcertTripDto } from './dto/concert-trip.dto';
+import { ConcertDto } from './dto/concert.dto';
+import { CreateConcertDto } from './dto/create-concert.dto';
+import { SearchConcertsDto } from './dto/search-concerts.dto';
+import { Concert } from './entities/concert.entity';
+
+export const CONCERTS_PAGE_SIZE = 20;
+
+@Injectable()
+export class ConcertsService {
+  private readonly logger = new Logger(ConcertsService.name);
+
+  constructor(
+    @InjectRepository(Concert)
+    private readonly concertsRepository: Repository<Concert>,
+    @InjectRepository(Trip)
+    private readonly tripsRepository: Repository<Trip>,
+    private readonly ticketmasterService: TicketmasterService,
+  ) {}
+
+  /**
+   * Cache-first search (quota-safe, PRD §4.3): the local cache is the source
+   * of truth, so repeated searches never touch the provider. The provider is
+   * only queried on a cache miss and its results are upserted, after which
+   * the cache is re-queried so responses always come from local rows.
+   * When the provider is unavailable the (possibly empty) cache result is
+   * served — search keeps working during outages and quota exhaustion.
+   */
+  async search(dto: SearchConcertsDto): Promise<ConcertDto[]> {
+    const cached = await this.searchCache(dto);
+    if (cached.length > 0) {
+      return cached.map((concert) => ConcertDto.fromEntity(concert));
+    }
+
+    const fetched = await this.ticketmasterService.searchEvents(dto);
+    if (fetched === null) {
+      this.logger.warn(
+        'Concert provider unavailable; serving cached results only',
+      );
+      return [];
+    }
+    if (fetched.length === 0) {
+      return [];
+    }
+
+    await this.upsertProviderConcerts(fetched);
+    const cachedAfterSync = await this.searchCache(dto);
+    return cachedAfterSync.map((concert) => ConcertDto.fromEntity(concert));
+  }
+
+  async getDetails(id: string): Promise<ConcertDetailsDto> {
+    const concert = await this.concertsRepository.findOneBy({ id });
+    if (!concert) {
+      throw new NotFoundException('Concert not found');
+    }
+    const trips = await this.tripsRepository.find({
+      where: { concertId: id },
+      relations: { driver: true },
+      order: { departureAt: 'ASC' },
+    });
+    const dto = new ConcertDetailsDto();
+    dto.concert = ConcertDto.fromEntity(concert);
+    dto.trips = trips.map((trip) => ConcertTripDto.fromEntity(trip));
+    return dto;
+  }
+
+  /** Manual creation (FR-CON-04): no provider id, flagged userSubmitted. */
+  async create(dto: CreateConcertDto): Promise<ConcertDto> {
+    const concert = this.concertsRepository.create({
+      ...dto,
+      lat: dto.lat ?? null,
+      lng: dto.lng ?? null,
+      imageUrl: dto.imageUrl ?? null,
+      genre: dto.genre ?? null,
+      ticketUrl: dto.ticketUrl ?? null,
+      startAt: new Date(dto.startAt),
+      externalId: null,
+      userSubmitted: true,
+    });
+    return ConcertDto.fromEntity(await this.concertsRepository.save(concert));
+  }
+
+  private searchCache(dto: SearchConcertsDto): Promise<Concert[]> {
+    const qb = this.concertsRepository
+      .createQueryBuilder('concert')
+      .orderBy('concert.startAt', 'ASC')
+      .skip(dto.page * CONCERTS_PAGE_SIZE)
+      .take(CONCERTS_PAGE_SIZE);
+    if (dto.q) {
+      qb.andWhere(
+        '(LOWER(concert.artist) LIKE :q OR LOWER(concert.title) LIKE :q)',
+        { q: `%${dto.q.toLowerCase()}%` },
+      );
+    }
+    if (dto.city) {
+      qb.andWhere('LOWER(concert.city) LIKE :city', {
+        city: `%${dto.city.toLowerCase()}%`,
+      });
+    }
+    if (dto.dateFrom) {
+      qb.andWhere('concert.startAt >= :dateFrom', {
+        dateFrom: `${dto.dateFrom}T00:00:00Z`,
+      });
+    }
+    if (dto.dateTo) {
+      qb.andWhere('concert.startAt <= :dateTo', {
+        dateTo: `${dto.dateTo}T23:59:59.999Z`,
+      });
+    }
+    if (dto.genre) {
+      qb.andWhere('LOWER(concert.genre) LIKE :genre', {
+        genre: `%${dto.genre.toLowerCase()}%`,
+      });
+    }
+    return qb.getMany();
+  }
+
+  /** Upserts provider results into the cache (unique externalId, FR-CON-02). */
+  private async upsertProviderConcerts(
+    concerts: ProviderConcert[],
+  ): Promise<void> {
+    await this.concertsRepository.upsert(
+      concerts.map((concert) => ({ ...concert, userSubmitted: false })),
+      ['externalId'],
+    );
+  }
+}
