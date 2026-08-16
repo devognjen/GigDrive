@@ -29,5 +29,6 @@ import { TripsService } from './trips.service';
     // with the real Mailtrap/Nodemailer implementation).
     { provide: TRIP_NOTIFICATIONS, useClass: LoggingTripNotifications },
   ],
+  exports: [TripsService],
 })
 export class TripsModule {}
