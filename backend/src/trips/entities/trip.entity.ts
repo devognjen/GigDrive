@@ -5,6 +5,7 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -12,6 +13,7 @@ import { Currency, PricingMode, TripStatus } from '../../common/enums';
 import { Concert } from '../../concerts/entities/concert.entity';
 import { User } from '../../users/entities/user.entity';
 import { Vehicle } from '../../vehicles/entities/vehicle.entity';
+import { TripStop } from './trip-stop.entity';
 
 @Entity('trips')
 export class Trip {
@@ -40,6 +42,9 @@ export class Trip {
   @Column()
   @Index()
   concertId: string;
+
+  @OneToMany(() => TripStop, (stop) => stop.trip)
+  stops: TripStop[];
 
   @Column({ type: 'varchar', length: 32 })
   pricingMode: PricingMode;
