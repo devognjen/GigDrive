@@ -49,12 +49,14 @@
           <ul>
             @for (trip of data.trips; track trip.id) {
               <li>
-                <span class="driver">{{ trip.driverName }}</span>
-                <span class="badge status">{{ trip.status }}</span>
-                <span class="meta">
-                  Departs {{ trip.departureAt | date: 'medium' }} ·
-                  {{ trip.minPassengers }}–{{ trip.maxPassengers }} passengers
-                </span>
+                <a [routerLink]="['/trips', trip.id]">
+                  <span class="driver">{{ trip.driverName }}</span>
+                  <span class="badge status">{{ trip.status }}</span>
+                  <span class="meta">
+                    Departs {{ trip.departureAt | date: 'medium' }} ·
+                    {{ trip.minPassengers }}–{{ trip.maxPassengers }} passengers
+                  </span>
+                </a>
               </li>
             }
           </ul>

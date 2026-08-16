@@ -1,0 +1,98 @@
+.trip-list {
+  max-width: 48rem;
+  margin: 2rem auto;
+
+  .trips-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+
+    h1 {
+      margin: 0;
+    }
+
+    .new-trip {
+      font-size: 0.9rem;
+    }
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      flex: 1 1 9rem;
+
+      input,
+      select {
+        padding: 0.5rem;
+        border: 1px solid #c4c4c4;
+        border-radius: 4px;
+      }
+    }
+  }
+
+  .state {
+    color: #555;
+  }
+
+  .trips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .trip-card {
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+
+      .trip-main {
+        display: flex;
+        align-items: baseline;
+        gap: 1rem;
+        text-decoration: none;
+        color: inherit;
+
+        .driver {
+          font-weight: 600;
+          flex: 1;
+        }
+
+        .price {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #3f51b5;
+        }
+
+        .band {
+          color: #555;
+          font-size: 0.85rem;
+        }
+      }
+
+      .trip-meta {
+        display: flex;
+        gap: 1rem;
+        color: #555;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+
+        .badge {
+          padding: 0.1rem 0.5rem;
+          border-radius: 999px;
+          background: #e8eaf6;
+          color: #3f51b5;
+        }
+      }
+    }
+  }
+}

@@ -1,1 +1,72 @@
-<p>trip-list works!</p>
+<div class="trip-list">
+  <header class="trips-header">
+    <h1>{{ concertId() ? 'Trips to this concert' : 'Shared rides' }}</h1>
+    <a class="new-trip" routerLink="/trips/new">Offer a ride</a>
+  </header>
+
+  <form class="filters" [formGroup]="filters">
+    <div class="field">
+      <label for="from">Departure</label>
+      <input id="from" type="text" formControlName="from" placeholder="City" autocomplete="off" />
+    </div>
+
+    <div class="field">
+      <label for="vehicleType">Vehicle</label>
+      <select id="vehicleType" formControlName="vehicleType">
+        @for (option of vehicleTypeOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="maxPrice">Max price (€)</label>
+      <input id="maxPrice" type="number" min="0" formControlName="maxPrice" />
+    </div>
+
+    <div class="field">
+      <label for="minRating">Min rating</label>
+      <input id="minRating" type="number" min="1" max="5" formControlName="minRating" />
+    </div>
+
+    <div class="field">
+      <label for="seatsMin">Seats left</label>
+      <input id="seatsMin" type="number" min="0" formControlName="seatsMin" />
+    </div>
+
+    <div class="field">
+      <label for="sort">Sort</label>
+      <select id="sort" formControlName="sort">
+        <option value="">Default</option>
+        <option value="cheapest">Cheapest</option>
+        <option value="likely">Most likely to happen</option>
+      </select>
+    </div>
+  </form>
+
+  @if (loading()) {
+    <p class="state">Loading rides…</p>
+  } @else if (trips().length === 0) {
+    <p class="state">No rides match your filters.</p>
+  } @else {
+    <ul class="trips">
+      @for (trip of trips(); track trip.id) {
+        <li class="trip-card">
+          <a [routerLink]="['/trips', trip.id]" class="trip-main">
+            <div class="driver">{{ trip.driverName }}</div>
+            <div class="price">{{ formatPrice(trip.livePrice.perPerson) }}</div>
+            <div class="band">
+              {{ formatPrice(trip.livePrice.lowerBound) }}
+              – {{ formatPrice(trip.livePrice.upperBound) }} / person
+            </div>
+          </a>
+          <div class="trip-meta">
+            <span class="badge">{{ trip.status }}</span>
+            <span>{{ trip.confirmedSeats }}/{{ trip.maxPassengers }} seats</span>
+            <span>Departs {{ trip.departureAt | date: 'medium' }}</span>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>

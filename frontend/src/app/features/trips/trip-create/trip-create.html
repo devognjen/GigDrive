@@ -1,0 +1,127 @@
+<div class="trip-create">
+  <h1>{{ editingId() ? 'Edit trip' : 'Offer a shared ride' }}</h1>
+
+  @if (serverError()) {
+    <p class="error" role="alert">{{ serverError() }}</p>
+  }
+
+  @if (loadingVehicles() || loadingTrip()) {
+    <p>Loading…</p>
+  } @else if (vehicles().length === 0) {
+    <p>You need a vehicle before you can offer a trip.</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="field">
+        <label for="vehicle">Vehicle</label>
+        <select id="vehicle" formControlName="vehicleId">
+          <option value="" disabled>Select a vehicle</option>
+          @for (vehicle of vehicles(); track vehicle.id) {
+            <option [value]="vehicle.id">
+              {{ vehicle.make }} {{ vehicle.model }} ({{ vehicle.seats }} seats)
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="concertId">Concert ID</label>
+        <input
+          id="concertId"
+          type="text"
+          formControlName="concertId"
+          placeholder="UUID of the concert"
+        />
+        @if (form.controls.concertId.touched && form.controls.concertId.hasError('required')) {
+          <p class="error">A concert is required.</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="pricingMode">Pricing mode</label>
+        <select id="pricingMode" formControlName="pricingMode">
+          @for (option of pricingOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="totalCost">Total cost (minor units, e.g. cents)</label>
+        <input id="totalCost" type="number" min="1" step="1" formControlName="totalCost" />
+      </div>
+
+      <div class="field">
+        <label for="currency">Currency</label>
+        <select id="currency" formControlName="currency">
+          <option value="EUR">EUR</option>
+          <option value="RSD">RSD</option>
+        </select>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="minPassengers">Min passengers</label>
+          <input
+            id="minPassengers"
+            type="number"
+            min="1"
+            step="1"
+            formControlName="minPassengers"
+          />
+        </div>
+        <div class="field">
+          <label for="maxPassengers">Max passengers</label>
+          <input
+            id="maxPassengers"
+            type="number"
+            min="1"
+            step="1"
+            formControlName="maxPassengers"
+          />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="confirmationDeadline">Confirmation deadline</label>
+          <input
+            id="confirmationDeadline"
+            type="datetime-local"
+            formControlName="confirmationDeadline"
+          />
+        </div>
+        <div class="field">
+          <label for="departureAt">Departure</label>
+          <input id="departureAt" type="datetime-local" formControlName="departureAt" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>
+          <input type="checkbox" formControlName="roundTrip" />
+          Round trip
+        </label>
+      </div>
+
+      <div class="field">
+        <label for="notes">Notes (optional)</label>
+        <textarea id="notes" rows="2" formControlName="notes"></textarea>
+      </div>
+
+      <section class="stops">
+        <h2>Pickup stops</h2>
+        @for (stop of stops.controls; track $index) {
+          <div class="stop">
+            <input type="text" [formControl]="placeControl($index)" placeholder="Stop location" />
+            <button type="button" class="secondary" (click)="removeStop($index)">Remove</button>
+          </div>
+        }
+        <button type="button" class="secondary" (click)="addStop()">Add stop</button>
+      </section>
+
+      <button type="submit" [disabled]="form.invalid || pending()">
+        {{ pending() ? 'Saving…' : editingId() ? 'Save changes' : 'Create trip' }}
+      </button>
+    </form>
+  }
+</div>

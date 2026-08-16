@@ -1,0 +1,80 @@
+<div class="trip-details">
+  @if (loading()) {
+    <p class="state">Loading trip…</p>
+  } @else if (notFound()) {
+    <div class="state">
+      <h1>Trip not found</h1>
+      <a routerLink="/trips">Back to rides</a>
+    </div>
+  } @else if (trip(); as trip) {
+    <header>
+      <h1>Ride with {{ trip.driverName }}</h1>
+      <span class="badge">{{ trip.status }}</span>
+    </header>
+
+    @if (actionError()) {
+      <p class="error" role="alert">{{ actionError() }}</p>
+    }
+
+    <div class="price-card">
+      <div class="live-price">{{ formatPrice(trip.livePrice.perPerson) }}</div>
+      <div class="band">
+        {{ formatPrice(trip.livePrice.lowerBound) }}
+        – {{ formatPrice(trip.livePrice.upperBound) }} / person
+      </div>
+      <div class="seats">{{ trip.confirmedSeats }}/{{ trip.maxPassengers }} seats filled</div>
+    </div>
+
+    <dl class="info">
+      <dt>Departure</dt>
+      <dd>{{ trip.departureAt | date: 'medium' }}</dd>
+      <dt>Confirmation deadline</dt>
+      <dd>{{ trip.confirmationDeadline | date: 'medium' }}</dd>
+      <dt>Pricing</dt>
+      <dd>{{ trip.pricingMode }} · {{ trip.currency }}</dd>
+      <dt>Passengers</dt>
+      <dd>{{ trip.minPassengers }} – {{ trip.maxPassengers }}</dd>
+      <dt>Round trip</dt>
+      <dd>{{ trip.roundTrip ? 'Yes' : 'No' }}</dd>
+      @if (trip.driverAverageRating !== null) {
+        <dt>Driver rating</dt>
+        <dd>{{ trip.driverAverageRating }}</dd>
+      }
+    </dl>
+
+    <section class="stops">
+      <h2>Pickup stops</h2>
+      @if (trip.stops.length === 0) {
+        <p class="state">No pickup stops listed.</p>
+      } @else {
+        <ol>
+          @for (stop of trip.stops; track stop.id) {
+            <li>{{ stop.place }}</li>
+          }
+        </ol>
+      }
+    </section>
+
+    @if (trip.notes) {
+      <p class="notes">{{ trip.notes }}</p>
+    }
+
+    @if (isDriver()) {
+      <div class="actions">
+        @if (trip.status === 'OPEN') {
+          <a class="edit" [routerLink]="['/trips', trip.id, 'edit']">Edit trip</a>
+        }
+        @if (trip.status === 'READY') {
+          <button type="button" (click)="confirm()" [disabled]="actionPending()">
+            Confirm trip
+          </button>
+        }
+        @if (trip.status !== 'CANCELLED' && trip.status !== 'COMPLETED') {
+          <button type="button" class="danger" (click)="cancel()" [disabled]="actionPending()">
+            Cancel trip
+          </button>
+        }
+      </div>
+    }
+  }
+</div>
