@@ -3,7 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Booking } from '../bookings/entities/booking.entity';
 import {
-  BookingStatus,
   Currency,
   PricingMode,
   TripStatus,
@@ -32,7 +31,11 @@ describe('TripsService', () => {
   const tripId = 'trip-uuid';
   const vehicleId = 'vehicle-uuid';
   const concertId = 'concert-uuid';
-  const driver = { id: 'driver-uuid', firstName: 'Demo', lastName: 'Driver' } as User;
+  const driver = {
+    id: 'driver-uuid',
+    firstName: 'Demo',
+    lastName: 'Driver',
+  } as User;
 
   const future = (days: number) => {
     const d = new Date();
@@ -91,8 +94,8 @@ describe('TripsService', () => {
 
   beforeEach(async () => {
     tripsRepository = {
-      create: jest.fn((data) => ({ id: tripId, ...data })),
-      save: jest.fn((trip) => Promise.resolve(trip)),
+      create: jest.fn((data: Partial<Trip>) => ({ id: tripId, ...data })),
+      save: jest.fn((trip: Trip) => Promise.resolve(trip)),
       find: jest.fn(),
       findOneBy: jest.fn(),
       findOne: jest.fn(),
@@ -100,8 +103,8 @@ describe('TripsService', () => {
     };
     stopsRepository = {
       delete: jest.fn(),
-      create: jest.fn((data) => data),
-      save: jest.fn((rows) => Promise.resolve(rows)),
+      create: jest.fn((data: Partial<TripStop>) => data),
+      save: jest.fn((rows: TripStop[]) => Promise.resolve(rows)),
     };
     bookingsRepository = { find: jest.fn().mockResolvedValue([]) };
     vehiclesRepository = { findOneBy: jest.fn() };
@@ -135,7 +138,10 @@ describe('TripsService', () => {
       const result = await service.create(driver.id, createDto);
 
       expect(tripsRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ driverId: driver.id, status: TripStatus.Open }),
+        expect.objectContaining({
+          driverId: driver.id,
+          status: TripStatus.Open,
+        }),
       );
       expect(stopsRepository.save).toHaveBeenCalled();
       expect(result).toMatchObject({ id: tripId, driverId: driver.id });
@@ -154,7 +160,11 @@ describe('TripsService', () => {
 
     it('rejects min > max', async () => {
       await expect(
-        service.create(driver.id, { ...createDto, minPassengers: 6, maxPassengers: 4 }),
+        service.create(driver.id, {
+          ...createDto,
+          minPassengers: 6,
+          maxPassengers: 4,
+        }),
       ).rejects.toBeInstanceOf(ConflictException);
     });
 
@@ -180,10 +190,7 @@ describe('TripsService', () => {
       tripsRepository.findOne.mockResolvedValue(
         buildTrip({ status: TripStatus.Ready }),
       );
-      bookingsRepository.find.mockResolvedValue([
-        { seats: 4 },
-        { seats: 2 },
-      ]);
+      bookingsRepository.find.mockResolvedValue([{ seats: 4 }, { seats: 2 }]);
 
       const result = await service.confirm(tripId);
 
@@ -197,10 +204,14 @@ describe('TripsService', () => {
     });
 
     it('rejects confirming a non-READY trip', async () => {
-      tripsRepository.findOne.mockResolvedValue(buildTrip({ status: TripStatus.Open }));
+      tripsRepository.findOne.mockResolvedValue(
+        buildTrip({ status: TripStatus.Open }),
+      );
       bookingsRepository.find.mockResolvedValue([{ seats: 4 }]);
 
-      await expect(service.confirm(tripId)).rejects.toBeInstanceOf(ConflictException);
+      await expect(service.confirm(tripId)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
       expect(notifications.notify).not.toHaveBeenCalled();
     });
   });
@@ -221,7 +232,9 @@ describe('TripsService', () => {
       tripsRepository.findOne.mockResolvedValue(
         buildTrip({ status: TripStatus.Completed }),
       );
-      await expect(service.cancel(tripId)).rejects.toBeInstanceOf(ConflictException);
+      await expect(service.cancel(tripId)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
     });
   });
 
@@ -235,9 +248,9 @@ describe('TripsService', () => {
       tripsRepository.findOne.mockResolvedValue(
         buildTrip({ status: TripStatus.Ready }),
       );
-      await expect(service.update(tripId, { notes: 'x' })).rejects.toBeInstanceOf(
-        ConflictException,
-      );
+      await expect(
+        service.update(tripId, { notes: 'x' }),
+      ).rejects.toBeInstanceOf(ConflictException);
     });
   });
 
@@ -295,7 +308,9 @@ describe('TripsService', () => {
       const pastDeadline = new Date();
       pastDeadline.setDate(pastDeadline.getDate() - 1);
       tripsRepository.find
-        .mockResolvedValueOnce([buildTrip({ confirmationDeadline: pastDeadline })])
+        .mockResolvedValueOnce([
+          buildTrip({ confirmationDeadline: pastDeadline }),
+        ])
         .mockResolvedValueOnce([]);
       bookingsRepository.find.mockResolvedValue([{ seats: 2 }]);
 
@@ -310,11 +325,12 @@ describe('TripsService', () => {
     it('completes a CONFIRMED trip past departure', async () => {
       const pastDeparture = new Date();
       pastDeparture.setDate(pastDeparture.getDate() - 1);
-      tripsRepository.find
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([
-          buildTrip({ status: TripStatus.Confirmed, departureAt: pastDeparture }),
-        ]);
+      tripsRepository.find.mockResolvedValueOnce([]).mockResolvedValueOnce([
+        buildTrip({
+          status: TripStatus.Confirmed,
+          departureAt: pastDeparture,
+        }),
+      ]);
       bookingsRepository.find.mockResolvedValue([]);
       notifications.notify.mockClear();
 

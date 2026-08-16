@@ -6,7 +6,6 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
-  IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
@@ -52,13 +51,18 @@ export class CreateTripDto {
   @Min(1)
   minPassengers: number;
 
-  @ApiProperty({ description: 'Maximum passengers (≤ vehicle seats)', minimum: 1 })
+  @ApiProperty({
+    description: 'Maximum passengers (≤ vehicle seats)',
+    minimum: 1,
+  })
   @Type(() => Number)
   @IsInt()
   @Min(1)
   maxPassengers: number;
 
-  @ApiProperty({ description: 'Go/no-go decision deadline as ISO 8601 timestamp' })
+  @ApiProperty({
+    description: 'Go/no-go decision deadline as ISO 8601 timestamp',
+  })
   @IsDateString()
   confirmationDeadline: string;
 
@@ -66,7 +70,9 @@ export class CreateTripDto {
   @IsDateString()
   departureAt: string;
 
-  @ApiPropertyOptional({ description: 'Whether the driver offers a return leg' })
+  @ApiPropertyOptional({
+    description: 'Whether the driver offers a return leg',
+  })
   @IsOptional()
   @IsBoolean()
   roundTrip?: boolean;

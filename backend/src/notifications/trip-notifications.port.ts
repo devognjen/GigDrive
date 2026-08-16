@@ -1,11 +1,7 @@
 import { Trip } from '../trips/entities/trip.entity';
 
 export interface TripNotificationEvent {
-  type:
-    | 'TRIP_READY'
-    | 'TRIP_CONFIRMED'
-    | 'TRIP_CANCELLED'
-    | 'TRIP_COMPLETED';
+  type: 'TRIP_READY' | 'TRIP_CONFIRMED' | 'TRIP_CANCELLED' | 'TRIP_COMPLETED';
   trip: Trip;
 }
 

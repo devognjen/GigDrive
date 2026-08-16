@@ -102,7 +102,8 @@ export class TripsService {
     const maxPassengers = dto.maxPassengers ?? trip.maxPassengers;
     this.assertValidCapacity(vehicle, minPassengers, maxPassengers);
 
-    const deadline = dto.confirmationDeadline ?? trip.confirmationDeadline.toISOString();
+    const deadline =
+      dto.confirmationDeadline ?? trip.confirmationDeadline.toISOString();
     this.assertValidDeadline(deadline, concert);
 
     if (dto.vehicleId !== undefined) {
@@ -292,9 +293,7 @@ export class TripsService {
 
   // ---- internals ----
 
-  private async loadTripsWithRelations(
-    dto: ListTripsDto,
-  ): Promise<Trip[]> {
+  private async loadTripsWithRelations(dto: ListTripsDto): Promise<Trip[]> {
     const qb = this.tripsRepository
       .createQueryBuilder('trip')
       .leftJoinAndSelect('trip.vehicle', 'vehicle')
@@ -306,7 +305,9 @@ export class TripsService {
       qb.andWhere('trip.concertId = :concertId', { concertId: dto.concertId });
     }
     if (dto.vehicleType) {
-      qb.andWhere('vehicle.type = :vehicleType', { vehicleType: dto.vehicleType });
+      qb.andWhere('vehicle.type = :vehicleType', {
+        vehicleType: dto.vehicleType,
+      });
     }
 
     // Sort handled after hydration, since the live price is computed in JS.
@@ -321,7 +322,7 @@ export class TripsService {
     const tripIds = trips.map((trip) => trip.id);
     const seatCounts = await this.countConfirmedSeatsFor(tripIds);
 
-    let result: TripDto[] = [];
+    const result: TripDto[] = [];
     for (const trip of trips) {
       const confirmedSeats = seatCounts.get(trip.id) ?? 0;
       const livePrice = this.pricing.calculate(
@@ -351,7 +352,10 @@ export class TripsService {
 
       if (dto.minRating !== undefined) {
         // Until reviews exist, no driver has a rating, so none can pass.
-        if (driverAverageRating === null || driverAverageRating < dto.minRating) {
+        if (
+          driverAverageRating === null ||
+          driverAverageRating < dto.minRating
+        ) {
           continue;
         }
       }
@@ -383,7 +387,9 @@ export class TripsService {
   }
 
   private matchesDeparture(trip: Trip, query: string): boolean {
-    const sortedStops = (trip.stops ?? []).slice().sort((a, b) => a.seq - b.seq);
+    const sortedStops = (trip.stops ?? [])
+      .slice()
+      .sort((a, b) => a.seq - b.seq);
     const first = sortedStops[0];
     if (!first) {
       return false;
@@ -391,10 +397,7 @@ export class TripsService {
     return first.place.toLowerCase().includes(query.toLowerCase());
   }
 
-  private async toDtoWithConfirmedSeats(
-    trip: Trip,
-    confirmedSeats: number,
-  ): Promise<TripDto> {
+  private toDtoWithConfirmedSeats(trip: Trip, confirmedSeats: number): TripDto {
     const livePrice = this.pricing.calculate(
       trip.pricingMode,
       trip.totalCost,
@@ -511,7 +514,9 @@ export class TripsService {
   private assertValidDeadline(deadline: string, concert: Concert): void {
     // FR-TRIP-02: the go/no-go deadline must fall before the concert.
     if (new Date(deadline).getTime() >= concert.startAt.getTime()) {
-      throw new ConflictException('Confirmation deadline must be before the concert');
+      throw new ConflictException(
+        'Confirmation deadline must be before the concert',
+      );
     }
   }
 }

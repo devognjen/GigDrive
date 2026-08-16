@@ -46,9 +46,7 @@ export class TripsController {
 
   @Get(':id')
   @ApiOkResponse({ type: TripDto })
-  getDetails(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<TripDto> {
+  getDetails(@Param('id', ParseUUIDPipe) id: string): Promise<TripDto> {
     return this.tripsService.getDetails(id);
   }
 

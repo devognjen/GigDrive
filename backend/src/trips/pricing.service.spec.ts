@@ -10,12 +10,7 @@ describe('PricingService', () => {
 
   describe('SHARED_TOTAL mode (PRD §4.1)', () => {
     it('matches the README example: 12000 total, min 4, max 8 → band 3000 → 1500', () => {
-      const price = service.calculate(
-        PricingMode.SharedTotal,
-        12000,
-        4,
-        8,
-      );
+      const price = service.calculate(PricingMode.SharedTotal, 12000, 4, 8);
       expect(price.lowerBound).toBe(3000); // 12000 / 4  = 30.00 €
       expect(price.upperBound).toBe(1500); // 12000 / 8  = 15.00 €
       expect(price.perPerson).toBe(3000); // below min → treated as 4
@@ -25,7 +20,13 @@ describe('PricingService', () => {
       const best = service.calculate(PricingMode.SharedTotal, 12000, 4, 8, 8);
       expect(best.perPerson).toBe(1500);
 
-      const partial = service.calculate(PricingMode.SharedTotal, 12000, 4, 8, 6);
+      const partial = service.calculate(
+        PricingMode.SharedTotal,
+        12000,
+        4,
+        8,
+        6,
+      );
       expect(partial.perPerson).toBe(2000); // ceil(12000 / 6)
 
       const none = service.calculate(PricingMode.SharedTotal, 12000, 4, 8, 0);

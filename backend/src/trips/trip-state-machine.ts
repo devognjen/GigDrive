@@ -34,12 +34,16 @@ export interface TripStateContext {
 @Injectable()
 export class TripStateMachine {
   /** Whether the trip is at (or above) its go/no-go seat threshold. */
-  hasMinReached(ctx: Pick<TripStateContext, 'confirmedSeats' | 'minPassengers'>): boolean {
+  hasMinReached(
+    ctx: Pick<TripStateContext, 'confirmedSeats' | 'minPassengers'>,
+  ): boolean {
     return ctx.confirmedSeats >= ctx.minPassengers;
   }
 
   /** Whether every offered seat is taken. */
-  isFull(ctx: Pick<TripStateContext, 'confirmedSeats' | 'maxPassengers'>): boolean {
+  isFull(
+    ctx: Pick<TripStateContext, 'confirmedSeats' | 'maxPassengers'>,
+  ): boolean {
     return ctx.confirmedSeats >= ctx.maxPassengers;
   }
 
@@ -55,7 +59,9 @@ export class TripStateMachine {
   /** The driver may cancel a trip that has not completed its lifecycle. */
   assertCancellable(status: TripStatus): void {
     if (status === TripStatus.Completed || status === TripStatus.Cancelled) {
-      throw new ConflictException('The trip is already finished and cannot be cancelled');
+      throw new ConflictException(
+        'The trip is already finished and cannot be cancelled',
+      );
     }
   }
 
@@ -65,7 +71,9 @@ export class TripStateMachine {
    */
   assertConfirmable(ctx: TripStateContext): void {
     if (ctx.status !== TripStatus.Ready) {
-      throw new ConflictException('Only READY trips (minimum reached) can be confirmed');
+      throw new ConflictException(
+        'Only READY trips (minimum reached) can be confirmed',
+      );
     }
   }
 

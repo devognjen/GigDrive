@@ -16,9 +16,10 @@ import {
 export class LoggingTripNotifications implements TripNotifications {
   private readonly logger = new Logger('TripNotifications');
 
-  async notify(event: TripNotificationEvent): Promise<void> {
+  notify(event: TripNotificationEvent): Promise<void> {
     this.logger.log(
       `[${event.type}] trip=${event.trip.id} driver=${event.trip.driverId}`,
     );
+    return Promise.resolve();
   }
 }

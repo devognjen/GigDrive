@@ -20,7 +20,9 @@ export class ListTripsDto {
   @IsUUID()
   concertId?: string;
 
-  @ApiPropertyOptional({ description: 'Departure city (matches the first stop)' })
+  @ApiPropertyOptional({
+    description: 'Departure city (matches the first stop)',
+  })
   @IsOptional()
   @IsString()
   from?: string;
@@ -30,7 +32,9 @@ export class ListTripsDto {
   @IsEnum(VehicleType)
   vehicleType?: VehicleType;
 
-  @ApiPropertyOptional({ description: 'Maximum live per-person price (minor units)' })
+  @ApiPropertyOptional({
+    description: 'Maximum live per-person price (minor units)',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -51,7 +55,10 @@ export class ListTripsDto {
   @Min(0)
   seatsMin?: number;
 
-  @ApiPropertyOptional({ description: 'Sort order', enum: ['cheapest', 'likely'] })
+  @ApiPropertyOptional({
+    description: 'Sort order',
+    enum: ['cheapest', 'likely'],
+  })
   @IsOptional()
   @IsString()
   sort?: string;

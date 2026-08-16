@@ -20,17 +20,29 @@ describe('TripStateMachine', () => {
 
   describe('hasMinReached', () => {
     it('is true once confirmed seats hit the minimum', () => {
-      expect(machine.hasMinReached({ confirmedSeats: 3, minPassengers: 4 })).toBe(false);
-      expect(machine.hasMinReached({ confirmedSeats: 4, minPassengers: 4 })).toBe(true);
-      expect(machine.hasMinReached({ confirmedSeats: 5, minPassengers: 4 })).toBe(true);
+      expect(
+        machine.hasMinReached({ confirmedSeats: 3, minPassengers: 4 }),
+      ).toBe(false);
+      expect(
+        machine.hasMinReached({ confirmedSeats: 4, minPassengers: 4 }),
+      ).toBe(true);
+      expect(
+        machine.hasMinReached({ confirmedSeats: 5, minPassengers: 4 }),
+      ).toBe(true);
     });
   });
 
   describe('isFull', () => {
     it('is true only when every seat is confirmed', () => {
-      expect(machine.isFull({ confirmedSeats: 7, maxPassengers: 8 })).toBe(false);
-      expect(machine.isFull({ confirmedSeats: 8, maxPassengers: 8 })).toBe(true);
-      expect(machine.isFull({ confirmedSeats: 9, maxPassengers: 8 })).toBe(true);
+      expect(machine.isFull({ confirmedSeats: 7, maxPassengers: 8 })).toBe(
+        false,
+      );
+      expect(machine.isFull({ confirmedSeats: 8, maxPassengers: 8 })).toBe(
+        true,
+      );
+      expect(machine.isFull({ confirmedSeats: 9, maxPassengers: 8 })).toBe(
+        true,
+      );
     });
   });
 
@@ -54,14 +66,18 @@ describe('TripStateMachine', () => {
     it('allows cancelling unsettled trips', () => {
       expect(() => machine.assertCancellable(TripStatus.Open)).not.toThrow();
       expect(() => machine.assertCancellable(TripStatus.Ready)).not.toThrow();
-      expect(() => machine.assertCancellable(TripStatus.Confirmed)).not.toThrow();
+      expect(() =>
+        machine.assertCancellable(TripStatus.Confirmed),
+      ).not.toThrow();
       expect(() => machine.assertCancellable(TripStatus.Full)).not.toThrow();
     });
 
     it.each([TripStatus.Completed, TripStatus.Cancelled])(
       'rejects cancelling a %s trip',
       (status) => {
-        expect(() => machine.assertCancellable(status)).toThrow(ConflictException);
+        expect(() => machine.assertCancellable(status)).toThrow(
+          ConflictException,
+        );
       },
     );
   });
@@ -80,23 +96,23 @@ describe('TripStateMachine', () => {
       TripStatus.Completed,
       TripStatus.Cancelled,
     ])('rejects confirming a %s trip', (status) => {
-      expect(() => machine.assertConfirmable({ ...baseContext, status })).toThrow(
-        ConflictException,
-      );
+      expect(() =>
+        machine.assertConfirmable({ ...baseContext, status }),
+      ).toThrow(ConflictException);
     });
   });
 
   describe('deriveStatus', () => {
     it('goes OPEN → READY once the minimum is reached', () => {
-      expect(
-        machine.deriveStatus({ ...baseContext, confirmedSeats: 4 }),
-      ).toBe(TripStatus.Ready);
+      expect(machine.deriveStatus({ ...baseContext, confirmedSeats: 4 })).toBe(
+        TripStatus.Ready,
+      );
     });
 
     it('goes OPEN → FULL once every seat is taken', () => {
-      expect(
-        machine.deriveStatus({ ...baseContext, confirmedSeats: 8 }),
-      ).toBe(TripStatus.Full);
+      expect(machine.deriveStatus({ ...baseContext, confirmedSeats: 8 })).toBe(
+        TripStatus.Full,
+      );
     });
 
     it('drops FULL → OPEN when a booking is cancelled below the minimum', () => {

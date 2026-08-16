@@ -57,9 +57,9 @@ describe('TripOwnershipGuard', () => {
   });
 
   it('rejects unauthenticated requests', async () => {
-    await expect(guard.canActivate(buildContext(undefined))).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(
+      guard.canActivate(buildContext(undefined)),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
     expect(tripsRepository.findOneBy).not.toHaveBeenCalled();
   });
 

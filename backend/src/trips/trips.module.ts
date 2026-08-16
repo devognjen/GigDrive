@@ -2,9 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Booking } from '../bookings/entities/booking.entity';
 import { Concert } from '../concerts/entities/concert.entity';
-import {
-  LoggingTripNotifications,
-} from '../notifications/logging-trip-notifications';
+import { LoggingTripNotifications } from '../notifications/logging-trip-notifications';
 import { TRIP_NOTIFICATIONS } from '../notifications/trip-notifications.port';
 import { Vehicle } from '../vehicles/entities/vehicle.entity';
 import { Trip } from './entities/trip.entity';
