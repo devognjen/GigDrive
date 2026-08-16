@@ -1,10 +1,10 @@
-.my-bookings {
+.driver-bookings {
   max-width: 720px;
   margin: 0 auto;
   padding: 24px;
 }
 
-.my-bookings h1 {
+.driver-bookings h1 {
   margin-bottom: 16px;
 }
 
@@ -15,8 +15,7 @@
 }
 
 .state {
-  color: var(--mat-sys-on-surface, #333);
-  background: var(--mat-sys-surface-container, #f5f5f5);
+  background: #f5f5f5;
 }
 
 .error {
@@ -34,7 +33,6 @@
 
 .booking {
   display: grid;
-  grid-template-columns: 1fr auto;
   gap: 6px 12px;
   padding: 16px;
   border: 1px solid #e0e0e0;
@@ -47,9 +45,18 @@
 }
 
 .seats,
-.paid,
 .requested {
   color: #666;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.accept {
+  color: #1b5e20;
 }
 
 .danger {

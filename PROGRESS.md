@@ -6,7 +6,7 @@ Each feature has a specification file in [docs/features/](docs/features/).
 
 **Status legend:** ⬜ Not started · 🔶 In progress · ✅ Done · ⏸️ Deferred/dropped
 
-Last updated: 2026-08-16
+Last updated: 2026-08-17
 
 ## Tier 0 — MVP (must have)
 
@@ -17,7 +17,7 @@ Last updated: 2026-08-16
 | 3 | Concert discovery, cache & manual creation | [03-concerts.md](docs/features/03-concerts.md) | M2, M7 | ✅ | Ticketmaster proxy + cache-first search (provider only on cache miss, upsert on `externalId`); details page with linked trips; manual creation (`userSubmitted`). Radius filter dropped (FR-CON-01 vs endpoint spec conflict; no geo source for typed cities) |
 | 4 | Vehicle management | [04-vehicles.md](docs/features/04-vehicles.md) | M3 | ✅ | CRUD + ownership guard (404 unknown, 403 foreign); delete of trip-referenced vehicle blocked with 409; vehicles section embedded in profile page |
 | 5 | Trip offers & dynamic shared pricing | [05-trips.md](docs/features/05-trips.md) | M3, M8, M9 | ✅ | Pricing calculator + state machine (pure, unit-tested); trips module CRUD, ownership guard, live price, filters/sorting, scheduled deadline sweep; notification seam (feature 07 swaps transport); Angular trip browse/create/edit/details with reactive filters & live price |
-| 6 | Booking flow | [06-bookings.md](docs/features/06-bookings.md) | M3, M10 | ⬜ | |
+| 6 | Booking flow | [06-bookings.md](docs/features/06-bookings.md) | M3, M10 | ✅ | Bookings module: request (PENDING), accept (transactional pessimistic-lock capacity re-check), reject, cancel (passenger), paid toggle (driver); booking-notification seam (feature 07 swaps transport); driver/passenger ownership guards; DTOs; Angular request form on trip details + My Bookings + driver incoming-requests views; service & guard unit tests |
 | 7 | Email notifications | [07-email-notifications.md](docs/features/07-email-notifications.md) | M4 | ⬜ | |
 | 8 | Driver & passenger dashboards | [08-dashboards.md](docs/features/08-dashboards.md) | M10 | ⬜ | |
 | 9 | Reviews & driver ratings | [09-reviews.md](docs/features/09-reviews.md) | M11 | ⬜ | |
@@ -40,8 +40,8 @@ Last updated: 2026-08-16
 
 ## Summary
 
-- **Total:** 15 features · ✅ Done: 5 · 🔶 In progress: 0 · ⬜ Not started: 10 · ⏸️ Deferred: 0
-- **Current focus:** Feature 6 — Booking flow (M3)
+- **Total:** 15 features · ✅ Done: 6 · 🔶 In progress: 0 · ⬜ Not started: 9 · ⏸️ Deferred: 0
+- **Current focus:** Feature 7 — Email notifications (M4)
 
 ## Working agreements
 

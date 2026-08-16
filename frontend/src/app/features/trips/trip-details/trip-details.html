@@ -23,6 +23,7 @@
         – {{ formatPrice(trip.livePrice.upperBound) }} / person
       </div>
       <div class="seats">{{ trip.confirmedSeats }}/{{ trip.maxPassengers }} seats filled</div>
+      <div class="seats-left">{{ trip.seatsLeft }} seats left</div>
     </div>
 
     <dl class="info">
@@ -57,6 +58,28 @@
 
     @if (trip.notes) {
       <p class="notes">{{ trip.notes }}</p>
+    }
+
+    @if (isBookable()) {
+      <section class="booking-request">
+        <h2>Request seats</h2>
+        @if (bookingDone()) {
+          <p class="success">Your booking request has been sent.</p>
+        } @else {
+          @if (bookingError()) {
+            <p class="error" role="alert">{{ bookingError() }}</p>
+          }
+          <form (ngSubmit)="requestSeats()">
+            <label>
+              Seats
+              <input type="number" min="1" [max]="trip.seatsLeft" [formControl]="seats" />
+            </label>
+            <button type="submit" [disabled]="seats.invalid || bookingPending()">
+              Request seats
+            </button>
+          </form>
+        }
+      </section>
     }
 
     @if (isDriver()) {
