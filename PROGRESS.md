@@ -18,7 +18,7 @@ Last updated: 2026-08-17
 | 4 | Vehicle management | [04-vehicles.md](docs/features/04-vehicles.md) | M3 | ✅ | CRUD + ownership guard (404 unknown, 403 foreign); delete of trip-referenced vehicle blocked with 409; vehicles section embedded in profile page |
 | 5 | Trip offers & dynamic shared pricing | [05-trips.md](docs/features/05-trips.md) | M3, M8, M9 | ✅ | Pricing calculator + state machine (pure, unit-tested); trips module CRUD, ownership guard, live price, filters/sorting, scheduled deadline sweep; notification seam (feature 07 swaps transport); Angular trip browse/create/edit/details with reactive filters & live price |
 | 6 | Booking flow | [06-bookings.md](docs/features/06-bookings.md) | M3, M10 | ✅ | Bookings module: request (PENDING), accept (transactional pessimistic-lock capacity re-check), reject, cancel (passenger), paid toggle (driver); booking-notification seam (feature 07 swaps transport); driver/passenger ownership guards; DTOs; Angular request form on trip details + My Bookings + driver incoming-requests views; service & guard unit tests |
-| 7 | Email notifications | [07-email-notifications.md](docs/features/07-email-notifications.md) | M4 | ⬜ | |
+| 7 | Email notifications | [07-email-notifications.md](docs/features/07-email-notifications.md) | M4 | ✅ | Nodemailer + Mailtrap SMTP; lifecycle emails honor `emailNotifications`; T-24h reminder cron; mail events logged |
 | 8 | Driver & passenger dashboards | [08-dashboards.md](docs/features/08-dashboards.md) | M10 | ⬜ | |
 | 9 | Reviews & driver ratings | [09-reviews.md](docs/features/09-reviews.md) | M11 | ⬜ | |
 
@@ -40,8 +40,8 @@ Last updated: 2026-08-17
 
 ## Summary
 
-- **Total:** 15 features · ✅ Done: 6 · 🔶 In progress: 0 · ⬜ Not started: 9 · ⏸️ Deferred: 0
-- **Current focus:** Feature 7 — Email notifications (M4)
+- **Total:** 15 features · ✅ Done: 7 · 🔶 In progress: 0 · ⬜ Not started: 8 · ⏸️ Deferred: 0
+- **Current focus:** Feature 8 — Driver & passenger dashboards (M10)
 
 ## Working agreements
 
