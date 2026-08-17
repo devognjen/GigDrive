@@ -33,14 +33,14 @@ Last updated: 2026-08-17
 
 | # | Feature | Spec | Milestone | Status | Notes |
 |---|---------|------|-----------|--------|-------|
-| 12 | Pickup-stop maps (Leaflet + OSM) | [12-pickup-stop-maps.md](docs/features/12-pickup-stop-maps.md) | M13 | ⬜ | |
+| 12 | Pickup-stop maps (Leaflet + OSM) | [12-pickup-stop-maps.md](docs/features/12-pickup-stop-maps.md) | M13 | ✅ | Leaflet map on trip details when stops have lat/lng; numbered markers in seq order; OSM tiles (no key); textual stop list always shown; optional coords on create/edit |
 | 13 | Concert-day weather widget (Open-Meteo) | [13-weather-widget.md](docs/features/13-weather-widget.md) | M13 | ⬜ | |
 | 14 | Waitlist on full trips | [14-waitlist.md](docs/features/14-waitlist.md) | M13 | ⬜ | FR-BOOK-05 |
 | 15 | CSV passenger manifest export | [15-csv-export.md](docs/features/15-csv-export.md) | M13 | ⬜ | |
 
 ## Summary
 
-- **Total:** 15 features · ✅ Done: 11 · 🔶 In progress: 0 · ⬜ Not started: 4 · ⏸️ Deferred: 0
+- **Total:** 15 features · ✅ Done: 12 · 🔶 In progress: 0 · ⬜ Not started: 3 · ⏸️ Deferred: 0
 - **Current focus:** —
 
 ## Working agreements
