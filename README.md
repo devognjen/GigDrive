@@ -55,11 +55,23 @@ docker compose exec backend node dist/database/seed.js
 The seed is idempotent — safe to re-run. Demo login: `driver@gigdrive.demo` /
 value of `SEED_DEMO_PASSWORD` (default `demo1234`).
 
-The experimental Signal service (feature 11) is behind a compose profile:
+### Experimental Signal group automation
+
+Signal group creation (feature 11) is **experimental**. It uses the unofficial
+`signal-cli-rest-api` client (ToS gray area; the registered number can be
+restricted). Email remains the primary channel; GigDrive never sends user phone
+numbers to Signal — crew members join via an invite link.
+
+The `signal-cli` service is behind a compose profile and stays off unless you
+start it explicitly:
 
 ```bash
 docker compose --profile signal up
 ```
+
+Then set `FEATURE_SIGNAL=true` and `SIGNAL_NUMBER` to the account registered
+with signal-cli. When the flag is off, or the service is down, trip confirmation
+works normally and the Signal step is skipped.
 
 ### Development mode (hot reload)
 
@@ -111,10 +123,15 @@ docker-compose.dev.yml    hot-reload development override
 All configuration lives in `.env` (never committed) — see
 [.env.example](.env.example) for every supported variable: PostgreSQL
 credentials, JWT secret, Ticketmaster API key, SMTP (Mailtrap) credentials,
-`FEATURE_CHAT`, and the Signal number. Datetimes are stored in UTC (ISO 8601)
-and displayed in local time.
+`FEATURE_CHAT`, `FEATURE_SIGNAL`, and the Signal number. Datetimes are stored
+in UTC (ISO 8601) and displayed in local time.
 
 In-app trip chat (feature 10) is on by default (`FEATURE_CHAT=true`). The UI
 reads `GET /api/features` and, for trip members, opens a Socket.IO room at
 namespace `/chat` (path `/api/socket.io`). Set `FEATURE_CHAT=false` to hide the
 panel and disable history/gateway without affecting the rest of the app.
+
+Signal group automation (feature 11) is off by default (`FEATURE_SIGNAL=false`).
+When enabled, confirming a trip creates a Signal group named
+`🎵 {Artist} — {City}, {date}` and emails the invite link to the driver and
+confirmed passengers. There is no dedicated UI.

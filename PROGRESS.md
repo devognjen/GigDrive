@@ -27,7 +27,7 @@ Last updated: 2026-08-17
 | # | Feature | Spec | Milestone | Status | Notes |
 |---|---------|------|-----------|--------|-------|
 | 10 | In-app trip chat | [10-trip-chat.md](docs/features/10-trip-chat.md) | M12 | ✅ | Feature-flagged (`FEATURE_CHAT`); WS `/chat` + `GET /trips/:id/messages`; trip-details panel for driver + confirmed passengers |
-| 11 | Signal group automation | [11-signal-automation.md](docs/features/11-signal-automation.md) | M12 | ⬜ | Flag `FEATURE_SIGNAL`; drop first if time runs short |
+| 11 | Signal group automation | [11-signal-automation.md](docs/features/11-signal-automation.md) | M12 | ✅ | Feature-flagged (`FEATURE_SIGNAL`); group + invite link emailed on CONFIRMED; compose profile `signal`; failures do not block confirmation |
 
 ## Tier 2 — If time allows (priority order)
 
@@ -40,8 +40,8 @@ Last updated: 2026-08-17
 
 ## Summary
 
-- **Total:** 15 features · ✅ Done: 10 · 🔶 In progress: 0 · ⬜ Not started: 5 · ⏸️ Deferred: 0
-- **Current focus:** Feature 11 — Signal group automation (M12)
+- **Total:** 15 features · ✅ Done: 11 · 🔶 In progress: 0 · ⬜ Not started: 4 · ⏸️ Deferred: 0
+- **Current focus:** —
 
 ## Working agreements
 
