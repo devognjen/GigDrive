@@ -21,4 +21,4 @@ export const loadMine = createEffect(
   { functional: true },
 );
 
-export const tripsEffects = [loadMine];
+export const tripsEffects = { loadMine };

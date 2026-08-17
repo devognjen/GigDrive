@@ -10,5 +10,5 @@ import { tripsFeature } from '../../trips/store/trips.reducer';
 export const dashboardStoreProviders = [
   provideState(tripsFeature),
   provideState(bookingsFeature),
-  provideEffects([...tripsEffects, ...bookingsEffects]),
+  provideEffects(tripsEffects, bookingsEffects),
 ];

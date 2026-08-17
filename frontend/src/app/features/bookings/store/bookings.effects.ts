@@ -118,11 +118,11 @@ export const setPaid = createEffect(
   { functional: true },
 );
 
-export const bookingsEffects = [
+export const bookingsEffects = {
   loadMine,
   loadForDriver,
   acceptBooking,
   rejectBooking,
   cancelBooking,
   setPaid,
-];
+};
