@@ -59,13 +59,19 @@
 
       .stop {
         display: flex;
+        flex-direction: column;
         gap: 0.5rem;
+        padding: 0.75rem;
+        border: 1px solid #eee;
+        border-radius: 4px;
 
-        input {
-          flex: 1;
-          padding: 0.5rem;
-          border: 1px solid #c4c4c4;
-          border-radius: 4px;
+        .stop-coords {
+          display: flex;
+          gap: 0.75rem;
+
+          .field {
+            flex: 1;
+          }
         }
       }
     }

@@ -112,7 +112,35 @@
         <h2>Pickup stops</h2>
         @for (stop of stops.controls; track $index) {
           <div class="stop">
-            <input type="text" [formControl]="placeControl($index)" placeholder="Stop location" />
+            <div class="field">
+              <label [attr.for]="'stop-place-' + $index">Place</label>
+              <input
+                [id]="'stop-place-' + $index"
+                type="text"
+                [formControl]="placeControl($index)"
+                placeholder="Stop location"
+              />
+            </div>
+            <div class="stop-coords">
+              <div class="field">
+                <label [attr.for]="'stop-lat-' + $index">Latitude (optional)</label>
+                <input
+                  [id]="'stop-lat-' + $index"
+                  type="number"
+                  step="any"
+                  [formControl]="latControl($index)"
+                />
+              </div>
+              <div class="field">
+                <label [attr.for]="'stop-lng-' + $index">Longitude (optional)</label>
+                <input
+                  [id]="'stop-lng-' + $index"
+                  type="number"
+                  step="any"
+                  [formControl]="lngControl($index)"
+                />
+              </div>
+            </div>
             <button type="button" class="secondary" (click)="removeStop($index)">Remove</button>
           </div>
         }

@@ -2,7 +2,13 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { Currency, CreateTripRequest, PricingMode, Trip } from '../../../core/models/trip.model';
+import {
+  CreateTripRequest,
+  CreateTripStop,
+  Currency,
+  PricingMode,
+  Trip,
+} from '../../../core/models/trip.model';
 import { Vehicle } from '../../../core/models/vehicle.model';
 import { VehicleService } from '../../profile/vehicle.service';
 import { TripService } from '../trip.service';
@@ -11,6 +17,13 @@ interface PricingOption {
   value: PricingMode;
   label: string;
 }
+
+type StopFormGroup = FormGroup<{
+  seq: FormControl<number>;
+  place: FormControl<string>;
+  lat: FormControl<number | null>;
+  lng: FormControl<number | null>;
+}>;
 
 @Component({
   selector: 'app-trip-create',
@@ -71,7 +84,7 @@ export class TripCreate implements OnInit {
     }),
     roundTrip: new FormControl(false, { nonNullable: true }),
     notes: new FormControl('', { nonNullable: true }),
-    stops: new FormArray<FormGroup>([]),
+    stops: new FormArray<StopFormGroup>([]),
   });
 
   ngOnInit(): void {
@@ -101,22 +114,39 @@ export class TripCreate implements OnInit {
     }
   }
 
-  protected get stops(): FormArray<FormGroup> {
+  protected get stops(): FormArray<StopFormGroup> {
     return this.form.controls.stops;
   }
 
   protected addStop(): void {
-    this.stops.push(
-      new FormGroup({
-        seq: new FormControl(this.stops.length + 1, { nonNullable: true }),
-        place: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-      }),
-    );
+    this.stops.push(this.stopGroup(this.stops.length + 1));
   }
 
   /** Returns the place FormControl of a stop so the template stays type-safe. */
   protected placeControl(index: number): FormControl<string> {
-    return this.stops.at(index).controls['place'] as FormControl<string>;
+    return this.stops.at(index).controls.place;
+  }
+
+  protected latControl(index: number): FormControl<number | null> {
+    return this.stops.at(index).controls.lat;
+  }
+
+  protected lngControl(index: number): FormControl<number | null> {
+    return this.stops.at(index).controls.lng;
+  }
+
+  private stopGroup(
+    seq: number,
+    place = '',
+    lat: number | null = null,
+    lng: number | null = null,
+  ): StopFormGroup {
+    return new FormGroup({
+      seq: new FormControl(seq, { nonNullable: true }),
+      place: new FormControl(place, { nonNullable: true, validators: [Validators.required] }),
+      lat: new FormControl<number | null>(lat),
+      lng: new FormControl<number | null>(lng),
+    });
   }
 
   private prefill(trip: Trip): void {
@@ -135,22 +165,14 @@ export class TripCreate implements OnInit {
     });
     this.stops.clear();
     for (const stop of [...trip.stops].sort((a, b) => a.seq - b.seq)) {
-      this.stops.push(
-        new FormGroup({
-          seq: new FormControl(stop.seq, { nonNullable: true }),
-          place: new FormControl(stop.place, {
-            nonNullable: true,
-            validators: [Validators.required],
-          }),
-        }),
-      );
+      this.stops.push(this.stopGroup(stop.seq, stop.place, stop.lat, stop.lng));
     }
   }
 
   protected removeStop(index: number): void {
     this.stops.removeAt(index);
     // Renumber the remaining stops so stop order stays stable.
-    this.stops.controls.forEach((control, i) => control.get('seq')?.setValue(i + 1));
+    this.stops.controls.forEach((control, i) => control.controls.seq.setValue(i + 1));
   }
 
   protected submit(): void {
@@ -162,9 +184,11 @@ export class TripCreate implements OnInit {
     this.serverError.set(null);
 
     const raw = this.form.getRawValue();
-    const stops = (raw.stops as Array<{ seq: number; place: string }>).map((stop) => ({
+    const stops: CreateTripStop[] = raw.stops.map((stop) => ({
       seq: stop.seq,
       place: stop.place.trim(),
+      ...(stop.lat !== null ? { lat: Number(stop.lat) } : {}),
+      ...(stop.lng !== null ? { lng: Number(stop.lng) } : {}),
     }));
     const request: CreateTripRequest = {
       vehicleId: raw.vehicleId,
