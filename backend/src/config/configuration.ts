@@ -34,5 +34,15 @@ export default () => ({
     // Default on so the M12 demo has chat; set FEATURE_CHAT=false to disable
     // without affecting the rest of the app (FR-COMM-02).
     chat: process.env.FEATURE_CHAT !== 'false',
+    // Default off: unofficial client and a registered number are required
+    // (FR-COMM-03). Set FEATURE_SIGNAL=true to enable group automation.
+    signal: process.env.FEATURE_SIGNAL === 'true',
+  },
+  signal: {
+    number: (process.env.SIGNAL_NUMBER ?? '').trim(),
+    cliUrl: (process.env.SIGNAL_CLI_URL ?? 'http://signal-cli:8080').replace(
+      /\/$/,
+      '',
+    ),
   },
 });
