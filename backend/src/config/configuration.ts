@@ -15,6 +15,11 @@ export default () => ({
       process.env.TICKETMASTER_BASE_URL ??
       'https://app.ticketmaster.com/discovery/v2',
   },
+  openMeteo: {
+    baseUrl: (
+      process.env.OPEN_METEO_BASE_URL ?? 'https://api.open-meteo.com'
+    ).replace(/\/$/, ''),
+  },
   smtp: {
     host: process.env.SMTP_HOST ?? 'sandbox.smtp.mailtrap.io',
     port: parseInt(process.env.SMTP_PORT ?? '2525', 10),
