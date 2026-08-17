@@ -20,7 +20,7 @@ Last updated: 2026-08-17
 | 6 | Booking flow | [06-bookings.md](docs/features/06-bookings.md) | M3, M10 | ✅ | Bookings module: request (PENDING), accept (transactional pessimistic-lock capacity re-check), reject, cancel (passenger), paid toggle (driver); booking-notification seam (feature 07 swaps transport); driver/passenger ownership guards; DTOs; Angular request form on trip details + My Bookings + driver incoming-requests views; service & guard unit tests |
 | 7 | Email notifications | [07-email-notifications.md](docs/features/07-email-notifications.md) | M4 | ✅ | Nodemailer + Mailtrap SMTP; lifecycle emails honor `emailNotifications`; T-24h reminder cron; mail events logged |
 | 8 | Driver & passenger dashboards | [08-dashboards.md](docs/features/08-dashboards.md) | M10 | ✅ | Driver/passenger home bases via NgRx entity adapters; map/reduce earnings; accept/reject/paid and cancel; presentational trip-card & booking-list; concert summary + nested trip on booking DTOs |
-| 9 | Reviews & driver ratings | [09-reviews.md](docs/features/09-reviews.md) | M11 | ⬜ | |
+| 9 | Reviews & driver ratings | [09-reviews.md](docs/features/09-reviews.md) | M11 | ✅ | Reviews module: eligibility guard (confirmed booking + past concert), one review per passenger/trip, rating aggregation on profiles and trip listings (feeds min-rating filter); Angular review form on passenger dashboard + ratings on trip cards/details and public profile |
 
 ## Tier 1 — Committed (behind feature flags)
 
@@ -40,8 +40,8 @@ Last updated: 2026-08-17
 
 ## Summary
 
-- **Total:** 15 features · ✅ Done: 8 · 🔶 In progress: 0 · ⬜ Not started: 7 · ⏸️ Deferred: 0
-- **Current focus:** Feature 9 — Reviews & driver ratings (M11)
+- **Total:** 15 features · ✅ Done: 9 · 🔶 In progress: 0 · ⬜ Not started: 6 · ⏸️ Deferred: 0
+- **Current focus:** Feature 10 — In-app trip chat (M12)
 
 ## Working agreements
 
