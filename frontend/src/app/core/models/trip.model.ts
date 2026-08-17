@@ -37,6 +37,9 @@ export interface Trip {
   vehicleId: string;
   vehicleType: string;
   concertId: string;
+  concertArtist: string;
+  concertTitle: string;
+  concertCity: string;
   pricingMode: PricingMode;
   totalCost: number;
   currency: Currency;
