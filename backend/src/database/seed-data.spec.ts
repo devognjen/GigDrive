@@ -26,6 +26,14 @@ describe('buildSeedData', () => {
     expect(past).toHaveLength(1);
   });
 
+  it('places the headline concert inside the Open-Meteo 16-day forecast window', () => {
+    const now = new Date('2026-08-13T12:00:00Z');
+    const daysAhead =
+      (data.concerts[0].startAt.getTime() - now.getTime()) / 86_400_000;
+    expect(daysAhead).toBeGreaterThan(0);
+    expect(daysAhead).toBeLessThanOrEqual(16);
+  });
+
   it('builds a nearly-full, open trip consistent with PRD §4 rules', () => {
     const { trip, vehicles, bookings } = data;
     const van = vehicles.find((v) => v.id === trip.vehicleId);
