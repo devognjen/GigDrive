@@ -13,6 +13,7 @@ import { EmailTripNotifications } from './email-trip-notifications';
 import { MAIL_TRANSPORT } from './mail.transport';
 import { MailerService } from './mailer.service';
 import { TRIP_NOTIFICATIONS } from './trip-notifications.port';
+import { TripReminderJob } from './trip-reminder.job';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { TRIP_NOTIFICATIONS } from './trip-notifications.port';
       provide: BOOKING_NOTIFICATIONS,
       useExisting: EmailBookingNotifications,
     },
+    TripReminderJob,
   ],
   exports: [TRIP_NOTIFICATIONS, BOOKING_NOTIFICATIONS],
 })
