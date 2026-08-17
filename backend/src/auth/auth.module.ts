@@ -37,5 +37,6 @@ import { LocalStrategy } from './strategies/local.strategy';
     // marked with @Public().
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
+  exports: [JwtModule],
 })
 export class AuthModule {}

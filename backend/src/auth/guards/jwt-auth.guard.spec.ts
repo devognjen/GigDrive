@@ -13,6 +13,7 @@ describe('JwtAuthGuard', () => {
   const context = {
     getHandler: () => handler,
     getClass: () => controllerClass,
+    getType: () => 'http',
   } as unknown as ExecutionContext;
 
   beforeEach(async () => {
@@ -49,5 +50,17 @@ describe('JwtAuthGuard', () => {
 
     expect(guard.canActivate(context)).toBe(true);
     expect(superCanActivate).toHaveBeenCalledWith(context);
+  });
+
+  it('skips passport for WebSocket contexts', () => {
+    const wsContext = {
+      getHandler: () => handler,
+      getClass: () => controllerClass,
+      getType: () => 'ws',
+    } as unknown as ExecutionContext;
+
+    expect(guard.canActivate(wsContext)).toBe(true);
+    expect(superCanActivate).not.toHaveBeenCalled();
+    expect(reflector.getAllAndOverride).not.toHaveBeenCalled();
   });
 });
