@@ -52,6 +52,9 @@ export class TripDto {
   driverAverageRating: number | null;
 
   @ApiProperty()
+  driverReviewCount: number;
+
+  @ApiProperty()
   vehicleId: string;
 
   @ApiProperty()
@@ -118,12 +121,14 @@ export class TripDto {
     stops: TripStop[],
     driverName: string,
     driverAverageRating: number | null,
+    driverReviewCount: number,
   ): TripDto {
     const dto = new TripDto();
     dto.id = trip.id;
     dto.driverId = trip.driverId;
     dto.driverName = driverName;
     dto.driverAverageRating = driverAverageRating;
+    dto.driverReviewCount = driverReviewCount;
     dto.vehicleId = trip.vehicleId;
     dto.vehicleType = trip.vehicle?.type ?? '';
     dto.concertId = trip.concertId;

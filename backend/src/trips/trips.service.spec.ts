@@ -10,6 +10,7 @@ import {
 } from '../common/enums';
 import { Concert } from '../concerts/entities/concert.entity';
 import { TRIP_NOTIFICATIONS } from '../notifications/trip-notifications.port';
+import { ReviewsService } from '../reviews/reviews.service';
 import { User } from '../users/entities/user.entity';
 import { Vehicle } from '../vehicles/entities/vehicle.entity';
 import { CreateTripDto } from './dto/create-trip.dto';
@@ -27,6 +28,9 @@ describe('TripsService', () => {
   let vehiclesRepository: Record<string, jest.Mock>;
   let concertsRepository: Record<string, jest.Mock>;
   let notifications: { notify: jest.Mock };
+  let reviewsService: {
+    aggregateByDriverIds: jest.Mock;
+  };
 
   const tripId = 'trip-uuid';
   const vehicleId = 'vehicle-uuid';
@@ -116,6 +120,9 @@ describe('TripsService', () => {
     vehiclesRepository = { findOneBy: jest.fn() };
     concertsRepository = { findOneBy: jest.fn() };
     notifications = { notify: jest.fn() };
+    reviewsService = {
+      aggregateByDriverIds: jest.fn().mockResolvedValue(new Map()),
+    };
 
     tripsRepository.findOne.mockResolvedValue(buildTrip());
     vehiclesRepository.findOneBy.mockResolvedValue(buildVehicle());
@@ -131,6 +138,7 @@ describe('TripsService', () => {
         { provide: getRepositoryToken(Booking), useValue: bookingsRepository },
         { provide: getRepositoryToken(Vehicle), useValue: vehiclesRepository },
         { provide: getRepositoryToken(Concert), useValue: concertsRepository },
+        { provide: ReviewsService, useValue: reviewsService },
         { provide: TRIP_NOTIFICATIONS, useValue: notifications },
       ],
     }).compile();
@@ -356,6 +364,17 @@ describe('TripsService', () => {
       expect(result.concertTitle).toBe('Summer Open Air');
       expect(result.concertCity).toBe('Novi Sad');
       expect(result.driverName).toBe('Demo Driver');
+      expect(result.driverAverageRating).toBeNull();
+      expect(result.driverReviewCount).toBe(0);
+    });
+
+    it('includes the aggregated driver rating', async () => {
+      reviewsService.aggregateByDriverIds.mockResolvedValue(
+        new Map([[driver.id, { averageRating: 4.5, reviewCount: 2 }]]),
+      );
+      const result = await service.getDetails(tripId);
+      expect(result.driverAverageRating).toBe(4.5);
+      expect(result.driverReviewCount).toBe(2);
     });
 
     it('throws NotFound for an unknown trip', async () => {
@@ -363,6 +382,40 @@ describe('TripsService', () => {
       await expect(service.getDetails('missing')).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+  });
+
+  describe('list', () => {
+    const mockListQuery = (trips: Trip[]) => {
+      tripsRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(trips),
+      });
+    };
+
+    it('drops trips whose driver rating is below minRating', async () => {
+      mockListQuery([buildTrip()]);
+      reviewsService.aggregateByDriverIds.mockResolvedValue(
+        new Map([[driver.id, { averageRating: 3.2, reviewCount: 4 }]]),
+      );
+
+      const result = await service.list({ minRating: 4 });
+
+      expect(result).toEqual([]);
+    });
+
+    it('keeps trips that meet minRating', async () => {
+      mockListQuery([buildTrip()]);
+      reviewsService.aggregateByDriverIds.mockResolvedValue(
+        new Map([[driver.id, { averageRating: 4.5, reviewCount: 2 }]]),
+      );
+
+      const result = await service.list({ minRating: 4 });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].driverAverageRating).toBe(4.5);
     });
   });
 

@@ -11,6 +11,7 @@ import {
   BOOKING_NOTIFICATIONS,
   BookingNotifications,
 } from '../notifications/booking-notifications.port';
+import { ReviewsService } from '../reviews/reviews.service';
 import { Trip } from '../trips/entities/trip.entity';
 import { TripsService } from '../trips/trips.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -36,6 +37,7 @@ export class BookingsService {
     // Imported from TripsModule so that accept/cancel can recompute the trip's
     // OPEN/READY/FULL status and trigger the READY notification.
     private readonly tripsService: TripsService,
+    private readonly reviewsService: ReviewsService,
     @Inject(BOOKING_NOTIFICATIONS)
     private readonly notifications: BookingNotifications,
   ) {}
@@ -209,7 +211,7 @@ export class BookingsService {
       relations: { passenger: true },
       order: { createdAt: 'DESC' },
     });
-    return this.toDtos(bookings);
+    return this.toDtos(bookings, { reviewerId: passengerId });
   }
 
   /** Lists all bookings for the authenticated user viewed as a driver. */
@@ -291,9 +293,15 @@ export class BookingsService {
    * Batch-hydrates bookings: unique trip ids are resolved in one TripsService
    * call so list endpoints do not N+1 getDetails.
    */
-  private async toDtos(bookings: Booking[]): Promise<BookingDto[]> {
+  private async toDtos(
+    bookings: Booking[],
+    options: { reviewerId?: string } = {},
+  ): Promise<BookingDto[]> {
     const tripIds = [...new Set(bookings.map((booking) => booking.tripId))];
     const trips = await this.tripsService.getDetailsMany(tripIds);
+    const reviewable = options.reviewerId
+      ? await this.reviewsService.reviewableTripIds(options.reviewerId, tripIds)
+      : new Set<string>();
     return bookings.map((booking) => {
       const trip = trips.get(booking.tripId);
       if (!trip) {
@@ -303,6 +311,7 @@ export class BookingsService {
         booking,
         trip,
         this.passengerDisplayName(booking),
+        reviewable.has(booking.tripId),
       );
     });
   }

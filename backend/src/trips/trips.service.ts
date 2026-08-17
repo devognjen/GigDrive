@@ -13,6 +13,8 @@ import {
   TRIP_NOTIFICATIONS,
   TripNotifications,
 } from '../notifications/trip-notifications.port';
+import { EMPTY_DRIVER_RATING } from '../reviews/driver-rating';
+import { ReviewsService } from '../reviews/reviews.service';
 import { Vehicle } from '../vehicles/entities/vehicle.entity';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { ListTripsDto } from './dto/list-trips.dto';
@@ -44,6 +46,7 @@ export class TripsService {
     private readonly concertsRepository: Repository<Concert>,
     private readonly pricing: PricingService,
     private readonly stateMachine: TripStateMachine,
+    private readonly reviewsService: ReviewsService,
     @Inject(TRIP_NOTIFICATIONS)
     private readonly notifications: TripNotifications,
   ) {}
@@ -238,10 +241,8 @@ export class TripsService {
     if (!trip) {
       throw new NotFoundException('Trip not found');
     }
-    return this.toDtoWithConfirmedSeats(
-      trip,
-      await this.countConfirmedSeats(trip.id),
-    );
+    const [dto] = await this.hydrateTrips([trip], {});
+    return dto;
   }
 
   /**
@@ -339,6 +340,9 @@ export class TripsService {
   ): Promise<TripDto[]> {
     const tripIds = trips.map((trip) => trip.id);
     const seatCounts = await this.countConfirmedSeatsFor(tripIds);
+    const ratings = await this.reviewsService.aggregateByDriverIds(
+      trips.map((trip) => trip.driverId),
+    );
 
     const result: TripDto[] = [];
     for (const trip of trips) {
@@ -365,11 +369,10 @@ export class TripsService {
       const driverName = trip.driver
         ? `${trip.driver.firstName} ${trip.driver.lastName}`
         : 'Unknown driver';
-      // Driver rating arrives with feature 09 (reviews).
-      const driverAverageRating: number | null = null;
+      const driverRating = ratings.get(trip.driverId) ?? EMPTY_DRIVER_RATING;
+      const driverAverageRating = driverRating.averageRating;
 
       if (dto.minRating !== undefined) {
-        // Until reviews exist, no driver has a rating, so none can pass.
         if (
           driverAverageRating === null ||
           driverAverageRating < dto.minRating
@@ -386,6 +389,7 @@ export class TripsService {
           trip.stops ?? [],
           driverName,
           driverAverageRating,
+          driverRating.reviewCount,
         ),
       );
     }
@@ -413,27 +417,6 @@ export class TripsService {
       return false;
     }
     return first.place.toLowerCase().includes(query.toLowerCase());
-  }
-
-  private toDtoWithConfirmedSeats(trip: Trip, confirmedSeats: number): TripDto {
-    const livePrice = this.pricing.calculate(
-      trip.pricingMode,
-      trip.totalCost,
-      trip.minPassengers,
-      trip.maxPassengers,
-      confirmedSeats,
-    );
-    const driverName = trip.driver
-      ? `${trip.driver.firstName} ${trip.driver.lastName}`
-      : 'Unknown driver';
-    return TripDto.fromEntity(
-      trip,
-      confirmedSeats,
-      livePrice,
-      trip.stops ?? [],
-      driverName,
-      null,
-    );
   }
 
   private async replaceStops(

@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { BookingStatus, Currency, TripStatus } from '../common/enums';
 import { BOOKING_NOTIFICATIONS } from '../notifications/booking-notifications.port';
+import { ReviewsService } from '../reviews/reviews.service';
 import { TripDto } from '../trips/dto/trip.dto';
 import { Trip } from '../trips/entities/trip.entity';
 import { TripsService } from '../trips/trips.service';
@@ -20,6 +21,9 @@ describe('BookingsService', () => {
   let tripsService: {
     recomputeStatus: jest.Mock;
     getDetailsMany: jest.Mock;
+  };
+  let reviewsService: {
+    reviewableTripIds: jest.Mock;
   };
   let notifications: { notify: jest.Mock };
 
@@ -50,6 +54,7 @@ describe('BookingsService', () => {
       driverId,
       driverName: 'Demo Driver',
       driverAverageRating: null,
+      driverReviewCount: 0,
       vehicleId: 'vehicle-uuid',
       vehicleType: 'VAN',
       concertId: 'concert-uuid',
@@ -114,6 +119,9 @@ describe('BookingsService', () => {
         .fn()
         .mockResolvedValue(new Map([[tripId, buildTripDto()]])),
     };
+    reviewsService = {
+      reviewableTripIds: jest.fn().mockResolvedValue(new Set()),
+    };
     notifications = { notify: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -122,6 +130,7 @@ describe('BookingsService', () => {
         { provide: getRepositoryToken(Booking), useValue: bookingsRepository },
         { provide: DataSource, useValue: dataSource },
         { provide: TripsService, useValue: tripsService },
+        { provide: ReviewsService, useValue: reviewsService },
         { provide: BOOKING_NOTIFICATIONS, useValue: notifications },
       ],
     }).compile();
@@ -377,7 +386,21 @@ describe('BookingsService', () => {
       expect(result[0].id).toBe(bookingId);
       expect(result[0].passengerName).toBe('Pat Passenger');
       expect(result[0].trip.livePrice.perPerson).toBe(3000);
+      expect(result[0].canReview).toBe(false);
       expect(tripsService.getDetailsMany).toHaveBeenCalledWith([tripId]);
+      expect(reviewsService.reviewableTripIds).toHaveBeenCalledWith(
+        passengerId,
+        [tripId],
+      );
+    });
+
+    it('sets canReview when the trip is still reviewable', async () => {
+      bookingsRepository.find.mockResolvedValue([
+        buildBooking({ status: BookingStatus.Confirmed }),
+      ]);
+      reviewsService.reviewableTripIds.mockResolvedValue(new Set([tripId]));
+      const result = await service.listMine(passengerId);
+      expect(result[0].canReview).toBe(true);
     });
   });
 
@@ -397,6 +420,8 @@ describe('BookingsService', () => {
       const result = await service.listForDriver(driverId);
       expect(result[0].id).toBe(bookingId);
       expect(result[0].trip.concertTitle).toBe('Summer Open Air');
+      expect(result[0].canReview).toBe(false);
+      expect(reviewsService.reviewableTripIds).not.toHaveBeenCalled();
     });
   });
 });

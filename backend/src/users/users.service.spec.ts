@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { ReviewsService } from '../reviews/reviews.service';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
@@ -10,6 +11,9 @@ describe('UsersService', () => {
     findOneBy: jest.Mock;
     create: jest.Mock;
     save: jest.Mock;
+  };
+  let reviewsService: {
+    aggregateForDriver: jest.Mock;
   };
 
   const buildUser = (overrides: Partial<User> = {}): User => ({
@@ -32,10 +36,18 @@ describe('UsersService', () => {
       save: jest.fn((user: User) => Promise.resolve(user)),
     };
 
+    reviewsService = {
+      aggregateForDriver: jest.fn().mockResolvedValue({
+        averageRating: null,
+        reviewCount: 0,
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         { provide: getRepositoryToken(User), useValue: repository },
+        { provide: ReviewsService, useValue: reviewsService },
       ],
     }).compile();
 
@@ -125,6 +137,19 @@ describe('UsersService', () => {
       });
       expect(profile).not.toHaveProperty('email');
       expect(profile).not.toHaveProperty('passwordHash');
+    });
+
+    it('surfaces the aggregated driver rating', async () => {
+      repository.findOneBy.mockResolvedValue(buildUser());
+      reviewsService.aggregateForDriver.mockResolvedValue({
+        averageRating: 4.5,
+        reviewCount: 2,
+      });
+
+      const profile = await service.getPublicProfile('user-uuid');
+
+      expect(profile.averageRating).toBe(4.5);
+      expect(profile.reviewCount).toBe(2);
     });
 
     it('throws NotFoundException for an unknown user', async () => {

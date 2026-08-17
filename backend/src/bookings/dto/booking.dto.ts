@@ -39,10 +39,15 @@ export class BookingDto {
   @ApiProperty({ type: () => TripDto })
   trip: TripDto;
 
+  /** True when this passenger may still review the driver for this trip. */
+  @ApiProperty()
+  canReview: boolean;
+
   static fromEntity(
     booking: Booking,
     trip: TripDto,
     passengerName: string,
+    canReview: boolean,
   ): BookingDto {
     const dto = new BookingDto();
     dto.id = booking.id;
@@ -55,6 +60,7 @@ export class BookingDto {
     dto.createdAt = booking.createdAt;
     dto.decidedAt = booking.decidedAt;
     dto.trip = trip;
+    dto.canReview = canReview;
     return dto;
   }
 }

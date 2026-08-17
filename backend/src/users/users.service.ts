@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ReviewsService } from '../reviews/reviews.service';
 import { PublicProfileDto } from './dto/public-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { User } from './entities/user.entity';
@@ -10,6 +11,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly reviewsService: ReviewsService,
   ) {}
 
   findByEmail(email: string): Promise<User | null> {
@@ -54,9 +56,9 @@ export class UsersService {
     dto.id = user.id;
     dto.firstName = user.firstName;
     dto.lastName = user.lastName;
-    // TODO(feature 09 — reviews): compute from the reviews table once it exists.
-    dto.averageRating = null;
-    dto.reviewCount = 0;
+    const rating = await this.reviewsService.aggregateForDriver(id);
+    dto.averageRating = rating.averageRating;
+    dto.reviewCount = rating.reviewCount;
     return dto;
   }
 }
