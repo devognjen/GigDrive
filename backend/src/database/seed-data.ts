@@ -7,6 +7,7 @@ import {
   VehicleType,
 } from '../common/enums';
 import { Concert } from '../concerts/entities/concert.entity';
+import { Review } from '../reviews/entities/review.entity';
 import { Trip } from '../trips/entities/trip.entity';
 import { TripStop } from '../trips/entities/trip-stop.entity';
 import { User } from '../users/entities/user.entity';
@@ -34,8 +35,10 @@ export interface SeedData {
   vehicles: Vehicle[];
   concerts: Concert[];
   trip: Trip;
+  pastTrip: Trip;
   stops: TripStop[];
   bookings: Booking[];
+  reviews: Review[];
 }
 
 export function buildSeedData(now: Date, passwordHash: string): SeedData {
@@ -147,10 +150,28 @@ export function buildSeedData(now: Date, passwordHash: string): SeedData {
       genre: 'Alternative',
       ticketUrl: null,
     }),
+    Object.assign(new Concert(), {
+      id: uuid(1004),
+      externalId: 'tm-demo-gojira-2026',
+      userSubmitted: false,
+      artist: 'Gojira',
+      title: 'Gojira — Fortitude',
+      venue: 'Exit Festival',
+      city: 'Novi Sad',
+      country: 'Serbia',
+      lat: 45.2542,
+      lng: 19.8617,
+      startAt: daysFromNow(now, -30, 19),
+      imageUrl: null,
+      genre: 'Metal',
+      ticketUrl: null,
+    }),
   ];
 
   const [headlineConcert] = concerts;
+  const pastConcert = concerts[4];
   const van = vehicles[1];
+  const car = vehicles[0];
 
   // Nearly-full trip: 6 of 7 seats confirmed → one seat left.
   const trip = Object.assign(new Trip(), {
@@ -189,6 +210,15 @@ export function buildSeedData(now: Date, passwordHash: string): SeedData {
       lng: 20.1608,
       plannedTime: daysFromNow(now, 45, 15),
     }),
+    Object.assign(new TripStop(), {
+      id: uuid(3002),
+      tripId: uuid(2001),
+      seq: 1,
+      place: 'Belgrade — Slavija',
+      lat: 44.8026,
+      lng: 20.4662,
+      plannedTime: daysFromNow(now, -30, 14),
+    }),
   ];
 
   const bookings = [
@@ -207,5 +237,67 @@ export function buildSeedData(now: Date, passwordHash: string): SeedData {
     }),
   );
 
-  return { driver, passengers, vehicles, concerts, trip, stops, bookings };
+  // Completed past trip so the demo driver has a rating (FR-REV-02).
+  const pastTrip = Object.assign(new Trip(), {
+    id: uuid(2001),
+    driverId: driver.id,
+    vehicleId: car.id,
+    concertId: pastConcert.id,
+    pricingMode: PricingMode.SharedTotal,
+    totalCost: 6000,
+    currency: Currency.Eur,
+    minPassengers: 2,
+    maxPassengers: car.seats,
+    confirmationDeadline: daysFromNow(now, -37, 11),
+    departureAt: daysFromNow(now, -30, 14),
+    roundTrip: true,
+    notes: 'Back the same night.',
+    status: TripStatus.Completed,
+  });
+
+  const pastBookings = [
+    { passenger: passengers[0], seats: 1, paid: true },
+    { passenger: passengers[1], seats: 1, paid: true },
+  ].map(({ passenger, seats, paid }, i) =>
+    Object.assign(new Booking(), {
+      id: uuid(4010 + i),
+      tripId: pastTrip.id,
+      passengerId: passenger.id,
+      seats,
+      status: BookingStatus.Confirmed,
+      paid,
+      decidedAt: daysFromNow(now, -32, 12),
+    }),
+  );
+
+  const reviews = [
+    Object.assign(new Review(), {
+      id: uuid(5000),
+      tripId: pastTrip.id,
+      authorId: passengers[0].id,
+      rating: 5,
+      comment: 'On time, great playlist, would ride again.',
+      createdAt: daysFromNow(now, -29, 10),
+    }),
+    Object.assign(new Review(), {
+      id: uuid(5001),
+      tripId: pastTrip.id,
+      authorId: passengers[1].id,
+      rating: 4,
+      comment: 'Smooth drive, a bit tight on luggage space.',
+      createdAt: daysFromNow(now, -29, 11),
+    }),
+  ];
+
+  return {
+    driver,
+    passengers,
+    vehicles,
+    concerts,
+    trip,
+    pastTrip,
+    stops,
+    bookings: [...bookings, ...pastBookings],
+    reviews,
+  };
 }

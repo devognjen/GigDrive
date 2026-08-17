@@ -72,6 +72,12 @@ async function seed(manager: EntityManager, data: SeedData): Promise<void> {
     data.trip as never,
     `nearly-full trip (${data.trip.maxPassengers - 1}/${data.trip.maxPassengers} seats taken)`,
   );
+  await insertIfMissing(
+    manager.getRepository('Trip'),
+    data.pastTrip.id,
+    data.pastTrip as never,
+    `completed past trip (${data.pastTrip.status})`,
+  );
   for (const stop of data.stops) {
     await insertIfMissing(
       manager.getRepository('TripStop'),
@@ -86,6 +92,16 @@ async function seed(manager: EntityManager, data: SeedData): Promise<void> {
       booking.id,
       booking as never,
       `booking ${booking.seats} seat(s), status ${booking.status}`,
+    );
+  }
+
+  console.log('Reviews:');
+  for (const review of data.reviews) {
+    await insertIfMissing(
+      manager.getRepository('Review'),
+      review.id,
+      review as never,
+      `review ${review.rating}/5 on trip ${review.tripId}`,
     );
   }
 }
