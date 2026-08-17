@@ -25,6 +25,11 @@ export interface BookingEmailContext extends TripEmailContext {
   seats: number;
 }
 
+export interface WaitlistEmailContext extends TripEmailContext {
+  position: number;
+  seats: number;
+}
+
 export type TripMailEvent =
   | 'TRIP_READY'
   | 'TRIP_CONFIRMED'
@@ -34,6 +39,8 @@ export type TripMailEvent =
 
 export type BookingMailEvent =
   'BOOKING_REQUESTED' | 'BOOKING_ACCEPTED' | 'BOOKING_REJECTED';
+
+export type WaitlistMailEvent = 'WAITLIST_SEAT_AVAILABLE';
 
 export function renderTripEmail(
   type: TripMailEvent,
@@ -64,6 +71,16 @@ export function renderBookingEmail(
       return bookingAccepted(ctx);
     case 'BOOKING_REJECTED':
       return bookingRejected(ctx);
+  }
+}
+
+export function renderWaitlistEmail(
+  type: WaitlistMailEvent,
+  ctx: WaitlistEmailContext,
+): RenderedEmail {
+  switch (type) {
+    case 'WAITLIST_SEAT_AVAILABLE':
+      return waitlistSeatAvailable(ctx);
   }
 }
 
@@ -168,6 +185,16 @@ function bookingRejected(ctx: BookingEmailContext): RenderedEmail {
     ctx,
     `Your booking for ${artist} was declined`,
     `${ctx.driverName} declined your request for ${seats} on the trip to ${artist} in ${city}.`,
+  );
+}
+
+function waitlistSeatAvailable(ctx: WaitlistEmailContext): RenderedEmail {
+  const { artist, city } = ctx.concert;
+  const seats = seatLabel(ctx.seats);
+  return compose(
+    ctx,
+    `A seat opened on ${artist} in ${city}`,
+    `a seat freed on the trip to ${artist} in ${city}. You are #${ctx.position} on the waitlist (you requested ${seats}). Request seats in GigDrive if you still want to go — joining the waitlist does not reserve a seat.`,
   );
 }
 

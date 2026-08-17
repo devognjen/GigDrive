@@ -3,7 +3,9 @@ import {
   formatUtc,
   renderBookingEmail,
   renderTripEmail,
+  renderWaitlistEmail,
   TripEmailContext,
+  WaitlistEmailContext,
 } from './email-templates';
 
 describe('email templates', () => {
@@ -22,6 +24,12 @@ describe('email templates', () => {
   const bookingCtx: BookingEmailContext = {
     ...ctx,
     passengerName: 'Pat Rider',
+    seats: 2,
+  };
+
+  const waitlistCtx: WaitlistEmailContext = {
+    ...ctx,
+    position: 1,
     seats: 2,
   };
 
@@ -70,6 +78,16 @@ describe('email templates', () => {
   it('names the passenger on a booking request to the driver', () => {
     const email = renderBookingEmail('BOOKING_REQUESTED', bookingCtx);
     expect(email.html).toContain('Pat Rider');
+  });
+
+  it('renders WAITLIST_SEAT_AVAILABLE with position and seats', () => {
+    const email = renderWaitlistEmail('WAITLIST_SEAT_AVAILABLE', waitlistCtx);
+    expect(email.subject).toContain('A seat opened');
+    expect(email.subject).toContain('Rammstein');
+    expect(email.text).toContain('#1');
+    expect(email.text).toContain('2 seats');
+    expect(email.text).toContain('does not reserve a seat');
+    expect(email.html).toContain('<p>');
   });
 
   it('escapes HTML in names', () => {

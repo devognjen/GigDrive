@@ -17,6 +17,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { ChatModule } from './chat/chat.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { SeedService } from './database/seed.service';
+import { WaitlistModule } from './waitlist/waitlist.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { SeedService } from './database/seed.service';
     NotificationsModule,
     ChatModule,
     IntegrationsModule,
+    WaitlistModule,
   ],
   controllers: [HealthController, FeaturesController],
   providers: [SeedService],
