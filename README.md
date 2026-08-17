@@ -10,7 +10,7 @@ automatically as more people join. Concerts are discovered through an external e
 | Layer    | Technology |
 |----------|------------|
 | Frontend | Angular · RxJS · NgRx (Store + Entity + Effects) |
-| Backend  | NestJS · TypeORM · Passport.js (Local + JWT) · Nodemailer |
+| Backend  | NestJS · TypeORM · Passport.js (Local + JWT) · Nodemailer · Socket.IO |
 | Database | PostgreSQL (Docker) |
 | Infra    | docker-compose (`db`, `backend`, `frontend`, optional `signal-cli` profile) |
 | Extras   | Ticketmaster Discovery API · Mailtrap (SMTP) · signal-cli-rest-api (experimental) |
@@ -109,6 +109,11 @@ docker-compose.dev.yml    hot-reload development override
 
 All configuration lives in `.env` (never committed) — see
 [.env.example](.env.example) for every supported variable: PostgreSQL
-credentials, JWT secret, Ticketmaster API key, SMTP (Mailtrap) credentials and
-the Signal number. Datetimes are stored in UTC (ISO 8601) and displayed in
-local time.
+credentials, JWT secret, Ticketmaster API key, SMTP (Mailtrap) credentials,
+`FEATURE_CHAT`, and the Signal number. Datetimes are stored in UTC (ISO 8601)
+and displayed in local time.
+
+In-app trip chat (feature 10) is on by default (`FEATURE_CHAT=true`). The UI
+reads `GET /api/features` and, for trip members, opens a Socket.IO room at
+namespace `/chat` (path `/api/socket.io`). Set `FEATURE_CHAT=false` to hide the
+panel and disable history/gateway without affecting the rest of the app.
