@@ -50,7 +50,10 @@ describe('BookingsService', () => {
 
   beforeEach(async () => {
     bookingsRepository = {
-      create: jest.fn((data: Partial<Booking>) => ({ ...buildBooking(), ...data })),
+      create: jest.fn((data: Partial<Booking>) => ({
+        ...buildBooking(),
+        ...data,
+      })),
       save: jest.fn((booking: Booking) => Promise.resolve(booking)),
       find: jest.fn(),
       findOneBy: jest.fn(),
