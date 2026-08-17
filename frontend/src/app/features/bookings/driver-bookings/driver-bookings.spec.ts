@@ -89,4 +89,19 @@ describe('DriverBookings', () => {
 
     expect(fixture.nativeElement.textContent).toContain('No booking requests yet.');
   });
+
+  it('surfaces a specific conflict (no seats left) message on accept', () => {
+    fixture.detectChanges();
+    httpTesting.expectOne('/api/bookings').flush(mockBookings);
+    fixture.detectChanges();
+
+    const acceptButton = fixture.nativeElement.querySelector('button.accept');
+    acceptButton.click();
+
+    const req = httpTesting.expectOne('/api/bookings/b1/accept');
+    req.flush('No seats left', { status: 409, statusText: 'Conflict' });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('no seats left for this trip');
+  });
 });

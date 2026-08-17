@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { catchError, Observable, of, tap } from 'rxjs';
 
@@ -43,18 +44,22 @@ export class DriverBookings {
   }
 
   protected accept(booking: Booking): void {
-    this.runAction(booking.id, this.bookingService.accept(booking.id));
+    this.runAction(booking.id, 'accept', this.bookingService.accept(booking.id));
   }
 
   protected reject(booking: Booking): void {
-    this.runAction(booking.id, this.bookingService.reject(booking.id));
+    this.runAction(booking.id, 'reject', this.bookingService.reject(booking.id));
   }
 
   protected togglePaid(booking: Booking): void {
-    this.runAction(booking.id, this.bookingService.setPaid(booking.id, !booking.paid));
+    this.runAction(
+      booking.id,
+      'update payment',
+      this.bookingService.setPaid(booking.id, !booking.paid),
+    );
   }
 
-  private runAction(id: string, action: Observable<Booking>): void {
+  private runAction(id: string, verb: string, action: Observable<Booking>): void {
     if (this.pendingId()) {
       return;
     }
@@ -65,10 +70,26 @@ export class DriverBookings {
         this.bookings.update((list) => list.map((b) => (b.id === updated.id ? updated : b)));
         this.pendingId.set(null);
       },
-      error: () => {
+      error: (error: HttpErrorResponse) => {
         this.pendingId.set(null);
-        this.actionError.set('The action could not be completed.');
+        this.actionError.set(this.messageForError(verb, error));
       },
     });
+  }
+
+  /** Maps an HTTP error to a readable, action-specific message. */
+  private messageForError(verb: string, error: HttpErrorResponse): string {
+    if (error.status === 409) {
+      // A conflict means state changed since the list was loaded — most
+      // commonly the trip has no seats left, so surface that directly.
+      return `Could not ${verb}: no seats left for this trip.`;
+    }
+    if (error.status === 403) {
+      return `Could not ${verb}: you are not allowed to perform this action.`;
+    }
+    if (error.status === 404) {
+      return `Could not ${verb}: the booking no longer exists.`;
+    }
+    return `Could not ${verb}.`;
   }
 }
