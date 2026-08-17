@@ -9,11 +9,12 @@ import { FeaturesService } from '../../../core/services/features.service';
 import { Trip } from '../../../core/models/trip.model';
 import { BookingService } from '../../bookings/booking.service';
 import { TripChat } from '../../chat/trip-chat/trip-chat';
+import { PickupMap } from '../pickup-map/pickup-map';
 import { TripService } from '../trip.service';
 
 @Component({
   selector: 'app-trip-details',
-  imports: [DatePipe, RouterLink, ReactiveFormsModule, TripChat],
+  imports: [DatePipe, RouterLink, ReactiveFormsModule, PickupMap, TripChat],
   templateUrl: './trip-details.html',
   styleUrl: './trip-details.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

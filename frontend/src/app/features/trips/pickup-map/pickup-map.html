@@ -1,0 +1,9 @@
+@if (markers().length > 0) {
+  <div
+    class="pickup-map"
+    role="img"
+    [attr.aria-label]="'Pickup stops on the map, ' + markers().length + ' marked'"
+  >
+    <div #map class="pickup-map-canvas"></div>
+  </div>
+}

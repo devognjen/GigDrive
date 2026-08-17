@@ -130,6 +130,28 @@ describe('TripDetails', () => {
     expect(text).not.toContain('Trip chat');
   });
 
+  it('keeps the stop list and omits the map when stops have no coordinates', () => {
+    fixture.detectChanges();
+    flushPage();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Novi Sad');
+    expect(fixture.nativeElement.querySelector('.pickup-map-canvas')).toBeNull();
+  });
+
+  it('shows the map when a stop has coordinates', () => {
+    fixture.detectChanges();
+    httpTesting.expectOne('/api/features').flush({ chat: false });
+    httpTesting.expectOne('/api/trips/t1').flush({
+      ...mockTrip,
+      stops: [{ id: 's1', seq: 1, place: 'Novi Sad', lat: 45.2649, lng: 19.8296, plannedTime: null }],
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Novi Sad');
+    expect(fixture.nativeElement.querySelector('.pickup-map-canvas')).not.toBeNull();
+  });
+
   it('hides chat when the feature flag is off', () => {
     currentUser.set(driver);
     fixture.detectChanges();
