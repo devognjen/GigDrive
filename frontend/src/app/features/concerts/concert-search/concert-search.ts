@@ -30,6 +30,7 @@ export class ConcertSearch {
 
   protected readonly results = signal<Concert[]>([]);
   protected readonly loading = signal(true);
+  protected readonly searchFailed = signal(false);
 
   constructor() {
     // Instant search: debounce keystrokes, skip emissions that do not change
@@ -42,9 +43,17 @@ export class ConcertSearch {
         debounceTime(300),
         map(() => this.toSearchParams()),
         distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-        tap(() => this.loading.set(true)),
+        tap(() => {
+          this.loading.set(true);
+          this.searchFailed.set(false);
+        }),
         switchMap((params) =>
-          this.concertService.search(params).pipe(catchError(() => of<Concert[]>([]))),
+          this.concertService.search(params).pipe(
+            catchError(() => {
+              this.searchFailed.set(true);
+              return of<Concert[]>([]);
+            }),
+          ),
         ),
         takeUntilDestroyed(),
       )

@@ -170,6 +170,18 @@ describe('ConcertSearch', () => {
     expect(text).toContain('No concerts found');
   });
 
+  it('shows an error state when the search request fails', () => {
+    vi.advanceTimersByTime(300);
+    httpTesting
+      .expectOne((r) => r.url === '/api/concerts/search')
+      .flush('error', { status: 500, statusText: 'Server Error' });
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain("Couldn't search concerts");
+    expect(text).not.toContain('No concerts found');
+  });
+
   it('hides the "add manually" link for guests', () => {
     vi.advanceTimersByTime(300);
     httpTesting.expectOne((r) => r.url === '/api/concerts/search').flush([]);

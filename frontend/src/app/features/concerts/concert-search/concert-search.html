@@ -36,6 +36,8 @@
 
   @if (loading()) {
     <p class="state">Searching…</p>
+  } @else if (searchFailed()) {
+    <p class="state">Couldn't search concerts. Please try again.</p>
   } @else if (results().length === 0) {
     <p class="state">No concerts found. Try adjusting your filters.</p>
   } @else {

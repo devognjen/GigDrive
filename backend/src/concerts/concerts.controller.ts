@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Param,
   ParseUUIDPipe,
   Post,
@@ -28,6 +29,7 @@ export class ConcertsController {
 
   @Public()
   @Get('search')
+  @Header('Cache-Control', 'no-store')
   @ApiOkResponse({ type: [ConcertDto] })
   search(@Query() dto: SearchConcertsDto): Promise<ConcertDto[]> {
     return this.concertsService.search(dto);
