@@ -44,8 +44,9 @@ This starts:
 | API docs   | http://localhost:3000/api/docs | Swagger UI                         |
 | PostgreSQL | localhost:5432                 | credentials from `.env`            |
 
-TypeORM migrations run automatically on backend startup. Seed the demo data
-(demo driver, vehicles, cached concerts, a nearly-full trip) with:
+TypeORM migrations run automatically on backend startup, followed by an
+idempotent demo seed (cached concerts, demo driver, vehicles, a nearly-full
+trip). Disable with `SEED_ON_START=false`. Re-run manually with:
 
 ```bash
 docker compose exec backend node dist/database/seed.js

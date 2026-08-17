@@ -16,6 +16,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ChatModule } from './chat/chat.module';
 import { IntegrationsModule } from './integrations/integrations.module';
+import { SeedService } from './database/seed.service';
 
 @Module({
   imports: [
@@ -54,5 +55,6 @@ import { IntegrationsModule } from './integrations/integrations.module';
     IntegrationsModule,
   ],
   controllers: [HealthController, FeaturesController],
+  providers: [SeedService],
 })
 export class AppModule {}

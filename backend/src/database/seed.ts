@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
-import { EntityManager, ObjectLiteral, Repository } from 'typeorm';
 import { AppDataSource } from './data-source';
-import { buildSeedData, SeedData } from './seed-data';
+import { applySeed } from './apply-seed';
+import { buildSeedData } from './seed-data';
 
 /**
  * Idempotent demo-data seed (see docs/features/01-infrastructure.md).
@@ -10,101 +10,9 @@ import { buildSeedData, SeedData } from './seed-data';
  * script can be re-run safely at any time.
  *
  * Usage: pnpm seed   (or `node dist/database/seed.js` in the container)
+ *
+ * The NestJS app also runs this on startup unless SEED_ON_START=false.
  */
-
-async function insertIfMissing<T extends ObjectLiteral>(
-  repository: Repository<T>,
-  id: string,
-  entity: T,
-  label: string,
-): Promise<boolean> {
-  const exists = await repository.existsBy({ id } as never);
-  if (exists) {
-    console.log(`  ↷ ${label} already present, skipping`);
-    return false;
-  }
-  await repository.save(entity);
-  console.log(`  ✓ ${label}`);
-  return true;
-}
-
-async function seed(manager: EntityManager, data: SeedData): Promise<void> {
-  console.log('Users:');
-  await insertIfMissing(
-    manager.getRepository('User'),
-    data.driver.id,
-    data.driver as never,
-    `demo driver ${data.driver.email}`,
-  );
-  for (const passenger of data.passengers) {
-    await insertIfMissing(
-      manager.getRepository('User'),
-      passenger.id,
-      passenger as never,
-      `passenger ${passenger.email}`,
-    );
-  }
-
-  console.log('Vehicles:');
-  for (const vehicle of data.vehicles) {
-    await insertIfMissing(
-      manager.getRepository('Vehicle'),
-      vehicle.id,
-      vehicle as never,
-      `${vehicle.make} ${vehicle.model} (${vehicle.seats} seats)`,
-    );
-  }
-
-  console.log('Concerts:');
-  for (const concert of data.concerts) {
-    await insertIfMissing(
-      manager.getRepository('Concert'),
-      concert.id,
-      concert as never,
-      `${concert.artist} @ ${concert.city}`,
-    );
-  }
-
-  console.log('Trip & bookings:');
-  await insertIfMissing(
-    manager.getRepository('Trip'),
-    data.trip.id,
-    data.trip as never,
-    `nearly-full trip (${data.trip.maxPassengers - 1}/${data.trip.maxPassengers} seats taken)`,
-  );
-  await insertIfMissing(
-    manager.getRepository('Trip'),
-    data.pastTrip.id,
-    data.pastTrip as never,
-    `completed past trip (${data.pastTrip.status})`,
-  );
-  for (const stop of data.stops) {
-    await insertIfMissing(
-      manager.getRepository('TripStop'),
-      stop.id,
-      stop as never,
-      `stop ${stop.seq}: ${stop.place}`,
-    );
-  }
-  for (const booking of data.bookings) {
-    await insertIfMissing(
-      manager.getRepository('Booking'),
-      booking.id,
-      booking as never,
-      `booking ${booking.seats} seat(s), status ${booking.status}`,
-    );
-  }
-
-  console.log('Reviews:');
-  for (const review of data.reviews) {
-    await insertIfMissing(
-      manager.getRepository('Review'),
-      review.id,
-      review as never,
-      `review ${review.rating}/5 on trip ${review.tripId}`,
-    );
-  }
-}
 
 async function main(): Promise<void> {
   await AppDataSource.initialize();
@@ -114,7 +22,7 @@ async function main(): Promise<void> {
   const passwordHash = bcrypt.hashSync(password, 10);
   const data = buildSeedData(new Date(), passwordHash);
 
-  await AppDataSource.transaction((manager) => seed(manager, data));
+  await AppDataSource.transaction((manager) => applySeed(manager, data));
 
   console.log('Seed complete.');
   await AppDataSource.destroy();
