@@ -6,13 +6,12 @@ export type BookingNotificationEvent =
   | { type: 'BOOKING_REJECTED'; booking: Booking };
 
 /**
- * Port for outgoing booking-lifecycle emails (feature 07).
+ * Port for outgoing booking-lifecycle emails.
  *
  * Mirrors `TRIP_NOTIFICATIONS`: the bookings domain depends on this abstraction
  * instead of a concrete SMTP sender, so the domain logic stays testable and
- * feature 07 can swap in the real Mailtrap/Nodemailer transport without
- * touching the booking state transitions. Until then the default implementation
- * only logs.
+ * the Mailtrap/Nodemailer transport can be swapped without touching booking
+ * state transitions.
  */
 export const BOOKING_NOTIFICATIONS = Symbol('BOOKING_NOTIFICATIONS');
 

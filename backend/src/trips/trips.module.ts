@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Booking } from '../bookings/entities/booking.entity';
 import { Concert } from '../concerts/entities/concert.entity';
-import { LoggingTripNotifications } from '../notifications/logging-trip-notifications';
-import { TRIP_NOTIFICATIONS } from '../notifications/trip-notifications.port';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { Vehicle } from '../vehicles/entities/vehicle.entity';
 import { Trip } from './entities/trip.entity';
 import { TripStop } from './entities/trip-stop.entity';
@@ -17,6 +16,7 @@ import { TripsService } from './trips.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Trip, TripStop, Booking, Vehicle, Concert]),
+    NotificationsModule,
   ],
   controllers: [TripsController],
   providers: [
@@ -25,9 +25,6 @@ import { TripsService } from './trips.service';
     TripStateMachine,
     TripOwnershipGuard,
     TripSweepJob,
-    // Placeholder notification transport (feature 07 replaces this provider
-    // with the real Mailtrap/Nodemailer implementation).
-    { provide: TRIP_NOTIFICATIONS, useClass: LoggingTripNotifications },
   ],
   exports: [TripsService],
 })
