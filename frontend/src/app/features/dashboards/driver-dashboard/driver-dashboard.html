@@ -1,0 +1,59 @@
+<div class="dashboard">
+  <header class="dash-header">
+    <h1>Driver dashboard</h1>
+    <a routerLink="/dashboard/passenger">Passenger dashboard</a>
+  </header>
+
+  @if (loading()) {
+    <p class="state">Loading dashboard…</p>
+  } @else {
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <section class="earnings">
+      <h2>Earnings</h2>
+      @if (earnings().length === 0) {
+        <p class="state">No confirmed bookings yet, so there are no earnings to show.</p>
+      } @else {
+        <ul>
+          @for (row of earnings(); track row.currency) {
+            <li>
+              <strong>{{ formatTotal(row.total, row.currency) }}</strong>
+              <span>paid {{ formatTotal(row.paid, row.currency) }}</span>
+              <span>unpaid {{ formatTotal(row.unpaid, row.currency) }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section>
+      <h2>Your trips</h2>
+      @if (trips().length === 0) {
+        <p class="state">You have not organized any trips yet.</p>
+      } @else {
+        <ul class="trips">
+          @for (trip of trips(); track trip.id) {
+            <li>
+              <app-trip-card [trip]="trip" [showDriver]="false" />
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section>
+      <h2>Incoming requests</h2>
+      <app-booking-list
+        [bookings]="bookings()"
+        mode="driver"
+        [pendingId]="pendingId()"
+        emptyMessage="No booking requests yet."
+        (accept)="accept($event)"
+        (reject)="reject($event)"
+        (togglePaid)="togglePaid($event)"
+      />
+    </section>
+  }
+</div>

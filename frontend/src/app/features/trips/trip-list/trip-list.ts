@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -6,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, combineLatest, debounceTime, map, of, startWith, switchMap } from 'rxjs';
 
 import { Trip } from '../../../core/models/trip.model';
+import { TripCard } from '../trip-card/trip-card';
 import { TripService } from '../trip.service';
 
 interface VehicleTypeOption {
@@ -29,7 +29,7 @@ interface TripFilters {
  */
 @Component({
   selector: 'app-trip-list',
-  imports: [ReactiveFormsModule, RouterLink, DatePipe],
+  imports: [ReactiveFormsModule, RouterLink, TripCard],
   templateUrl: './trip-list.html',
   styleUrl: './trip-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -78,11 +78,6 @@ export class TripList {
         this.trips.set(trips);
         this.loading.set(false);
       });
-  }
-
-  /** Formats a minor-units price as a human-readable amount. */
-  protected formatPrice(minorUnits: number): string {
-    return `${(minorUnits / 100).toFixed(2)} €`;
   }
 
   private toParams(filters: Partial<TripFilters>, concertId: string | null) {

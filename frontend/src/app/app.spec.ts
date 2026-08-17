@@ -42,7 +42,7 @@ describe('App', () => {
 
     expect(compiled.querySelector('.brand')?.textContent).toContain('GigDrive');
     const links = [...compiled.querySelectorAll('nav a')].map((a) => a.textContent?.trim());
-    expect(links).toEqual(['Concerts', 'Trips', 'My bookings', 'Log in', 'Register']);
+    expect(links).toEqual(['Concerts', 'Trips', 'Log in', 'Register']);
   });
 
   it('renders the authenticated navigation and logs out', async () => {
@@ -60,7 +60,7 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
     const links = [...compiled.querySelectorAll('nav a')].map((a) => a.textContent?.trim());
-    expect(links).toEqual(['Concerts', 'Trips', 'My bookings', 'Profile']);
+    expect(links).toEqual(['Concerts', 'Trips', 'Driver', 'Passenger', 'Profile']);
     expect(compiled.querySelector('.user-name')?.textContent).toContain('Ada');
 
     const logoutButton = compiled.querySelector('button.logout') as HTMLButtonElement;

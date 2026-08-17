@@ -1,0 +1,35 @@
+<article class="trip-card">
+  <a [routerLink]="['/trips', trip.id]" class="trip-main">
+    <div class="title">
+      @if (trip.concertArtist) {
+        <span class="concert">{{ trip.concertArtist }}</span>
+        @if (trip.concertTitle) {
+          <span class="concert-title">{{ trip.concertTitle }}</span>
+        }
+      } @else if (showDriver) {
+        <span class="driver">{{ trip.driverName }}</span>
+      } @else {
+        <span class="concert">Trip</span>
+      }
+    </div>
+    <div class="price">{{ formatPrice(trip.livePrice.perPerson) }}</div>
+    <div class="band">
+      {{ formatPrice(trip.livePrice.lowerBound) }}
+      – {{ formatPrice(trip.livePrice.upperBound) }} / person
+    </div>
+  </a>
+  <div class="trip-meta">
+    <span class="badge">{{ trip.status }}</span>
+    <span>{{ trip.confirmedSeats }}/{{ trip.maxPassengers }} seats</span>
+    @if (trip.concertCity) {
+      <span>{{ trip.concertCity }}</span>
+    }
+    <span>Departs {{ trip.departureAt | date: 'medium' }}</span>
+    @if (showDriver && trip.driverName) {
+      <span>{{ trip.driverName }}</span>
+    }
+    @if (trip.driverAverageRating !== null) {
+      <span>Rating {{ trip.driverAverageRating }}</span>
+    }
+  </div>
+</article>

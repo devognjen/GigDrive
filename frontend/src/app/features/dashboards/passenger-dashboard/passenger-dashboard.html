@@ -1,0 +1,22 @@
+<div class="dashboard">
+  <header class="dash-header">
+    <h1>Passenger dashboard</h1>
+    <a routerLink="/dashboard/driver">Driver dashboard</a>
+  </header>
+
+  @if (loading()) {
+    <p class="state">Loading bookings…</p>
+  } @else {
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <app-booking-list
+      [bookings]="bookings()"
+      mode="passenger"
+      [pendingId]="pendingId()"
+      emptyMessage="You have no bookings yet."
+      (cancel)="cancel($event)"
+    />
+  }
+</div>

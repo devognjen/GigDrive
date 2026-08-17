@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
+import { dashboardStoreProviders } from './features/dashboards/store/dashboard-store.providers';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'concerts' },
@@ -17,10 +18,13 @@ export const routes: Routes = [
     loadChildren: () => import('./features/trips/trips.routes'),
   },
   {
-    path: 'bookings',
+    path: 'dashboard',
     canActivate: [authGuard],
-    loadChildren: () => import('./features/bookings/bookings.routes'),
+    providers: dashboardStoreProviders,
+    loadChildren: () => import('./features/dashboards/dashboards.routes'),
   },
+  { path: 'bookings/driver', redirectTo: '/dashboard/driver' },
+  { path: 'bookings', redirectTo: '/dashboard/passenger' },
   {
     path: 'profile',
     canActivate: [authGuard],

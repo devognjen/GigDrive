@@ -1,0 +1,66 @@
+@if (bookings.length === 0) {
+  <p class="state">{{ emptyMessage }}</p>
+} @else {
+  <ul class="booking-list">
+    @for (booking of bookings; track booking.id) {
+      <li class="booking">
+        <div class="status">{{ booking.status }}</div>
+        <div class="trip">
+          <a [routerLink]="['/trips', booking.tripId]">
+            {{ booking.trip.concertArtist || 'Trip' }}
+            @if (booking.trip.concertTitle) {
+              — {{ booking.trip.concertTitle }}
+            }
+          </a>
+        </div>
+        <div class="price">{{ formatPrice(booking) }} / person</div>
+        <div class="seats">{{ booking.seats }} seat{{ booking.seats === 1 ? '' : 's' }}</div>
+        <div class="paid">{{ booking.paid ? 'Paid' : 'Not paid' }}</div>
+        @if (mode === 'driver') {
+          <div class="passenger">{{ booking.passengerName }}</div>
+        }
+        <div class="requested">Requested {{ booking.createdAt | date: 'medium' }}</div>
+
+        <div class="actions">
+          @if (mode === 'driver' && booking.status === 'PENDING') {
+            <button
+              type="button"
+              class="accept"
+              (click)="accept.emit(booking)"
+              [disabled]="pendingId === booking.id"
+            >
+              Accept
+            </button>
+            <button
+              type="button"
+              class="danger"
+              (click)="reject.emit(booking)"
+              [disabled]="pendingId === booking.id"
+            >
+              Reject
+            </button>
+          }
+          @if (mode === 'driver' && booking.status === 'CONFIRMED') {
+            <button
+              type="button"
+              (click)="togglePaid.emit(booking)"
+              [disabled]="pendingId === booking.id"
+            >
+              {{ booking.paid ? 'Mark unpaid' : 'Mark paid' }}
+            </button>
+          }
+          @if (mode === 'passenger' && canCancel(booking)) {
+            <button
+              type="button"
+              class="danger"
+              (click)="cancel.emit(booking)"
+              [disabled]="pendingId === booking.id"
+            >
+              Cancel
+            </button>
+          }
+        </div>
+      </li>
+    }
+  </ul>
+}

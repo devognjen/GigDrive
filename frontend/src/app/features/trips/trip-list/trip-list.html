@@ -51,20 +51,8 @@
   } @else {
     <ul class="trips">
       @for (trip of trips(); track trip.id) {
-        <li class="trip-card">
-          <a [routerLink]="['/trips', trip.id]" class="trip-main">
-            <div class="driver">{{ trip.driverName }}</div>
-            <div class="price">{{ formatPrice(trip.livePrice.perPerson) }}</div>
-            <div class="band">
-              {{ formatPrice(trip.livePrice.lowerBound) }}
-              – {{ formatPrice(trip.livePrice.upperBound) }} / person
-            </div>
-          </a>
-          <div class="trip-meta">
-            <span class="badge">{{ trip.status }}</span>
-            <span>{{ trip.confirmedSeats }}/{{ trip.maxPassengers }} seats</span>
-            <span>Departs {{ trip.departureAt | date: 'medium' }}</span>
-          </div>
+        <li>
+          <app-trip-card [trip]="trip" />
         </li>
       }
     </ul>

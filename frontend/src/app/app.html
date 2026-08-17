@@ -3,8 +3,9 @@
   <nav>
     <a routerLink="/concerts" routerLinkActive="active">Concerts</a>
     <a routerLink="/trips" routerLinkActive="active">Trips</a>
-    <a routerLink="/bookings" routerLinkActive="active">My bookings</a>
     @if (authService.currentUser(); as user) {
+      <a routerLink="/dashboard/driver" routerLinkActive="active">Driver</a>
+      <a routerLink="/dashboard/passenger" routerLinkActive="active">Passenger</a>
       <a routerLink="/profile" routerLinkActive="active">Profile</a>
       <span class="user-name">{{ user.firstName }}</span>
       <button type="button" class="logout" (click)="logout()">Log out</button>
