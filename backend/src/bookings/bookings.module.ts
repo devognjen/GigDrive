@@ -4,6 +4,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { ReviewsModule } from '../reviews/reviews.module';
 import { Trip } from '../trips/entities/trip.entity';
 import { TripsModule } from '../trips/trips.module';
+import { WaitlistModule } from '../waitlist/waitlist.module';
 import { BookingsController } from './bookings.controller';
 import { BookingsService } from './bookings.service';
 import { Booking } from './entities/booking.entity';
@@ -16,6 +17,7 @@ import { BookingPassengerGuard } from './guards/booking-passenger.guard';
     TripsModule,
     NotificationsModule,
     ReviewsModule,
+    WaitlistModule,
   ],
   controllers: [BookingsController],
   providers: [BookingsService, BookingDriverGuard, BookingPassengerGuard],

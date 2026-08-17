@@ -14,6 +14,7 @@ import {
 import { ReviewsService } from '../reviews/reviews.service';
 import { Trip } from '../trips/entities/trip.entity';
 import { TripsService } from '../trips/trips.service';
+import { WaitlistService } from '../waitlist/waitlist.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingDto } from './dto/booking.dto';
 import { Booking } from './entities/booking.entity';
@@ -38,6 +39,7 @@ export class BookingsService {
     // OPEN/READY/FULL status and trigger the READY notification.
     private readonly tripsService: TripsService,
     private readonly reviewsService: ReviewsService,
+    private readonly waitlistService: WaitlistService,
     @Inject(BOOKING_NOTIFICATIONS)
     private readonly notifications: BookingNotifications,
   ) {}
@@ -185,6 +187,7 @@ export class BookingsService {
     // Only a CONFIRMED cancellation affects capacity and therefore the trip.
     if (wasConfirmed) {
       await this.tripsService.recomputeStatus(saved.tripId);
+      await this.waitlistService.notifyOnSeatFreed(saved.tripId);
     }
 
     return this.toDto(saved);

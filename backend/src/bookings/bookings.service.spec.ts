@@ -9,6 +9,7 @@ import { TripDto } from '../trips/dto/trip.dto';
 import { Trip } from '../trips/entities/trip.entity';
 import { TripsService } from '../trips/trips.service';
 import { User } from '../users/entities/user.entity';
+import { WaitlistService } from '../waitlist/waitlist.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { Booking } from './entities/booking.entity';
 import { BookingsService } from './bookings.service';
@@ -24,6 +25,9 @@ describe('BookingsService', () => {
   };
   let reviewsService: {
     reviewableTripIds: jest.Mock;
+  };
+  let waitlistService: {
+    notifyOnSeatFreed: jest.Mock;
   };
   let notifications: { notify: jest.Mock };
 
@@ -122,6 +126,9 @@ describe('BookingsService', () => {
     reviewsService = {
       reviewableTripIds: jest.fn().mockResolvedValue(new Set()),
     };
+    waitlistService = {
+      notifyOnSeatFreed: jest.fn().mockResolvedValue(undefined),
+    };
     notifications = { notify: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -131,6 +138,7 @@ describe('BookingsService', () => {
         { provide: DataSource, useValue: dataSource },
         { provide: TripsService, useValue: tripsService },
         { provide: ReviewsService, useValue: reviewsService },
+        { provide: WaitlistService, useValue: waitlistService },
         { provide: BOOKING_NOTIFICATIONS, useValue: notifications },
       ],
     }).compile();
@@ -334,6 +342,7 @@ describe('BookingsService', () => {
         expect.objectContaining({ status: BookingStatus.CancelledByPassenger }),
       );
       expect(tripsService.recomputeStatus).toHaveBeenCalledWith(tripId);
+      expect(waitlistService.notifyOnSeatFreed).toHaveBeenCalledWith(tripId);
       expect(result.status).toBe(BookingStatus.CancelledByPassenger);
     });
 
@@ -343,6 +352,7 @@ describe('BookingsService', () => {
       await service.cancel(bookingId);
 
       expect(tripsService.recomputeStatus).not.toHaveBeenCalled();
+      expect(waitlistService.notifyOnSeatFreed).not.toHaveBeenCalled();
     });
 
     it('rejects cancelling a rejected booking', async () => {
