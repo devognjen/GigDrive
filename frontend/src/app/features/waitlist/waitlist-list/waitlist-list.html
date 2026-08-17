@@ -1,0 +1,31 @@
+@if (entries.length === 0) {
+  <p class="state">{{ emptyMessage }}</p>
+} @else {
+  <ul class="waitlist-list">
+    @for (entry of entries; track entry.id) {
+      <li class="entry">
+        <div class="position">#{{ entry.position }}</div>
+        <div class="trip">
+          <a [routerLink]="['/trips', entry.tripId]">
+            {{ entry.trip.concertArtist || 'Trip' }}
+            @if (entry.trip.concertTitle) {
+              — {{ entry.trip.concertTitle }}
+            }
+          </a>
+        </div>
+        <div class="seats">{{ entry.seats }} seat{{ entry.seats === 1 ? '' : 's' }}</div>
+        <div class="joined">Joined {{ entry.createdAt | date: 'medium' }}</div>
+        <div class="actions">
+          <button
+            type="button"
+            class="danger"
+            (click)="leave.emit(entry)"
+            [disabled]="pendingTripId === entry.tripId"
+          >
+            Leave
+          </button>
+        </div>
+      </li>
+    }
+  </ul>
+}

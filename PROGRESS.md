@@ -6,7 +6,7 @@ Each feature has a specification file in [docs/features/](docs/features/).
 
 **Status legend:** ⬜ Not started · 🔶 In progress · ✅ Done · ⏸️ Deferred/dropped
 
-Last updated: 2026-08-17
+Last updated: 2026-08-18
 
 ## Tier 0 — MVP (must have)
 
@@ -35,12 +35,12 @@ Last updated: 2026-08-17
 |---|---------|------|-----------|--------|-------|
 | 12 | Pickup-stop maps (Leaflet + OSM) | [12-pickup-stop-maps.md](docs/features/12-pickup-stop-maps.md) | M13 | ✅ | Leaflet map on trip details when stops have lat/lng; numbered markers in seq order; OSM tiles (no key); textual stop list always shown; optional coords on create/edit |
 | 13 | Concert-day weather widget (Open-Meteo) | [13-weather-widget.md](docs/features/13-weather-widget.md) | M13 | ✅ | Backend Open-Meteo proxy (`GET /concerts/:id/weather`); details page `zip(eventDetails$, weather$)`; empty state for missing coords / out-of-range date; provider failure hides the widget; headline seed concert moved inside the 16-day forecast window |
-| 14 | Waitlist on full trips | [14-waitlist.md](docs/features/14-waitlist.md) | M13 | ⬜ | FR-BOOK-05 |
+| 14 | Waitlist on full trips | [14-waitlist.md](docs/features/14-waitlist.md) | M13 | ✅ | FR-BOOK-05: join/leave while FULL; notify in join order when a confirmed booking cancels; waitlist never reserves seats |
 | 15 | CSV passenger manifest export | [15-csv-export.md](docs/features/15-csv-export.md) | M13 | ⬜ | |
 
 ## Summary
 
-- **Total:** 15 features · ✅ Done: 13 · 🔶 In progress: 0 · ⬜ Not started: 2 · ⏸️ Deferred: 0
+- **Total:** 15 features · ✅ Done: 14 · 🔶 In progress: 0 · ⬜ Not started: 1 · ⏸️ Deferred: 0
 - **Current focus:** —
 
 ## Working agreements

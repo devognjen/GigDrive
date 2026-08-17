@@ -29,3 +29,12 @@
   color: #b00020;
   background: #fdecea;
 }
+
+.waitlist {
+  margin-top: 2rem;
+
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+  }
+}

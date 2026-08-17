@@ -23,5 +23,21 @@
       (cancel)="cancel($event)"
       (review)="submitReview($event)"
     />
+
+    <section class="waitlist">
+      <h2>Waitlist</h2>
+      @if (waitlistError()) {
+        <p class="error" role="alert">{{ waitlistError() }}</p>
+      }
+      @if (waitlistLoading()) {
+        <p class="state">Loading waitlist…</p>
+      } @else {
+        <app-waitlist-list
+          [entries]="waitlistEntries()"
+          [pendingTripId]="waitlistPendingTripId()"
+          (leave)="leaveWaitlist($event)"
+        />
+      }
+    </section>
   }
 </div>

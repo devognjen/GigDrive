@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 
-import { buildBooking } from '../../../testing/trip.fixture';
+import { buildBooking, buildWaitlistEntry } from '../../../testing/trip.fixture';
 import { BookingsActions } from '../../bookings/store/bookings.actions';
 import {
   selectDashboardError,
@@ -41,6 +41,7 @@ describe('PassengerDashboard', () => {
     httpTesting = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(PassengerDashboard);
     fixture.detectChanges();
+    httpTesting.expectOne('/api/waitlist/mine').flush([]);
   });
 
   afterEach(() => {
@@ -50,6 +51,7 @@ describe('PassengerDashboard', () => {
   it('dispatches loadMine on enter', () => {
     const dispatchSpy = vi.spyOn(store, 'dispatch');
     TestBed.createComponent(PassengerDashboard);
+    httpTesting.expectOne('/api/waitlist/mine').flush([]);
     expect(dispatchSpy).toHaveBeenCalledWith(BookingsActions.loadMine());
   });
 
@@ -83,5 +85,32 @@ describe('PassengerDashboard', () => {
     req.flush({ id: 'r1' });
 
     expect(dispatchSpy).toHaveBeenCalledWith(BookingsActions.loadMine());
+  });
+
+  it('renders waitlist entries with position and leave', () => {
+    const extra = TestBed.createComponent(PassengerDashboard);
+    httpTesting.expectOne('/api/waitlist/mine').flush([buildWaitlistEntry()]);
+    extra.detectChanges();
+
+    const text = extra.nativeElement.textContent as string;
+    expect(text).toContain('Waitlist');
+    expect(text).toContain('#1');
+    expect(text).toContain('The Demo Band');
+    expect(text).toContain('Leave');
+  });
+
+  it('leaves a waitlist entry', () => {
+    const extra = TestBed.createComponent(PassengerDashboard);
+    const entry = buildWaitlistEntry();
+    httpTesting.expectOne('/api/waitlist/mine').flush([entry]);
+    extra.detectChanges();
+
+    extra.componentInstance['leaveWaitlist'](entry);
+    const req = httpTesting.expectOne('/api/trips/t1/waitlist');
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+    extra.detectChanges();
+
+    expect(extra.nativeElement.textContent).toContain('You are not on any waitlists.');
   });
 });
