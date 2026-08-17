@@ -60,6 +60,15 @@ export class TripDto {
   @ApiProperty()
   concertId: string;
 
+  @ApiProperty()
+  concertArtist: string;
+
+  @ApiProperty()
+  concertTitle: string;
+
+  @ApiProperty()
+  concertCity: string;
+
   @ApiProperty({ enum: PricingMode })
   pricingMode: PricingMode;
 
@@ -118,6 +127,9 @@ export class TripDto {
     dto.vehicleId = trip.vehicleId;
     dto.vehicleType = trip.vehicle?.type ?? '';
     dto.concertId = trip.concertId;
+    dto.concertArtist = trip.concert?.artist ?? '';
+    dto.concertTitle = trip.concert?.title ?? '';
+    dto.concertCity = trip.concert?.city ?? '';
     dto.pricingMode = trip.pricingMode;
     dto.totalCost = trip.totalCost;
     dto.currency = trip.currency;

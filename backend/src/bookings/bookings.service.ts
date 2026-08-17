@@ -80,7 +80,7 @@ export class BookingsService {
       booking: saved,
     });
 
-    return BookingDto.fromEntity(saved);
+    return this.toDto(await this.findBookingOrFail(saved.id));
   }
 
   /**
@@ -139,7 +139,7 @@ export class BookingsService {
       booking: saved,
     });
 
-    return BookingDto.fromEntity(saved);
+    return this.toDto(saved);
   }
 
   /**
@@ -159,7 +159,7 @@ export class BookingsService {
       booking: saved,
     });
 
-    return BookingDto.fromEntity(saved);
+    return this.toDto(saved);
   }
 
   /**
@@ -185,7 +185,7 @@ export class BookingsService {
       await this.tripsService.recomputeStatus(saved.tripId);
     }
 
-    return BookingDto.fromEntity(saved);
+    return this.toDto(saved);
   }
 
   /**
@@ -199,16 +199,17 @@ export class BookingsService {
 
     booking.paid = paid;
     const saved = await this.bookingsRepository.save(booking);
-    return BookingDto.fromEntity(saved);
+    return this.toDto(saved);
   }
 
   /** Lists the authenticated passenger's own bookings. */
   async listMine(passengerId: string): Promise<BookingDto[]> {
     const bookings = await this.bookingsRepository.find({
       where: { passengerId },
+      relations: { passenger: true },
       order: { createdAt: 'DESC' },
     });
-    return bookings.map((booking) => BookingDto.fromEntity(booking));
+    return this.toDtos(bookings);
   }
 
   /** Lists all bookings for the authenticated user viewed as a driver. */
@@ -223,9 +224,10 @@ export class BookingsService {
     }
     const bookings = await this.bookingsRepository.find({
       where: { tripId: In(tripIds) },
+      relations: { passenger: true },
       order: { createdAt: 'DESC' },
     });
-    return bookings.map((booking) => BookingDto.fromEntity(booking));
+    return this.toDtos(bookings);
   }
 
   private isBookable(status: TripStatus): boolean {
@@ -269,10 +271,46 @@ export class BookingsService {
   }
 
   private async findBookingOrFail(id: string): Promise<Booking> {
-    const booking = await this.bookingsRepository.findOneBy({ id });
+    const booking = await this.bookingsRepository.findOne({
+      where: { id },
+      relations: { passenger: true },
+    });
     if (!booking) {
       throw new NotFoundException('Booking not found');
     }
     return booking;
+  }
+
+  /** Hydrates a single booking with its live trip and passenger display name. */
+  private async toDto(booking: Booking): Promise<BookingDto> {
+    const [dto] = await this.toDtos([booking]);
+    return dto;
+  }
+
+  /**
+   * Batch-hydrates bookings: unique trip ids are resolved in one TripsService
+   * call so list endpoints do not N+1 getDetails.
+   */
+  private async toDtos(bookings: Booking[]): Promise<BookingDto[]> {
+    const tripIds = [...new Set(bookings.map((booking) => booking.tripId))];
+    const trips = await this.tripsService.getDetailsMany(tripIds);
+    return bookings.map((booking) => {
+      const trip = trips.get(booking.tripId);
+      if (!trip) {
+        throw new NotFoundException('Trip not found');
+      }
+      return BookingDto.fromEntity(
+        booking,
+        trip,
+        this.passengerDisplayName(booking),
+      );
+    });
+  }
+
+  private passengerDisplayName(booking: Booking): string {
+    if (!booking.passenger) {
+      return 'Unknown passenger';
+    }
+    return `${booking.passenger.firstName} ${booking.passenger.lastName}`;
   }
 }

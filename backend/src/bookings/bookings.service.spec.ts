@@ -2,10 +2,12 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { BookingStatus, TripStatus } from '../common/enums';
+import { BookingStatus, Currency, TripStatus } from '../common/enums';
 import { BOOKING_NOTIFICATIONS } from '../notifications/booking-notifications.port';
+import { TripDto } from '../trips/dto/trip.dto';
 import { Trip } from '../trips/entities/trip.entity';
 import { TripsService } from '../trips/trips.service';
+import { User } from '../users/entities/user.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { Booking } from './entities/booking.entity';
 import { BookingsService } from './bookings.service';
@@ -15,13 +17,22 @@ describe('BookingsService', () => {
   let bookingsRepository: Record<string, jest.Mock>;
   let tripRepository: Record<string, jest.Mock>;
   let dataSource: { transaction: jest.Mock; getRepository: jest.Mock };
-  let tripsService: { recomputeStatus: jest.Mock };
+  let tripsService: {
+    recomputeStatus: jest.Mock;
+    getDetailsMany: jest.Mock;
+  };
   let notifications: { notify: jest.Mock };
 
   const tripId = 'trip-uuid';
   const passengerId = 'passenger-uuid';
   const driverId = 'driver-uuid';
   const bookingId = 'booking-uuid';
+
+  const passenger = {
+    id: passengerId,
+    firstName: 'Pat',
+    lastName: 'Passenger',
+  } as User;
 
   const buildTrip = (overrides: Partial<Trip> = {}): Trip =>
     ({
@@ -33,11 +44,40 @@ describe('BookingsService', () => {
       ...overrides,
     }) as Trip;
 
+  const buildTripDto = (): TripDto =>
+    ({
+      id: tripId,
+      driverId,
+      driverName: 'Demo Driver',
+      driverAverageRating: null,
+      vehicleId: 'vehicle-uuid',
+      vehicleType: 'VAN',
+      concertId: 'concert-uuid',
+      concertArtist: 'The Demo Band',
+      concertTitle: 'Summer Open Air',
+      concertCity: 'Novi Sad',
+      pricingMode: 'SHARED_TOTAL',
+      totalCost: 12000,
+      currency: Currency.Eur,
+      minPassengers: 4,
+      maxPassengers: 8,
+      confirmationDeadline: new Date(),
+      departureAt: new Date(),
+      roundTrip: false,
+      notes: null,
+      status: TripStatus.Open,
+      confirmedSeats: 0,
+      seatsLeft: 8,
+      stops: [],
+      livePrice: { perPerson: 3000, lowerBound: 3000, upperBound: 1500 },
+    }) as TripDto;
+
   const buildBooking = (overrides: Partial<Booking> = {}): Booking =>
     ({
       id: bookingId,
       tripId,
       passengerId,
+      passenger,
       seats: 2,
       status: BookingStatus.Pending,
       paid: false,
@@ -56,6 +96,7 @@ describe('BookingsService', () => {
       })),
       save: jest.fn((booking: Booking) => Promise.resolve(booking)),
       find: jest.fn(),
+      findOne: jest.fn(),
       findOneBy: jest.fn(),
     };
     tripRepository = {
@@ -67,7 +108,12 @@ describe('BookingsService', () => {
       transaction: jest.fn(),
       getRepository: jest.fn(),
     };
-    tripsService = { recomputeStatus: jest.fn().mockResolvedValue(undefined) };
+    tripsService = {
+      recomputeStatus: jest.fn().mockResolvedValue(undefined),
+      getDetailsMany: jest
+        .fn()
+        .mockResolvedValue(new Map([[tripId, buildTripDto()]])),
+    };
     notifications = { notify: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -89,6 +135,7 @@ describe('BookingsService', () => {
       tripRepository.findOneBy.mockResolvedValue(buildTrip());
       bookingsRepository.find.mockResolvedValue([]);
       bookingsRepository.findOneBy.mockResolvedValue(null);
+      bookingsRepository.findOne.mockResolvedValue(buildBooking());
 
       const result = await service.request(tripId, passengerId, createDto);
 
@@ -99,6 +146,8 @@ describe('BookingsService', () => {
         expect.objectContaining({ type: 'BOOKING_REQUESTED' }),
       );
       expect(result.status).toBe(BookingStatus.Pending);
+      expect(result.passengerName).toBe('Pat Passenger');
+      expect(result.trip.concertArtist).toBe('The Demo Band');
     });
 
     it('rejects the driver booking their own trip', async () => {
@@ -154,7 +203,7 @@ describe('BookingsService', () => {
 
   describe('accept', () => {
     it('confirms a PENDING booking inside a transaction and notifies', async () => {
-      bookingsRepository.findOneBy.mockResolvedValue(buildBooking());
+      bookingsRepository.findOne.mockResolvedValue(buildBooking());
 
       const manager = {
         getRepository: (entity: unknown) => {
@@ -193,7 +242,7 @@ describe('BookingsService', () => {
     });
 
     it('rejects accepting a non-PENDING booking', async () => {
-      bookingsRepository.findOneBy.mockResolvedValue(
+      bookingsRepository.findOne.mockResolvedValue(
         buildBooking({ status: BookingStatus.Confirmed }),
       );
 
@@ -204,7 +253,7 @@ describe('BookingsService', () => {
     });
 
     it('rejects over-capacity inside the transaction', async () => {
-      bookingsRepository.findOneBy.mockResolvedValue(buildBooking());
+      bookingsRepository.findOne.mockResolvedValue(buildBooking());
 
       const manager = {
         getRepository: (entity: unknown) => {
@@ -240,7 +289,7 @@ describe('BookingsService', () => {
 
   describe('reject', () => {
     it('rejects a PENDING booking and notifies', async () => {
-      bookingsRepository.findOneBy.mockResolvedValue(buildBooking());
+      bookingsRepository.findOne.mockResolvedValue(buildBooking());
 
       const result = await service.reject(bookingId);
 
@@ -254,7 +303,7 @@ describe('BookingsService', () => {
     });
 
     it('rejects rejecting a non-PENDING booking', async () => {
-      bookingsRepository.findOneBy.mockResolvedValue(
+      bookingsRepository.findOne.mockResolvedValue(
         buildBooking({ status: BookingStatus.Rejected }),
       );
 
@@ -266,7 +315,7 @@ describe('BookingsService', () => {
 
   describe('cancel', () => {
     it('cancels a CONFIRMED booking and recomputes the trip', async () => {
-      bookingsRepository.findOneBy.mockResolvedValue(
+      bookingsRepository.findOne.mockResolvedValue(
         buildBooking({ status: BookingStatus.Confirmed }),
       );
 
@@ -280,7 +329,7 @@ describe('BookingsService', () => {
     });
 
     it('cancels a PENDING booking without recomputing', async () => {
-      bookingsRepository.findOneBy.mockResolvedValue(buildBooking());
+      bookingsRepository.findOne.mockResolvedValue(buildBooking());
 
       await service.cancel(bookingId);
 
@@ -288,7 +337,7 @@ describe('BookingsService', () => {
     });
 
     it('rejects cancelling a rejected booking', async () => {
-      bookingsRepository.findOneBy.mockResolvedValue(
+      bookingsRepository.findOne.mockResolvedValue(
         buildBooking({ status: BookingStatus.Rejected }),
       );
 
@@ -300,7 +349,7 @@ describe('BookingsService', () => {
 
   describe('setPaid', () => {
     it('sets the paid flag on a CONFIRMED booking', async () => {
-      bookingsRepository.findOneBy.mockResolvedValue(
+      bookingsRepository.findOne.mockResolvedValue(
         buildBooking({ status: BookingStatus.Confirmed }),
       );
 
@@ -313,7 +362,7 @@ describe('BookingsService', () => {
     });
 
     it('rejects marking a non-CONFIRMED booking paid', async () => {
-      bookingsRepository.findOneBy.mockResolvedValue(buildBooking());
+      bookingsRepository.findOne.mockResolvedValue(buildBooking());
 
       await expect(service.setPaid(bookingId, true)).rejects.toBeInstanceOf(
         ConflictException,
@@ -322,10 +371,13 @@ describe('BookingsService', () => {
   });
 
   describe('listMine', () => {
-    it('maps bookings to DTOs', async () => {
+    it('maps bookings to DTOs with trip and passenger name', async () => {
       bookingsRepository.find.mockResolvedValue([buildBooking()]);
       const result = await service.listMine(passengerId);
       expect(result[0].id).toBe(bookingId);
+      expect(result[0].passengerName).toBe('Pat Passenger');
+      expect(result[0].trip.livePrice.perPerson).toBe(3000);
+      expect(tripsService.getDetailsMany).toHaveBeenCalledWith([tripId]);
     });
   });
 
@@ -335,14 +387,16 @@ describe('BookingsService', () => {
       tripRepository.find.mockResolvedValue([]);
       const result = await service.listForDriver(driverId);
       expect(result).toEqual([]);
+      expect(tripsService.getDetailsMany).not.toHaveBeenCalled();
     });
 
-    it('maps the driver trips bookings', async () => {
+    it('maps the driver trips bookings with nested trip', async () => {
       dataSource.getRepository.mockReturnValue(tripRepository);
       tripRepository.find.mockResolvedValue([buildTrip()]);
       bookingsRepository.find.mockResolvedValue([buildBooking()]);
       const result = await service.listForDriver(driverId);
       expect(result[0].id).toBe(bookingId);
+      expect(result[0].trip.concertTitle).toBe('Summer Open Air');
     });
   });
 });

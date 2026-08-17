@@ -54,7 +54,13 @@ describe('TripsService', () => {
     }) as Vehicle;
 
   const buildConcert = (): Concert =>
-    ({ id: concertId, startAt: future(45) }) as Concert;
+    ({
+      id: concertId,
+      artist: 'The Demo Band',
+      title: 'Summer Open Air',
+      city: 'Novi Sad',
+      startAt: future(45),
+    }) as Concert;
 
   const buildTrip = (overrides: Partial<Trip> = {}): Trip =>
     ({
@@ -344,11 +350,33 @@ describe('TripsService', () => {
   });
 
   describe('getDetails', () => {
+    it('includes concert summary fields', async () => {
+      const result = await service.getDetails(tripId);
+      expect(result.concertArtist).toBe('The Demo Band');
+      expect(result.concertTitle).toBe('Summer Open Air');
+      expect(result.concertCity).toBe('Novi Sad');
+      expect(result.driverName).toBe('Demo Driver');
+    });
+
     it('throws NotFound for an unknown trip', async () => {
       tripsRepository.findOne.mockResolvedValue(null);
       await expect(service.getDetails('missing')).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+  });
+
+  describe('getDetailsMany', () => {
+    it('returns an empty map for no ids', async () => {
+      const result = await service.getDetailsMany([]);
+      expect(result.size).toBe(0);
+      expect(tripsRepository.find).not.toHaveBeenCalled();
+    });
+
+    it('hydrates unique trips by id', async () => {
+      tripsRepository.find.mockResolvedValue([buildTrip()]);
+      const result = await service.getDetailsMany([tripId, tripId]);
+      expect(result.get(tripId)?.concertArtist).toBe('The Demo Band');
     });
   });
 });

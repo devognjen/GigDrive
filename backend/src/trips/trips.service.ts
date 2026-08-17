@@ -220,7 +220,7 @@ export class TripsService {
   async listMine(driverId: string): Promise<TripDto[]> {
     const trips = await this.tripsRepository.find({
       where: { driverId },
-      relations: { vehicle: true, driver: true, stops: true },
+      relations: { vehicle: true, driver: true, concert: true, stops: true },
       order: { createdAt: 'DESC' },
     });
     return this.hydrateTrips(trips, {});
@@ -233,7 +233,7 @@ export class TripsService {
     }
     const trip = await this.tripsRepository.findOne({
       where: { id },
-      relations: { vehicle: true, concert: true, stops: true },
+      relations: { vehicle: true, concert: true, stops: true, driver: true },
     });
     if (!trip) {
       throw new NotFoundException('Trip not found');
@@ -242,6 +242,23 @@ export class TripsService {
       trip,
       await this.countConfirmedSeats(trip.id),
     );
+  }
+
+  /**
+   * Loads several trips (live price + concert summary) in one pass so booking
+   * lists can hydrate without an N+1 of getDetails calls.
+   */
+  async getDetailsMany(ids: string[]): Promise<Map<string, TripDto>> {
+    const uniqueIds = [...new Set(ids.filter((id) => Boolean(id)))];
+    if (uniqueIds.length === 0) {
+      return new Map();
+    }
+    const trips = await this.tripsRepository.find({
+      where: { id: In(uniqueIds) },
+      relations: { vehicle: true, concert: true, stops: true, driver: true },
+    });
+    const dtos = await this.hydrateTrips(trips, {});
+    return new Map(dtos.map((dto) => [dto.id, dto]));
   }
 
   /**
@@ -298,6 +315,7 @@ export class TripsService {
       .createQueryBuilder('trip')
       .leftJoinAndSelect('trip.vehicle', 'vehicle')
       .leftJoinAndSelect('trip.driver', 'driver')
+      .leftJoinAndSelect('trip.concert', 'concert')
       .leftJoinAndSelect('trip.stops', 'stops')
       .take(TRIPS_PAGE_SIZE);
 
