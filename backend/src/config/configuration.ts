@@ -10,7 +10,7 @@ export default () => ({
   jwtSecret: process.env.JWT_SECRET ?? 'dev-only-secret',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '1d',
   ticketmaster: {
-    apiKey: process.env.TICKETMASTER_API_KEY ?? '',
+    apiKey: (process.env.TICKETMASTER_API_KEY ?? '').trim(),
     baseUrl:
       process.env.TICKETMASTER_BASE_URL ??
       'https://app.ticketmaster.com/discovery/v2',
@@ -24,5 +24,15 @@ export default () => ({
   },
   seed: {
     demoPassword: process.env.SEED_DEMO_PASSWORD ?? 'demo1234',
+    // Default on so concert search has cached demo rows without a manual
+    // `pnpm seed`. Tests set NODE_ENV=test and skip this. Set SEED_ON_START=false
+    // to disable.
+    onStart:
+      process.env.NODE_ENV !== 'test' && process.env.SEED_ON_START !== 'false',
+  },
+  features: {
+    // Default on so the M12 demo has chat; set FEATURE_CHAT=false to disable
+    // without affecting the rest of the app (FR-COMM-02).
+    chat: process.env.FEATURE_CHAT !== 'false',
   },
 });

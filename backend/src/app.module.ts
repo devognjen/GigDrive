@@ -4,6 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import configuration from './config/configuration';
+import { FeaturesController } from './features.controller';
 import { HealthController } from './health.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -52,6 +53,6 @@ import { IntegrationsModule } from './integrations/integrations.module';
     ChatModule,
     IntegrationsModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, FeaturesController],
 })
 export class AppModule {}
