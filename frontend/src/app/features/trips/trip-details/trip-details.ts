@@ -5,13 +5,15 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { FeaturesService } from '../../../core/services/features.service';
 import { Trip } from '../../../core/models/trip.model';
-import { TripService } from '../trip.service';
 import { BookingService } from '../../bookings/booking.service';
+import { TripChat } from '../../chat/trip-chat/trip-chat';
+import { TripService } from '../trip.service';
 
 @Component({
   selector: 'app-trip-details',
-  imports: [DatePipe, RouterLink, ReactiveFormsModule],
+  imports: [DatePipe, RouterLink, ReactiveFormsModule, TripChat],
   templateUrl: './trip-details.html',
   styleUrl: './trip-details.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +23,7 @@ export class TripDetails {
   private readonly tripService = inject(TripService);
   private readonly bookingService = inject(BookingService);
   private readonly authService = inject(AuthService);
+  private readonly featuresService = inject(FeaturesService);
 
   protected readonly trip = signal<Trip | null>(null);
   protected readonly loading = signal(true);
@@ -30,6 +33,9 @@ export class TripDetails {
   protected readonly bookingError = signal<string | null>(null);
   protected readonly bookingPending = signal(false);
   protected readonly bookingDone = signal(false);
+  protected readonly isConfirmedPassenger = signal(false);
+
+  private membershipRequested = false;
 
   protected readonly seats = new FormControl(1, {
     nonNullable: true,
@@ -54,7 +60,15 @@ export class TripDetails {
     );
   });
 
+  protected readonly showChat = computed(
+    () =>
+      this.featuresService.chatEnabled() &&
+      (this.isDriver() || this.isConfirmedPassenger()),
+  );
+
   constructor() {
+    this.featuresService.load().subscribe(() => this.maybeLoadMembership());
+
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
       this.loading.set(false);
@@ -65,12 +79,34 @@ export class TripDetails {
       next: (trip) => {
         this.trip.set(trip);
         this.loading.set(false);
+        this.maybeLoadMembership();
       },
       error: (error: HttpErrorResponse) => {
         this.loading.set(false);
         if (error.status === 404) {
           this.notFound.set(true);
         }
+      },
+    });
+  }
+
+  private maybeLoadMembership(): void {
+    if (this.membershipRequested) {
+      return;
+    }
+    const trip = this.trip();
+    if (!trip || this.featuresService.features() === null) {
+      return;
+    }
+    this.membershipRequested = true;
+    if (!this.featuresService.chatEnabled() || this.isDriver()) {
+      return;
+    }
+    this.bookingService.listMine().subscribe({
+      next: (bookings) => {
+        this.isConfirmedPassenger.set(
+          bookings.some((booking) => booking.tripId === trip.id && booking.status === 'CONFIRMED'),
+        );
       },
     });
   }

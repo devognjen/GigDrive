@@ -1,9 +1,15 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { EMPTY, of } from 'rxjs';
 
+import { User } from '../../../core/models/user.model';
 import { Trip } from '../../../core/models/trip.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { buildBooking } from '../../../testing/trip.fixture';
+import { ChatService } from '../../chat/chat.service';
 import { TripDetails } from './trip-details';
 
 const mockTrip: Trip = {
@@ -34,12 +40,32 @@ const mockTrip: Trip = {
   livePrice: { perPerson: 3000, lowerBound: 3000, upperBound: 1500 },
 };
 
+const driver: User = {
+  id: 'd1',
+  email: 'driver@gigdrive.demo',
+  firstName: 'Demo',
+  lastName: 'Driver',
+  phone: null,
+  emailNotifications: true,
+};
+
+const passenger: User = {
+  id: 'p1',
+  email: 'ana@gigdrive.demo',
+  firstName: 'Ana',
+  lastName: 'Passenger',
+  phone: null,
+  emailNotifications: true,
+};
+
 describe('TripDetails', () => {
   let component: TripDetails;
   let fixture: ComponentFixture<TripDetails>;
   let httpTesting: HttpTestingController;
+  const currentUser = signal<User | null>(null);
 
   beforeEach(async () => {
+    currentUser.set(null);
     await TestBed.configureTestingModule({
       imports: [TripDetails],
       providers: [
@@ -49,6 +75,22 @@ describe('TripDetails', () => {
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: convertToParamMap({ id: 't1' }) } },
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            currentUser: currentUser.asReadonly(),
+            getToken: () => (currentUser() ? 'jwt' : null),
+          },
+        },
+        {
+          provide: ChatService,
+          useValue: {
+            getMessages: () => of([]),
+            connect: () => EMPTY,
+            send: vi.fn(),
+            disconnect: vi.fn(),
+          },
         },
       ],
     }).compileComponents();
@@ -62,14 +104,19 @@ describe('TripDetails', () => {
     httpTesting.verify();
   });
 
+  function flushPage(chat = false): void {
+    httpTesting.expectOne('/api/features').flush({ chat });
+    httpTesting.expectOne('/api/trips/t1').flush(mockTrip);
+  }
+
   it('should create', () => {
     expect(component).toBeTruthy();
-    httpTesting.expectOne('/api/trips/t1').flush(mockTrip);
+    flushPage();
   });
 
   it('renders the trip with price band and stops', () => {
     fixture.detectChanges();
-    httpTesting.expectOne('/api/trips/t1').flush(mockTrip);
+    flushPage();
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
@@ -80,5 +127,44 @@ describe('TripDetails', () => {
     expect(text).toContain('4.5 (2 reviews)');
     const driverLink = fixture.nativeElement.querySelector('a[href="/users/d1"]') as HTMLAnchorElement | null;
     expect(driverLink?.textContent).toContain('Demo Driver');
+    expect(text).not.toContain('Trip chat');
+  });
+
+  it('hides chat when the feature flag is off', () => {
+    currentUser.set(driver);
+    fixture.detectChanges();
+    flushPage(false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('Trip chat');
+  });
+
+  it('shows chat for the driver when the flag is on', () => {
+    currentUser.set(driver);
+    fixture.detectChanges();
+    flushPage(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Trip chat');
+  });
+
+  it('shows chat for a confirmed passenger when the flag is on', () => {
+    currentUser.set(passenger);
+    fixture.detectChanges();
+    flushPage(true);
+    httpTesting.expectOne('/api/bookings/mine').flush([
+      buildBooking({ tripId: 't1', passengerId: 'p1', status: 'CONFIRMED' }),
+    ]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Trip chat');
+  });
+
+  it('hides chat for a non-member when the flag is on', () => {
+    currentUser.set(passenger);
+    fixture.detectChanges();
+    flushPage(true);
+    httpTesting.expectOne('/api/bookings/mine').flush([
+      buildBooking({ tripId: 't1', passengerId: 'p1', status: 'PENDING' }),
+    ]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('Trip chat');
   });
 });

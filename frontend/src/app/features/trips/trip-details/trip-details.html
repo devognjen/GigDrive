@@ -63,6 +63,10 @@
       <p class="notes">{{ trip.notes }}</p>
     }
 
+    @if (showChat()) {
+      <app-trip-chat [tripId]="trip.id" />
+    }
+
     @if (isBookable()) {
       <section class="booking-request">
         <h2>Request seats</h2>

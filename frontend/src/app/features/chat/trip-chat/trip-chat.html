@@ -1,0 +1,30 @@
+<section class="trip-chat">
+  <h2>Trip chat</h2>
+  @if (loading()) {
+    <p class="state">Loading messages…</p>
+  } @else if (loadError()) {
+    <p class="error" role="alert">{{ loadError() }}</p>
+  } @else {
+    @if (messages().length === 0) {
+      <p class="state">No messages yet. Say hello to the crew.</p>
+    } @else {
+      <ol class="messages">
+        @for (message of messages(); track message.id) {
+          <li [class.own]="message.authorId === currentUserId()">
+            <div class="meta">
+              {{ message.authorName }} · {{ message.sentAt | date: 'short' }}
+            </div>
+            <p>{{ message.body }}</p>
+          </li>
+        }
+      </ol>
+    }
+  }
+  <form (ngSubmit)="send()">
+    <label>
+      Message
+      <input type="text" maxlength="2000" [formControl]="body" autocomplete="off" />
+    </label>
+    <button type="submit" [disabled]="body.invalid || sendPending()">Send</button>
+  </form>
+</section>
