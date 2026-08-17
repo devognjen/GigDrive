@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Booking } from '../bookings/entities/booking.entity';
 import { Concert } from '../concerts/entities/concert.entity';
+import { IntegrationsModule } from '../integrations/integrations.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ReviewsModule } from '../reviews/reviews.module';
 import { Vehicle } from '../vehicles/entities/vehicle.entity';
@@ -19,6 +20,7 @@ import { TripsService } from './trips.service';
     TypeOrmModule.forFeature([Trip, TripStop, Booking, Vehicle, Concert]),
     NotificationsModule,
     ReviewsModule,
+    IntegrationsModule,
   ],
   controllers: [TripsController],
   providers: [

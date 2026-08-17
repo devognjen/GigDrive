@@ -1,4 +1,4 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Logger, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Booking } from '../bookings/entities/booking.entity';
@@ -9,6 +9,7 @@ import {
   VehicleType,
 } from '../common/enums';
 import { Concert } from '../concerts/entities/concert.entity';
+import { SignalAutomationService } from '../integrations/signal/signal-automation.service';
 import { TRIP_NOTIFICATIONS } from '../notifications/trip-notifications.port';
 import { ReviewsService } from '../reviews/reviews.service';
 import { User } from '../users/entities/user.entity';
@@ -28,6 +29,7 @@ describe('TripsService', () => {
   let vehiclesRepository: Record<string, jest.Mock>;
   let concertsRepository: Record<string, jest.Mock>;
   let notifications: { notify: jest.Mock };
+  let signalAutomation: { onTripConfirmed: jest.Mock };
   let reviewsService: {
     aggregateByDriverIds: jest.Mock;
   };
@@ -120,6 +122,9 @@ describe('TripsService', () => {
     vehiclesRepository = { findOneBy: jest.fn() };
     concertsRepository = { findOneBy: jest.fn() };
     notifications = { notify: jest.fn() };
+    signalAutomation = {
+      onTripConfirmed: jest.fn().mockResolvedValue(undefined),
+    };
     reviewsService = {
       aggregateByDriverIds: jest.fn().mockResolvedValue(new Map()),
     };
@@ -140,6 +145,7 @@ describe('TripsService', () => {
         { provide: getRepositoryToken(Concert), useValue: concertsRepository },
         { provide: ReviewsService, useValue: reviewsService },
         { provide: TRIP_NOTIFICATIONS, useValue: notifications },
+        { provide: SignalAutomationService, useValue: signalAutomation },
       ],
     }).compile();
 
@@ -214,7 +220,32 @@ describe('TripsService', () => {
       expect(notifications.notify).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'TRIP_CONFIRMED' }),
       );
+      expect(signalAutomation.onTripConfirmed).toHaveBeenCalledWith(
+        expect.objectContaining({ id: tripId, status: TripStatus.Confirmed }),
+      );
       expect(result.status).toBe(TripStatus.Confirmed);
+    });
+
+    it('still confirms when Signal automation throws', async () => {
+      const errorSpy = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation();
+      tripsRepository.findOne.mockResolvedValue(
+        buildTrip({ status: TripStatus.Ready }),
+      );
+      bookingsRepository.find.mockResolvedValue([{ seats: 4 }]);
+      signalAutomation.onTripConfirmed.mockRejectedValue(new Error('down'));
+
+      try {
+        const result = await service.confirm(tripId);
+
+        expect(result.status).toBe(TripStatus.Confirmed);
+        expect(notifications.notify).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'TRIP_CONFIRMED' }),
+        );
+      } finally {
+        errorSpy.mockRestore();
+      }
     });
 
     it('rejects confirming a non-READY trip', async () => {
@@ -227,6 +258,7 @@ describe('TripsService', () => {
         ConflictException,
       );
       expect(notifications.notify).not.toHaveBeenCalled();
+      expect(signalAutomation.onTripConfirmed).not.toHaveBeenCalled();
     });
   });
 

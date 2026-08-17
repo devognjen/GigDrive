@@ -2,6 +2,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +10,7 @@ import { In, Repository } from 'typeorm';
 import { Booking } from '../bookings/entities/booking.entity';
 import { BookingStatus, Currency, TripStatus } from '../common/enums';
 import { Concert } from '../concerts/entities/concert.entity';
+import { SignalAutomationService } from '../integrations/signal/signal-automation.service';
 import {
   TRIP_NOTIFICATIONS,
   TripNotifications,
@@ -33,6 +35,8 @@ const TRIPS_PAGE_SIZE = 50;
 
 @Injectable()
 export class TripsService {
+  private readonly logger = new Logger(TripsService.name);
+
   constructor(
     @InjectRepository(Trip)
     private readonly tripsRepository: Repository<Trip>,
@@ -49,6 +53,7 @@ export class TripsService {
     private readonly reviewsService: ReviewsService,
     @Inject(TRIP_NOTIFICATIONS)
     private readonly notifications: TripNotifications,
+    private readonly signalAutomation: SignalAutomationService,
   ) {}
 
   /** Creates a trip for the given driver together with its pickup stops. */
@@ -164,6 +169,14 @@ export class TripsService {
     trip.status = TripStatus.Confirmed;
     await this.tripsRepository.save(trip);
     await this.notifications.notify({ type: 'TRIP_CONFIRMED', trip });
+    try {
+      await this.signalAutomation.onTripConfirmed(trip);
+    } catch (error) {
+      this.logger.error(
+        `Signal automation failed trip=${trip.id}`,
+        error as Error,
+      );
+    }
 
     return this.getDetails(id);
   }
