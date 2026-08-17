@@ -1,0 +1,35 @@
+.weather-widget {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+
+  h3 {
+    margin: 0 0 0.5rem;
+  }
+
+  .condition {
+    margin: 0 0 0.75rem;
+    font-weight: 600;
+  }
+
+  .empty {
+    margin: 0;
+    color: #555;
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.25rem 1rem;
+    margin: 0;
+  }
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+  }
+}

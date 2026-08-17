@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { Concert, ConcertDetails } from '../../core/models/concert.model';
+import { Concert, ConcertDetails, ConcertWeather } from '../../core/models/concert.model';
 import { ConcertService } from './concert.service';
 
 const mockConcert: Concert = {
@@ -116,6 +116,28 @@ describe('ConcertService', () => {
       req.flush(mockDetails);
 
       expect(result).toEqual(mockDetails);
+    });
+  });
+
+  describe('getWeather', () => {
+    it('requests the concert weather endpoint', () => {
+      const forecast: ConcertWeather = {
+        available: true,
+        date: '2026-09-01',
+        weatherCode: 0,
+        description: 'Clear',
+        tempMinC: 12,
+        tempMaxC: 24,
+        precipitationMm: 0,
+      };
+      let result: ConcertWeather | undefined;
+      service.getWeather('c1').subscribe((weather) => (result = weather));
+
+      const req = httpTesting.expectOne('/api/concerts/c1/weather');
+      expect(req.request.method).toBe('GET');
+      req.flush(forecast);
+
+      expect(result).toEqual(forecast);
     });
   });
 

@@ -6,6 +6,7 @@ import {
   Concert,
   ConcertDetails,
   ConcertSearchParams,
+  ConcertWeather,
   CreateConcertRequest,
 } from '../../core/models/concert.model';
 
@@ -29,6 +30,11 @@ export class ConcertService {
   /** Loads a concert together with the trips linked to it. Public endpoint. */
   getDetails(id: string): Observable<ConcertDetails> {
     return this.http.get<ConcertDetails>(`${API_BASE}/concerts/${id}`);
+  }
+
+  /** Concert-day forecast via the backend Open-Meteo proxy. Public endpoint. */
+  getWeather(id: string): Observable<ConcertWeather> {
+    return this.http.get<ConcertWeather>(`${API_BASE}/concerts/${id}/weather`);
   }
 
   /** Creates a user-submitted concert. Requires authentication. */

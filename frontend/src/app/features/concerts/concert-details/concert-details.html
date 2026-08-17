@@ -33,6 +33,8 @@
         <dd>{{ data.concert.city }}, {{ data.concert.country }}</dd>
       </dl>
 
+      <app-weather-widget [weather]="weather()" />
+
       @if (data.concert.ticketUrl) {
         <p>
           <a class="tickets" [href]="data.concert.ticketUrl" target="_blank" rel="noopener">

@@ -1,0 +1,18 @@
+@if (visible()) {
+  <section class="weather-widget" aria-label="Concert-day weather">
+    <h3>Weather on the concert day</h3>
+    @if (weather(); as data) {
+      @if (data.available) {
+        <p class="condition">{{ data.description }}</p>
+        <dl>
+          <dt>Temperature</dt>
+          <dd>{{ data.tempMinC | number: '1.0-0' }}–{{ data.tempMaxC | number: '1.0-0' }} °C</dd>
+          <dt>Precipitation</dt>
+          <dd>{{ data.precipitationMm | number: '1.0-1' }} mm</dd>
+        </dl>
+      } @else {
+        <p class="empty">{{ emptyMessage() }}</p>
+      }
+    }
+  </section>
+}

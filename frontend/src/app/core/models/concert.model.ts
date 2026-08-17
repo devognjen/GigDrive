@@ -35,6 +35,22 @@ export interface ConcertDetails {
   trips: ConcertTrip[];
 }
 
+/** Why a concert-day forecast cannot be shown. */
+export type WeatherUnavailableReason = 'NO_COORDINATES' | 'OUT_OF_RANGE' | 'UNAVAILABLE';
+
+/** Response of GET /concerts/:id/weather. */
+export interface ConcertWeather {
+  available: boolean;
+  reason?: WeatherUnavailableReason;
+  /** Venue-local calendar day (YYYY-MM-DD). */
+  date?: string;
+  weatherCode?: number;
+  description?: string;
+  tempMinC?: number;
+  tempMaxC?: number;
+  precipitationMm?: number;
+}
+
 /** Payload for POST /concerts. */
 export interface CreateConcertRequest {
   artist: string;
