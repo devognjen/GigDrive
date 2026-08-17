@@ -64,4 +64,16 @@ describe('buildSeedData', () => {
       data.reviews.reduce((sum, r) => sum + r.rating, 0) / data.reviews.length;
     expect(average).toBe(4.5);
   });
+
+  it('seeds chat history on the headline trip for the driver and passengers', () => {
+    expect(data.chatMessages).toHaveLength(3);
+    expect(data.chatMessages.every((m) => m.tripId === data.trip.id)).toBe(
+      true,
+    );
+    expect(data.chatMessages.map((m) => m.authorId)).toEqual([
+      data.driver.id,
+      data.passengers[0].id,
+      data.passengers[1].id,
+    ]);
+  });
 });

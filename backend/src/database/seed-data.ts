@@ -6,6 +6,7 @@ import {
   TripStatus,
   VehicleType,
 } from '../common/enums';
+import { ChatMessage } from '../chat/entities/chat-message.entity';
 import { Concert } from '../concerts/entities/concert.entity';
 import { Review } from '../reviews/entities/review.entity';
 import { Trip } from '../trips/entities/trip.entity';
@@ -39,6 +40,7 @@ export interface SeedData {
   stops: TripStop[];
   bookings: Booking[];
   reviews: Review[];
+  chatMessages: ChatMessage[];
 }
 
 export function buildSeedData(now: Date, passwordHash: string): SeedData {
@@ -289,6 +291,30 @@ export function buildSeedData(now: Date, passwordHash: string): SeedData {
     }),
   ];
 
+  const chatMessages = [
+    Object.assign(new ChatMessage(), {
+      id: uuid(6000),
+      tripId: trip.id,
+      authorId: driver.id,
+      body: 'Pickup at Novi Sad station — look for the white van.',
+      sentAt: daysFromNow(now, -1, 13),
+    }),
+    Object.assign(new ChatMessage(), {
+      id: uuid(6001),
+      tripId: trip.id,
+      authorId: passengers[0].id,
+      body: "I'll be there 10 minutes early.",
+      sentAt: daysFromNow(now, -1, 14),
+    }),
+    Object.assign(new ChatMessage(), {
+      id: uuid(6002),
+      tripId: trip.id,
+      authorId: passengers[1].id,
+      body: 'Can we still do the short stop in Stara Pazova?',
+      sentAt: daysFromNow(now, -1, 15),
+    }),
+  ];
+
   return {
     driver,
     passengers,
@@ -299,5 +325,6 @@ export function buildSeedData(now: Date, passwordHash: string): SeedData {
     stops,
     bookings: [...bookings, ...pastBookings],
     reviews,
+    chatMessages,
   };
 }
