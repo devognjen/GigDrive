@@ -15,6 +15,13 @@ export default () => ({
       process.env.TICKETMASTER_BASE_URL ??
       'https://app.ticketmaster.com/discovery/v2',
   },
+  smtp: {
+    host: process.env.SMTP_HOST ?? 'sandbox.smtp.mailtrap.io',
+    port: parseInt(process.env.SMTP_PORT ?? '2525', 10),
+    user: process.env.SMTP_USER ?? '',
+    pass: process.env.SMTP_PASS ?? '',
+    from: process.env.MAIL_FROM ?? 'GigDrive <no-reply@gigdrive.local>',
+  },
   seed: {
     demoPassword: process.env.SEED_DEMO_PASSWORD ?? 'demo1234',
   },
