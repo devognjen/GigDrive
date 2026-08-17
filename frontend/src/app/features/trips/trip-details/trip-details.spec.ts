@@ -189,4 +189,33 @@ describe('TripDetails', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).not.toContain('Trip chat');
   });
+
+  it('shows the booking form on OPEN trips for a passenger', () => {
+    currentUser.set(passenger);
+    fixture.detectChanges();
+    flushPage();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Request seats');
+    expect(text).not.toContain('Join waitlist');
+  });
+
+  it('replaces the booking form with join waitlist on FULL trips', () => {
+    currentUser.set(passenger);
+    fixture.detectChanges();
+    httpTesting.expectOne('/api/features').flush({ chat: false });
+    httpTesting.expectOne('/api/trips/t1').flush({
+      ...mockTrip,
+      status: 'FULL',
+      confirmedSeats: 8,
+      seatsLeft: 0,
+    });
+    httpTesting.expectOne('/api/waitlist/mine').flush([]);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Join waitlist');
+    expect(text).not.toContain('Request seats');
+  });
 });

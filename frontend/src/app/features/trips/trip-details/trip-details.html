@@ -68,7 +68,7 @@
       <app-trip-chat [tripId]="trip.id" />
     }
 
-    @if (isBookable()) {
+    @if (canRequestBooking()) {
       <section class="booking-request">
         <h2>Request seats</h2>
         @if (bookingDone()) {
@@ -84,6 +84,39 @@
             </label>
             <button type="submit" [disabled]="seats.invalid || bookingPending()">
               Request seats
+            </button>
+          </form>
+        }
+      </section>
+    }
+
+    @if (canJoinWaitlist()) {
+      <section class="booking-request">
+        <h2>Join waitlist</h2>
+        @if (waitlistEntry(); as entry) {
+          <p class="success">
+            You're #{{ entry.position }} on the waitlist
+            ({{ entry.seats }} seat{{ entry.seats === 1 ? '' : 's' }}).
+          </p>
+          <button
+            type="button"
+            class="danger"
+            (click)="leaveWaitlist()"
+            [disabled]="waitlistPending()"
+          >
+            Leave waitlist
+          </button>
+        } @else {
+          @if (waitlistError()) {
+            <p class="error" role="alert">{{ waitlistError() }}</p>
+          }
+          <form (ngSubmit)="joinWaitlist()">
+            <label>
+              Seats
+              <input type="number" min="1" [max]="trip.maxPassengers" [formControl]="seats" />
+            </label>
+            <button type="submit" [disabled]="seats.invalid || waitlistPending()">
+              Join waitlist
             </button>
           </form>
         }

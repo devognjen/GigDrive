@@ -7,8 +7,10 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { FeaturesService } from '../../../core/services/features.service';
 import { Trip } from '../../../core/models/trip.model';
+import { WaitlistEntry } from '../../../core/models/waitlist.model';
 import { BookingService } from '../../bookings/booking.service';
 import { TripChat } from '../../chat/trip-chat/trip-chat';
+import { WaitlistService } from '../../waitlist/waitlist.service';
 import { PickupMap } from '../pickup-map/pickup-map';
 import { TripService } from '../trip.service';
 
@@ -23,6 +25,7 @@ export class TripDetails {
   private readonly route = inject(ActivatedRoute);
   private readonly tripService = inject(TripService);
   private readonly bookingService = inject(BookingService);
+  private readonly waitlistService = inject(WaitlistService);
   private readonly authService = inject(AuthService);
   private readonly featuresService = inject(FeaturesService);
 
@@ -35,6 +38,9 @@ export class TripDetails {
   protected readonly bookingPending = signal(false);
   protected readonly bookingDone = signal(false);
   protected readonly isConfirmedPassenger = signal(false);
+  protected readonly waitlistEntry = signal<WaitlistEntry | null>(null);
+  protected readonly waitlistError = signal<string | null>(null);
+  protected readonly waitlistPending = signal(false);
 
   private membershipRequested = false;
 
@@ -49,16 +55,19 @@ export class TripDetails {
     return Boolean(currentUser && currentTrip && currentUser.id === currentTrip.driverId);
   });
 
-  protected readonly isBookable = computed(() => {
+  protected readonly canRequestBooking = computed(() => {
     const currentTrip = this.trip();
     const isDriver = this.isDriver();
     return Boolean(
       currentTrip &&
       !isDriver &&
-      (currentTrip.status === 'OPEN' ||
-        currentTrip.status === 'READY' ||
-        currentTrip.status === 'FULL'),
+      (currentTrip.status === 'OPEN' || currentTrip.status === 'READY'),
     );
+  });
+
+  protected readonly canJoinWaitlist = computed(() => {
+    const currentTrip = this.trip();
+    return Boolean(currentTrip && !this.isDriver() && currentTrip.status === 'FULL');
   });
 
   protected readonly showChat = computed(
@@ -81,6 +90,7 @@ export class TripDetails {
         this.trip.set(trip);
         this.loading.set(false);
         this.maybeLoadMembership();
+        this.loadWaitlistMembership();
       },
       error: (error: HttpErrorResponse) => {
         this.loading.set(false);
@@ -112,6 +122,19 @@ export class TripDetails {
     });
   }
 
+  private loadWaitlistMembership(): void {
+    const trip = this.trip();
+    const user = this.authService.currentUser();
+    if (!trip || trip.status !== 'FULL' || !user || user.id === trip.driverId) {
+      return;
+    }
+    this.waitlistService.listMine().subscribe({
+      next: (entries) => {
+        this.waitlistEntry.set(entries.find((entry) => entry.tripId === trip.id) ?? null);
+      },
+    });
+  }
+
   protected formatPrice(minorUnits: number): string {
     return `${(minorUnits / 100).toFixed(2)} €`;
   }
@@ -136,6 +159,49 @@ export class TripDetails {
             ? 'Not enough seats left for this trip.'
             : 'Could not request seats.',
         );
+      },
+    });
+  }
+
+  protected joinWaitlist(): void {
+    const trip = this.trip();
+    const seats = this.seats.value;
+    if (!trip || seats < 1 || this.waitlistPending()) {
+      return;
+    }
+    this.waitlistPending.set(true);
+    this.waitlistError.set(null);
+    this.waitlistService.join(trip.id, { seats }).subscribe({
+      next: (entry) => {
+        this.waitlistPending.set(false);
+        this.waitlistEntry.set(entry);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.waitlistPending.set(false);
+        this.waitlistError.set(
+          error.status === 409
+            ? 'Could not join the waitlist for this trip.'
+            : 'Could not join the waitlist.',
+        );
+      },
+    });
+  }
+
+  protected leaveWaitlist(): void {
+    const trip = this.trip();
+    if (!trip || this.waitlistPending()) {
+      return;
+    }
+    this.waitlistPending.set(true);
+    this.waitlistError.set(null);
+    this.waitlistService.leave(trip.id).subscribe({
+      next: () => {
+        this.waitlistPending.set(false);
+        this.waitlistEntry.set(null);
+      },
+      error: () => {
+        this.waitlistPending.set(false);
+        this.waitlistError.set('Could not leave the waitlist.');
       },
     });
   }

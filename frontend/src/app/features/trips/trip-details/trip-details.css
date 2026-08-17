@@ -133,6 +133,13 @@
     .success {
       color: #1b5e20;
     }
+
+    button.danger {
+      margin-top: 0.75rem;
+      background: #fbe9e7;
+      color: #b71c1c;
+      border-color: #ef9a9a;
+    }
   }
 
   .actions {

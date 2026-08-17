@@ -1,5 +1,6 @@
 import { Booking } from '../core/models/booking.model';
 import { Trip } from '../core/models/trip.model';
+import { WaitlistEntry } from '../core/models/waitlist.model';
 
 /** Shared trip used by store and dashboard tests. */
 export function buildTrip(overrides: Partial<Trip> = {}): Trip {
@@ -48,6 +49,21 @@ export function buildBooking(overrides: Partial<Booking> = {}): Booking {
     decidedAt: null,
     trip,
     canReview: false,
+    ...overrides,
+  };
+}
+
+/** Shared waitlist entry used by dashboard and trip-details tests. */
+export function buildWaitlistEntry(overrides: Partial<WaitlistEntry> = {}): WaitlistEntry {
+  const trip = overrides.trip ?? buildTrip({ status: 'FULL', confirmedSeats: 8, seatsLeft: 0 });
+  return {
+    id: 'w1',
+    tripId: trip.id,
+    passengerId: 'p1',
+    seats: 2,
+    position: 1,
+    createdAt: '2026-08-01T00:00:00.000Z',
+    trip,
     ...overrides,
   };
 }
