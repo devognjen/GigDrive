@@ -1,6 +1,6 @@
 import { Trip } from '../trips/entities/trip.entity';
 
-export interface TripNotificationEvent {
+type TripLifecycleEvent = {
   type:
     | 'TRIP_READY'
     | 'TRIP_CONFIRMED'
@@ -8,7 +8,16 @@ export interface TripNotificationEvent {
     | 'TRIP_COMPLETED'
     | 'TRIP_REMINDER';
   trip: Trip;
-}
+};
+
+type SignalInviteEvent = {
+  type: 'SIGNAL_INVITE';
+  trip: Trip;
+  inviteLink: string;
+  groupName: string;
+};
+
+export type TripNotificationEvent = TripLifecycleEvent | SignalInviteEvent;
 
 /**
  * Port for outgoing trip-lifecycle emails.

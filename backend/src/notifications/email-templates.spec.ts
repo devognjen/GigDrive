@@ -44,6 +44,18 @@ describe('email templates', () => {
     expect(email.html).toContain('Dana');
   });
 
+  it('renders SIGNAL_INVITE with a clickable invite link', () => {
+    const email = renderTripEmail('SIGNAL_INVITE', {
+      ...ctx,
+      groupName: '🎵 Rammstein — Vienna, 20 Aug 2026',
+      inviteLink: 'https://signal.group/#invite',
+    });
+    expect(email.subject).toContain('Signal group');
+    expect(email.text).toContain('https://signal.group/#invite');
+    expect(email.text).toContain('never collects phone numbers');
+    expect(email.html).toContain('href="https://signal.group/#invite"');
+  });
+
   it.each([
     'BOOKING_REQUESTED',
     'BOOKING_ACCEPTED',

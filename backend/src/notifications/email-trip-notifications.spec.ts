@@ -82,7 +82,11 @@ describe('EmailTripNotifications', () => {
   });
 
   const sendCalls = () =>
-    mailer.sendToUser.mock.calls as [User, RenderedEmail][];
+    mailer.sendToUser.mock.calls as [
+      User,
+      RenderedEmail,
+      { eventType: string; entityId: string },
+    ][];
 
   const recipientIds = () => sendCalls().map(([user]) => user.id);
 
@@ -102,6 +106,26 @@ describe('EmailTripNotifications', () => {
     await service.notify({ type: 'TRIP_CONFIRMED', trip });
 
     expect(recipientIds()).toEqual([driver.id, confirmedPassenger.id]);
+  });
+
+  it('emails the Signal invite link to the driver and confirmed passengers', async () => {
+    bookingsRepository.find.mockResolvedValue([
+      { passenger: confirmedPassenger, status: BookingStatus.Confirmed },
+    ]);
+
+    await service.notify({
+      type: 'SIGNAL_INVITE',
+      trip,
+      groupName: '🎵 Rammstein — Vienna, 20 Aug 2026',
+      inviteLink: 'https://signal.group/#invite',
+    });
+
+    expect(recipientIds()).toEqual([driver.id, confirmedPassenger.id]);
+    expect(sendCalls()[0][1].text).toContain('https://signal.group/#invite');
+    expect(sendCalls()[0][2]).toEqual({
+      eventType: 'SIGNAL_INVITE',
+      entityId: trip.id,
+    });
   });
 
   it('emails driver, confirmed, and pending passengers on CANCELLED', async () => {

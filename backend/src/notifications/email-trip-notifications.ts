@@ -21,9 +21,9 @@ const CONFIRMED_ONLY = [BookingStatus.Confirmed];
 const CONFIRMED_AND_PENDING = [BookingStatus.Confirmed, BookingStatus.Pending];
 
 /**
- * Trip-lifecycle emails: READY (driver), CONFIRMED / T-24h (driver + confirmed
- * passengers), CANCELLED (driver + confirmed and pending passengers).
- * COMPLETED is logged only — it is not part of FR-COMM-01.
+ * Trip-lifecycle emails: READY (driver), CONFIRMED / T-24h / Signal invite
+ * (driver + confirmed passengers), CANCELLED (driver + confirmed and pending
+ * passengers). COMPLETED is logged only — it is not part of FR-COMM-01.
  */
 @Injectable()
 export class EmailTripNotifications implements TripNotifications {
@@ -66,7 +66,7 @@ export class EmailTripNotifications implements TripNotifications {
     }
 
     const recipients = await this.resolveRecipients(event.type, trip);
-    const base = this.toContext(trip);
+    const base = this.toContext(trip, event);
 
     for (const user of recipients) {
       const message = renderTripEmail(event.type, {
@@ -90,6 +90,7 @@ export class EmailTripNotifications implements TripNotifications {
         return uniqueUsers([driver]);
       case 'TRIP_CONFIRMED':
       case 'TRIP_REMINDER':
+      case 'SIGNAL_INVITE':
         return uniqueUsers([
           driver,
           ...(await this.loadPassengers(trip.id, CONFIRMED_ONLY)),
@@ -113,11 +114,17 @@ export class EmailTripNotifications implements TripNotifications {
     return bookings.map((booking) => booking.passenger);
   }
 
-  private toContext(trip: Trip): Omit<TripEmailContext, 'recipientFirstName'> {
+  private toContext(
+    trip: Trip,
+    event: Exclude<TripNotificationEvent, { type: 'TRIP_COMPLETED' }>,
+  ): Omit<TripEmailContext, 'recipientFirstName'> {
     return {
       driverName: displayName(trip.driver),
       concert: concertSnippet(trip),
       departureAt: trip.departureAt,
+      ...(event.type === 'SIGNAL_INVITE'
+        ? { inviteLink: event.inviteLink, groupName: event.groupName }
+        : {}),
     };
   }
 }

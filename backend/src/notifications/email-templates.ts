@@ -16,6 +16,8 @@ export interface TripEmailContext {
   driverName: string;
   concert: ConcertSnippet;
   departureAt: Date;
+  inviteLink?: string;
+  groupName?: string;
 }
 
 export interface BookingEmailContext extends TripEmailContext {
@@ -24,7 +26,11 @@ export interface BookingEmailContext extends TripEmailContext {
 }
 
 export type TripMailEvent =
-  'TRIP_READY' | 'TRIP_CONFIRMED' | 'TRIP_CANCELLED' | 'TRIP_REMINDER';
+  | 'TRIP_READY'
+  | 'TRIP_CONFIRMED'
+  | 'TRIP_CANCELLED'
+  | 'TRIP_REMINDER'
+  | 'SIGNAL_INVITE';
 
 export type BookingMailEvent =
   'BOOKING_REQUESTED' | 'BOOKING_ACCEPTED' | 'BOOKING_REJECTED';
@@ -42,6 +48,8 @@ export function renderTripEmail(
       return tripCancelled(ctx);
     case 'TRIP_REMINDER':
       return tripReminder(ctx);
+    case 'SIGNAL_INVITE':
+      return signalInvite(ctx);
   }
 }
 
@@ -106,6 +114,31 @@ function tripReminder(ctx: TripEmailContext): RenderedEmail {
     `Reminder: ${artist} trip departs tomorrow`,
     `this is a reminder that your trip to ${artist} in ${city} departs in about 24 hours.`,
   );
+}
+
+function signalInvite(ctx: TripEmailContext): RenderedEmail {
+  const { artist, city } = ctx.concert;
+  const groupName = ctx.groupName ?? `🎵 ${artist} — ${city}`;
+  const link = ctx.inviteLink ?? '';
+  const greeting = `Hi ${ctx.recipientFirstName},`;
+  const body = `the crew Signal group "${groupName}" is ready. Open the invite link below to join. GigDrive never collects phone numbers for Signal.`;
+  const details = tripDetails(ctx);
+  const signOff = '— GigDrive';
+  const subject = `Signal group for ${artist} in ${city}`;
+  const text = [greeting, '', body, '', link, '', details, '', signOff].join(
+    '\n',
+  );
+  const html = wrapHtml(
+    subject,
+    [
+      `<p>${escapeHtml(greeting)}</p>`,
+      `<p>${escapeHtml(body)}</p>`,
+      `<p><a href="${escapeHtml(link)}">${escapeHtml(link)}</a></p>`,
+      `<p>${escapeHtml(details).replaceAll('\n', '<br />')}</p>`,
+      `<p>${escapeHtml(signOff)}</p>`,
+    ].join('\n'),
+  );
+  return { subject, text, html };
 }
 
 function bookingRequested(ctx: BookingEmailContext): RenderedEmail {
