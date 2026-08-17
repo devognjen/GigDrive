@@ -11,6 +11,7 @@ const mockTrip: Trip = {
   driverId: 'd1',
   driverName: 'Demo Driver',
   driverAverageRating: 4.5,
+  driverReviewCount: 2,
   vehicleId: 'v1',
   vehicleType: 'VAN',
   concertId: 'c1',
@@ -76,5 +77,8 @@ describe('TripDetails', () => {
     expect(text).toContain('30.00 €');
     expect(text).toContain('Novi Sad');
     expect(text).toContain('3/8 seats filled');
+    expect(text).toContain('4.5 (2 reviews)');
+    const driverLink = fixture.nativeElement.querySelector('a[href="/users/d1"]') as HTMLAnchorElement | null;
+    expect(driverLink?.textContent).toContain('Demo Driver');
   });
 });

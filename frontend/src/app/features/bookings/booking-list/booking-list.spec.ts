@@ -73,4 +73,14 @@ describe('BookingList', () => {
     fixture.nativeElement.querySelector('button.danger').click();
     expect(cancelled).toEqual([bookings[0]]);
   });
+
+  it('shows a review form for reviewable passenger bookings', () => {
+    const reviewable = buildBooking({ id: 'b3', status: 'CONFIRMED', canReview: true });
+    fixture.componentRef.setInput('bookings', [reviewable]);
+    fixture.componentRef.setInput('mode', 'passenger');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-review-form')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Review the driver');
+  });
 });

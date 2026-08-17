@@ -8,6 +8,17 @@
         ⭐ {{ user.averageRating }}
         <span class="review-count">({{ user.reviewCount }} reviews)</span>
       </p>
+      <ul class="reviews">
+        @for (review of reviews(); track review.id) {
+          <li>
+            <div class="review-rating">⭐ {{ review.rating }}</div>
+            <p class="review-comment">{{ review.comment }}</p>
+            <div class="review-meta">
+              {{ review.authorName }} · {{ review.createdAt | date: 'mediumDate' }}
+            </div>
+          </li>
+        }
+      </ul>
     }
   } @else if (notFound()) {
     <p class="empty-state">This user does not exist.</p>

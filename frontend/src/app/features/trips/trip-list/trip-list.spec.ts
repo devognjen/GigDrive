@@ -12,6 +12,7 @@ const mockTrips: Trip[] = [
     driverId: 'd1',
     driverName: 'Demo Driver',
     driverAverageRating: null,
+    driverReviewCount: 0,
     vehicleId: 'v1',
     vehicleType: 'VAN',
     concertId: 'c1',

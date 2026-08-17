@@ -4,6 +4,12 @@
 
   h1 {
     margin: 0;
+
+    a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
   }
 
   header {

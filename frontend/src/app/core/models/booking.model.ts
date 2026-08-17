@@ -20,6 +20,8 @@ export interface Booking {
   decidedAt: string | null;
   /** Nested trip with live price and concert summary. */
   trip: Trip;
+  /** True when this passenger may still review the driver. */
+  canReview: boolean;
 }
 
 /** Payload for POST /trips/:id/bookings. */

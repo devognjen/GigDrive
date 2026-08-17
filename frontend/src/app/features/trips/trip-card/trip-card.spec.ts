@@ -35,8 +35,11 @@ describe('TripCard', () => {
   });
 
   it('shows driver rating when present', () => {
-    fixture.componentRef.setInput('trip', buildTrip({ driverAverageRating: 4.5 }));
+    fixture.componentRef.setInput(
+      'trip',
+      buildTrip({ driverAverageRating: 4.5, driverReviewCount: 2 }),
+    );
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Rating 4.5');
+    expect(fixture.nativeElement.textContent).toContain('Rating 4.5 (2 reviews)');
   });
 });

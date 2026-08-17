@@ -29,7 +29,7 @@
       <span>{{ trip.driverName }}</span>
     }
     @if (trip.driverAverageRating !== null) {
-      <span>Rating {{ trip.driverAverageRating }}</span>
+      <span>Rating {{ trip.driverAverageRating }} ({{ trip.driverReviewCount }} reviews)</span>
     }
   </div>
 </article>

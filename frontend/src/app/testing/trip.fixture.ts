@@ -8,6 +8,7 @@ export function buildTrip(overrides: Partial<Trip> = {}): Trip {
     driverId: 'd1',
     driverName: 'Demo Driver',
     driverAverageRating: null,
+    driverReviewCount: 0,
     vehicleId: 'v1',
     vehicleType: 'VAN',
     concertId: 'c1',
@@ -46,6 +47,7 @@ export function buildBooking(overrides: Partial<Booking> = {}): Booking {
     createdAt: '2026-08-01T00:00:00.000Z',
     decidedAt: null,
     trip,
+    canReview: false,
     ...overrides,
   };
 }

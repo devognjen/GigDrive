@@ -10,13 +10,18 @@
     @if (error()) {
       <p class="error" role="alert">{{ error() }}</p>
     }
+    @if (reviewError()) {
+      <p class="error" role="alert">{{ reviewError() }}</p>
+    }
 
     <app-booking-list
       [bookings]="bookings()"
       mode="passenger"
       [pendingId]="pendingId()"
+      [reviewPendingTripId]="reviewPendingTripId()"
       emptyMessage="You have no bookings yet."
       (cancel)="cancel($event)"
+      (review)="submitReview($event)"
     />
   }
 </div>

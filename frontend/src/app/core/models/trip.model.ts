@@ -34,6 +34,7 @@ export interface Trip {
   driverId: string;
   driverName: string;
   driverAverageRating: number | null;
+  driverReviewCount: number;
   vehicleId: string;
   vehicleType: string;
   concertId: string;

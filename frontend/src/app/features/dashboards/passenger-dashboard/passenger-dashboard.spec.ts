@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -15,12 +17,15 @@ import { PassengerDashboard } from './passenger-dashboard';
 describe('PassengerDashboard', () => {
   let fixture: ComponentFixture<PassengerDashboard>;
   let store: MockStore;
+  let httpTesting: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PassengerDashboard],
       providers: [
         provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         provideMockStore({
           selectors: [
             { selector: selectPassengerBookings, value: [buildBooking({ status: 'CONFIRMED' })] },
@@ -33,8 +38,13 @@ describe('PassengerDashboard', () => {
     }).compileComponents();
 
     store = TestBed.inject(MockStore);
+    httpTesting = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(PassengerDashboard);
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    httpTesting.verify();
   });
 
   it('dispatches loadMine on enter', () => {
@@ -57,5 +67,21 @@ describe('PassengerDashboard', () => {
     store.refreshState();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('You have no bookings yet.');
+  });
+
+  it('posts a review and reloads bookings', () => {
+    const dispatchSpy = vi.spyOn(store, 'dispatch');
+    fixture.componentInstance['submitReview']({
+      booking: buildBooking({ status: 'CONFIRMED', canReview: true }),
+      rating: 5,
+      comment: 'Great ride',
+    });
+
+    const req = httpTesting.expectOne('/api/trips/t1/reviews');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ rating: 5, comment: 'Great ride' });
+    req.flush({ id: 'r1' });
+
+    expect(dispatchSpy).toHaveBeenCalledWith(BookingsActions.loadMine());
   });
 });

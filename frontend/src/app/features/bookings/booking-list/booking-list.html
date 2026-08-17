@@ -60,6 +60,13 @@
             </button>
           }
         </div>
+
+        @if (mode === 'passenger' && booking.canReview) {
+          <app-review-form
+            [pending]="reviewPendingTripId === booking.tripId"
+            (submitted)="review.emit({ booking, rating: $event.rating, comment: $event.comment })"
+          />
+        }
       </li>
     }
   </ul>

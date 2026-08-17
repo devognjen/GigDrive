@@ -1,0 +1,27 @@
+<form class="review-form" [formGroup]="form" (ngSubmit)="submit()">
+  <h3>Review the driver</h3>
+  <label>
+    Rating
+    <select formControlName="rating">
+      <option [ngValue]="null" disabled>Select a rating</option>
+      @for (value of ratings; track value) {
+        <option [ngValue]="value">{{ value }}</option>
+      }
+    </select>
+  </label>
+  @if (form.controls.rating.touched && form.controls.rating.invalid) {
+    <p class="error">Choose a rating from 1 to 5.</p>
+  }
+
+  <label>
+    Comment
+    <textarea formControlName="comment" rows="3" maxlength="1000"></textarea>
+  </label>
+  @if (form.controls.comment.touched && form.controls.comment.hasError('required')) {
+    <p class="error">A comment is required.</p>
+  }
+
+  <button type="submit" [disabled]="form.invalid || pending">
+    {{ pending ? 'Sending…' : 'Submit review' }}
+  </button>
+</form>
