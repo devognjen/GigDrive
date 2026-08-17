@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { OpenMeteoService } from '../integrations/open-meteo/open-meteo.service';
 import {
   ProviderConcert,
   TicketmasterService,
@@ -8,6 +9,10 @@ import {
 import { Trip } from '../trips/entities/trip.entity';
 import { ConcertDetailsDto } from './dto/concert-details.dto';
 import { ConcertTripDto } from './dto/concert-trip.dto';
+import {
+  ConcertWeatherDto,
+  WeatherUnavailableReason,
+} from './dto/concert-weather.dto';
 import { ConcertDto } from './dto/concert.dto';
 import { CreateConcertDto } from './dto/create-concert.dto';
 import { SearchConcertsDto } from './dto/search-concerts.dto';
@@ -25,6 +30,7 @@ export class ConcertsService {
     @InjectRepository(Trip)
     private readonly tripsRepository: Repository<Trip>,
     private readonly ticketmasterService: TicketmasterService,
+    private readonly openMeteoService: OpenMeteoService,
   ) {}
 
   /**
@@ -71,6 +77,35 @@ export class ConcertsService {
     dto.concert = ConcertDto.fromEntity(concert);
     dto.trips = trips.map((trip) => ConcertTripDto.fromEntity(trip));
     return dto;
+  }
+
+  /**
+   * Concert-day forecast via the Open-Meteo proxy. Missing coordinates and
+   * dates outside the forecast window are empty states; provider failures
+   * are reported as unavailable so the widget can hide without 5xx.
+   */
+  async getWeather(id: string): Promise<ConcertWeatherDto> {
+    const concert = await this.concertsRepository.findOneBy({ id });
+    if (!concert) {
+      throw new NotFoundException('Concert not found');
+    }
+    if (!hasCoordinates(concert)) {
+      return ConcertWeatherDto.unavailable(
+        WeatherUnavailableReason.NoCoordinates,
+      );
+    }
+    const result = await this.openMeteoService.getForecastForDate(
+      concert.lat,
+      concert.lng,
+      concert.startAt,
+    );
+    if (result.status === 'ok') {
+      return ConcertWeatherDto.fromForecast(result.forecast);
+    }
+    if (result.status === 'out_of_range') {
+      return ConcertWeatherDto.unavailable(WeatherUnavailableReason.OutOfRange);
+    }
+    return ConcertWeatherDto.unavailable(WeatherUnavailableReason.Unavailable);
   }
 
   /** Manual creation (FR-CON-04): no provider id, flagged userSubmitted. */
@@ -133,4 +168,15 @@ export class ConcertsService {
       ['externalId'],
     );
   }
+}
+
+function hasCoordinates(
+  concert: Concert,
+): concert is Concert & { lat: number; lng: number } {
+  return (
+    concert.lat !== null &&
+    concert.lng !== null &&
+    Number.isFinite(concert.lat) &&
+    Number.isFinite(concert.lng)
+  );
 }

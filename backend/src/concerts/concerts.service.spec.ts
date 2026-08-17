@@ -6,8 +6,10 @@ import {
   ProviderConcert,
   TicketmasterService,
 } from '../integrations/ticketmaster/ticketmaster.service';
+import { OpenMeteoService } from '../integrations/open-meteo/open-meteo.service';
 import { Trip } from '../trips/entities/trip.entity';
 import { ConcertsService } from './concerts.service';
+import { WeatherUnavailableReason } from './dto/concert-weather.dto';
 import { SearchConcertsDto } from './dto/search-concerts.dto';
 import { Concert } from './entities/concert.entity';
 
@@ -22,6 +24,7 @@ describe('ConcertsService', () => {
   };
   let tripsRepository: { find: jest.Mock };
   let ticketmasterService: { searchEvents: jest.Mock };
+  let openMeteoService: { getForecastForDate: jest.Mock };
   let queryBuilder: {
     orderBy: jest.Mock;
     skip: jest.Mock;
@@ -85,6 +88,7 @@ describe('ConcertsService', () => {
     };
     tripsRepository = { find: jest.fn() };
     ticketmasterService = { searchEvents: jest.fn() };
+    openMeteoService = { getForecastForDate: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -92,6 +96,7 @@ describe('ConcertsService', () => {
         { provide: getRepositoryToken(Concert), useValue: concertsRepository },
         { provide: getRepositoryToken(Trip), useValue: tripsRepository },
         { provide: TicketmasterService, useValue: ticketmasterService },
+        { provide: OpenMeteoService, useValue: openMeteoService },
       ],
     }).compile();
 
@@ -265,6 +270,89 @@ describe('ConcertsService', () => {
       expect(concertsRepository.save).toHaveBeenCalled();
       expect(result.userSubmitted).toBe(true);
       expect(result.externalId).toBeNull();
+    });
+  });
+
+  describe('getWeather', () => {
+    it('maps an Open-Meteo forecast for the concert day', async () => {
+      concertsRepository.findOneBy.mockResolvedValue(buildConcert());
+      openMeteoService.getForecastForDate.mockResolvedValue({
+        status: 'ok',
+        forecast: {
+          date: '2026-07-01',
+          weatherCode: 61,
+          description: 'Rain',
+          tempMinC: 14,
+          tempMaxC: 22,
+          precipitationMm: 4.2,
+        },
+      });
+
+      const result = await service.getWeather('concert-uuid');
+
+      expect(openMeteoService.getForecastForDate).toHaveBeenCalledWith(
+        48.207,
+        16.42,
+        new Date('2026-07-01T19:00:00Z'),
+      );
+      expect(result).toMatchObject({
+        available: true,
+        date: '2026-07-01',
+        description: 'Rain',
+        tempMinC: 14,
+        tempMaxC: 22,
+        precipitationMm: 4.2,
+      });
+    });
+
+    it('returns NO_COORDINATES without calling Open-Meteo', async () => {
+      concertsRepository.findOneBy.mockResolvedValue(
+        buildConcert({ lat: null, lng: null }),
+      );
+
+      const result = await service.getWeather('concert-uuid');
+
+      expect(result).toEqual({
+        available: false,
+        reason: WeatherUnavailableReason.NoCoordinates,
+      });
+      expect(openMeteoService.getForecastForDate).not.toHaveBeenCalled();
+    });
+
+    it('returns OUT_OF_RANGE when the concert day is not forecastable', async () => {
+      concertsRepository.findOneBy.mockResolvedValue(buildConcert());
+      openMeteoService.getForecastForDate.mockResolvedValue({
+        status: 'out_of_range',
+      });
+
+      const result = await service.getWeather('concert-uuid');
+
+      expect(result).toEqual({
+        available: false,
+        reason: WeatherUnavailableReason.OutOfRange,
+      });
+    });
+
+    it('returns UNAVAILABLE when the provider fails', async () => {
+      concertsRepository.findOneBy.mockResolvedValue(buildConcert());
+      openMeteoService.getForecastForDate.mockResolvedValue({
+        status: 'unavailable',
+      });
+
+      const result = await service.getWeather('concert-uuid');
+
+      expect(result).toEqual({
+        available: false,
+        reason: WeatherUnavailableReason.Unavailable,
+      });
+    });
+
+    it('throws NotFoundException for an unknown concert', async () => {
+      concertsRepository.findOneBy.mockResolvedValue(null);
+
+      await expect(service.getWeather('missing')).rejects.toThrow(
+        new NotFoundException('Concert not found'),
+      );
     });
   });
 });

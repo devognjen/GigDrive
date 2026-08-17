@@ -18,6 +18,7 @@ import {
 import { Public } from '../auth/decorators/public.decorator';
 import { ConcertsService } from './concerts.service';
 import { ConcertDetailsDto } from './dto/concert-details.dto';
+import { ConcertWeatherDto } from './dto/concert-weather.dto';
 import { ConcertDto } from './dto/concert.dto';
 import { CreateConcertDto } from './dto/create-concert.dto';
 import { SearchConcertsDto } from './dto/search-concerts.dto';
@@ -33,6 +34,15 @@ export class ConcertsController {
   @ApiOkResponse({ type: [ConcertDto] })
   search(@Query() dto: SearchConcertsDto): Promise<ConcertDto[]> {
     return this.concertsService.search(dto);
+  }
+
+  @Public()
+  @Get(':id/weather')
+  @ApiOkResponse({ type: ConcertWeatherDto })
+  getWeather(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ConcertWeatherDto> {
+    return this.concertsService.getWeather(id);
   }
 
   @Public()
