@@ -73,7 +73,7 @@ export class TicketmasterService {
   private readonly baseUrl: string;
 
   constructor(config: ConfigService) {
-    this.apiKey = config.get<string>('ticketmaster.apiKey') ?? '';
+    this.apiKey = (config.get<string>('ticketmaster.apiKey') ?? '').trim();
     this.baseUrl = config.get<string>(
       'ticketmaster.baseUrl',
       'https://app.ticketmaster.com/discovery/v2',
@@ -101,7 +101,11 @@ export class TicketmasterService {
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
       if (!response.ok) {
-        this.logger.warn(`Ticketmaster responded with HTTP ${response.status}`);
+        this.logger.warn(
+          response.status === 401
+            ? 'Ticketmaster rejected the API key (HTTP 401). Use a Consumer Key from https://developer.ticketmaster.com/'
+            : `Ticketmaster responded with HTTP ${response.status}`,
+        );
         return null;
       }
       const payload = (await response.json()) as TmEventSearchResponse;

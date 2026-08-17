@@ -146,6 +146,23 @@ describe('TicketmasterService', () => {
       expect(result).toBeNull();
     });
 
+    it('treats a whitespace-only key as unconfigured', async () => {
+      const result = await createService('   ').searchEvents({});
+
+      expect(result).toBeNull();
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('trims the API key before calling the provider', async () => {
+      fetchSpy.mockResolvedValue(okResponse({}));
+
+      await createService('  secret  ').searchEvents({});
+
+      const calls = fetchSpy.mock.calls as [string][];
+      const url = new URL(calls[0][0]);
+      expect(url.searchParams.get('apikey')).toBe('secret');
+    });
+
     it('returns null when the request fails (provider down)', async () => {
       fetchSpy.mockRejectedValue(new Error('ECONNREFUSED'));
 
