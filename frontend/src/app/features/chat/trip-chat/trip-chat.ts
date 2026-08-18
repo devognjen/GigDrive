@@ -19,7 +19,6 @@ import { ChatService } from '../chat.service';
   selector: 'app-trip-chat',
   imports: [DatePipe, ReactiveFormsModule],
   templateUrl: './trip-chat.html',
-  styleUrl: './trip-chat.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TripChat implements OnInit, OnDestroy {

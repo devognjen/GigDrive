@@ -14,7 +14,6 @@ interface VehicleTypeOption {
   selector: 'app-vehicles',
   imports: [ReactiveFormsModule],
   templateUrl: './vehicles.html',
-  styleUrl: './vehicles.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Vehicles implements OnInit {

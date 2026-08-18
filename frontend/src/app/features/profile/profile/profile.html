@@ -1,4 +1,4 @@
-<div class="profile-card">
+<div class="profile-card card mx-auto max-w-2xl">
   <h1>Your profile</h1>
 
   @if (saved()) {
@@ -8,7 +8,7 @@
     <p class="error" role="alert">{{ serverError() }}</p>
   }
 
-  <form [formGroup]="form" (ngSubmit)="submit()">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 flex flex-col gap-4">
     <div class="field">
       <label for="firstName">First name</label>
       <input id="firstName" type="text" formControlName="firstName" autocomplete="given-name" />
@@ -30,12 +30,12 @@
       <input id="phone" type="tel" formControlName="phone" autocomplete="tel" />
     </div>
 
-    <div class="field checkbox">
+    <div class="field checkbox flex-row items-center gap-2">
       <input id="emailNotifications" type="checkbox" formControlName="emailNotifications" />
       <label for="emailNotifications">Email notifications</label>
     </div>
 
-    <button type="submit" [disabled]="form.pristine || form.invalid || pending()">
+    <button type="submit" class="btn btn-primary" [disabled]="form.pristine || form.invalid || pending()">
       {{ pending() ? 'Saving…' : 'Save' }}
     </button>
   </form>

@@ -8,7 +8,6 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
   selector: 'app-review-form',
   imports: [ReactiveFormsModule],
   templateUrl: './review-form.html',
-  styleUrl: './review-form.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReviewForm {

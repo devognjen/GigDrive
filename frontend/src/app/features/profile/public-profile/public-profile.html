@@ -1,19 +1,19 @@
-<div class="public-profile-card">
+<div class="public-profile-card card mx-auto max-w-2xl">
   @if (profile(); as user) {
     <h1>{{ user.firstName }} {{ user.lastName }}</h1>
     @if (user.reviewCount === 0) {
-      <p class="empty-state">No reviews yet</p>
+      <p class="empty-state mt-3 text-night/60">No reviews yet</p>
     } @else {
-      <p class="rating">
+      <p class="rating mt-3 font-display text-xl font-semibold">
         ⭐ {{ user.averageRating }}
-        <span class="review-count">({{ user.reviewCount }} reviews)</span>
+        <span class="review-count text-base font-normal text-night/60">({{ user.reviewCount }} reviews)</span>
       </p>
-      <ul class="reviews">
+      <ul class="reviews mt-6 m-0 flex list-none flex-col gap-3 p-0">
         @for (review of reviews(); track review.id) {
-          <li>
-            <div class="review-rating">⭐ {{ review.rating }}</div>
-            <p class="review-comment">{{ review.comment }}</p>
-            <div class="review-meta">
+          <li class="rounded-xl border border-mist p-4">
+            <div class="review-rating font-semibold">⭐ {{ review.rating }}</div>
+            <p class="review-comment mt-2 mb-0">{{ review.comment }}</p>
+            <div class="review-meta mt-2 text-sm text-night/60">
               {{ review.authorName }} · {{ review.createdAt | date: 'mediumDate' }}
             </div>
           </li>
@@ -21,8 +21,8 @@
       </ul>
     }
   } @else if (notFound()) {
-    <p class="empty-state">This user does not exist.</p>
+    <p class="empty-state text-night/60">This user does not exist.</p>
   } @else {
-    <p>Loading…</p>
+    <p class="state">Loading…</p>
   }
 </div>

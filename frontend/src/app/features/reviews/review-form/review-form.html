@@ -1,6 +1,6 @@
-<form class="review-form" [formGroup]="form" (ngSubmit)="submit()">
-  <h3>Review the driver</h3>
-  <label>
+<form class="review-form card mt-3 flex flex-col gap-3" [formGroup]="form" (ngSubmit)="submit()">
+  <h3 class="m-0">Review the driver</h3>
+  <label class="field">
     Rating
     <select formControlName="rating">
       <option [ngValue]="null" disabled>Select a rating</option>
@@ -13,7 +13,7 @@
     <p class="error">Choose a rating from 1 to 5.</p>
   }
 
-  <label>
+  <label class="field">
     Comment
     <textarea formControlName="comment" rows="3" maxlength="1000"></textarea>
   </label>
@@ -21,7 +21,7 @@
     <p class="error">A comment is required.</p>
   }
 
-  <button type="submit" [disabled]="form.invalid || pending">
+  <button type="submit" class="btn btn-primary w-fit" [disabled]="form.invalid || pending">
     {{ pending ? 'Sending…' : 'Submit review' }}
   </button>
 </form>

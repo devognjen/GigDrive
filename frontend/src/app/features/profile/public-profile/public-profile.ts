@@ -11,7 +11,6 @@ import { ProfileService } from '../profile.service';
   selector: 'app-public-profile',
   imports: [DatePipe],
   templateUrl: './public-profile.html',
-  styleUrl: './public-profile.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PublicProfile {

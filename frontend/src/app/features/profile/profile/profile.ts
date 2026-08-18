@@ -8,7 +8,6 @@ import { Vehicles } from '../vehicles/vehicles';
   selector: 'app-profile',
   imports: [ReactiveFormsModule, Vehicles],
   templateUrl: './profile.html',
-  styleUrl: './profile.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Profile {

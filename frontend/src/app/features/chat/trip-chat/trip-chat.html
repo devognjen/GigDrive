@@ -1,4 +1,4 @@
-<section class="trip-chat">
+<section class="trip-chat card mt-8">
   <h2>Trip chat</h2>
   @if (loading()) {
     <p class="state">Loading messages…</p>
@@ -8,23 +8,30 @@
     @if (messages().length === 0) {
       <p class="state">No messages yet. Say hello to the crew.</p>
     } @else {
-      <ol class="messages">
+      <ol class="messages mt-4 m-0 flex max-h-80 list-none flex-col gap-3 overflow-y-auto p-0">
         @for (message of messages(); track message.id) {
-          <li [class.own]="message.authorId === currentUserId()">
-            <div class="meta">
+          <li
+            class="max-w-[85%] rounded-2xl px-3 py-2"
+            [class.own]="message.authorId === currentUserId()"
+            [class.ml-auto]="message.authorId === currentUserId()"
+            [class.bg-stage]="message.authorId === currentUserId()"
+            [class.text-white]="message.authorId === currentUserId()"
+            [class.bg-paper]="message.authorId !== currentUserId()"
+          >
+            <div class="meta text-xs" [class.text-white/70]="message.authorId === currentUserId()" [class.text-night/50]="message.authorId !== currentUserId()">
               {{ message.authorName }} · {{ message.sentAt | date: 'short' }}
             </div>
-            <p>{{ message.body }}</p>
+            <p class="m-0 mt-1">{{ message.body }}</p>
           </li>
         }
       </ol>
     }
   }
-  <form (ngSubmit)="send()">
-    <label>
+  <form (ngSubmit)="send()" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+    <label class="field flex-1">
       Message
       <input type="text" maxlength="2000" [formControl]="body" autocomplete="off" />
     </label>
-    <button type="submit" [disabled]="body.invalid || sendPending()">Send</button>
+    <button type="submit" class="btn btn-primary" [disabled]="body.invalid || sendPending()">Send</button>
   </form>
 </section>
