@@ -67,7 +67,11 @@ export class TripsService {
 
     this.assertOwnsVehicle(driverId, vehicle);
     this.assertValidCapacity(vehicle, dto.minPassengers, dto.maxPassengers);
-    this.assertValidDeadline(dto.confirmationDeadline, concert);
+    this.assertValidSchedule(
+      dto.confirmationDeadline,
+      dto.departureAt,
+      concert,
+    );
 
     const trip = this.tripsRepository.create({
       driverId,
@@ -116,7 +120,8 @@ export class TripsService {
 
     const deadline =
       dto.confirmationDeadline ?? trip.confirmationDeadline.toISOString();
-    this.assertValidDeadline(deadline, concert);
+    const departureAt = dto.departureAt ?? trip.departureAt.toISOString();
+    this.assertValidSchedule(deadline, departureAt, concert);
 
     if (dto.vehicleId !== undefined) {
       trip.vehicleId = dto.vehicleId;
@@ -562,12 +567,30 @@ export class TripsService {
     }
   }
 
-  private assertValidDeadline(deadline: string, concert: Concert): void {
-    // FR-TRIP-02: the go/no-go deadline must fall before the concert.
-    if (new Date(deadline).getTime() >= concert.startAt.getTime()) {
+  /**
+   * FR-TRIP-02 plus schedule sanity: deadline < departure ≤ concert start.
+   * A go/no-go after people have already left (or after the show) is useless.
+   */
+  private assertValidSchedule(
+    deadline: string,
+    departureAt: string,
+    concert: Concert,
+  ): void {
+    const deadlineMs = new Date(deadline).getTime();
+    const departureMs = new Date(departureAt).getTime();
+    const concertMs = concert.startAt.getTime();
+    if (deadlineMs >= concertMs) {
       throw new ConflictException(
         'Confirmation deadline must be before the concert',
       );
+    }
+    if (deadlineMs >= departureMs) {
+      throw new ConflictException(
+        'Confirmation deadline must be before departure',
+      );
+    }
+    if (departureMs > concertMs) {
+      throw new ConflictException('Departure must be on or before the concert');
     }
   }
 }

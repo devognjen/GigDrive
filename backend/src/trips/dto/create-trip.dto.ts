@@ -18,9 +18,9 @@ import { TripStopDto } from './trip-stop.dto';
 /**
  * Payload for creating a shared-ride trip (FR-TRIP-01).
  *
- * Cross-field validation (`min ≤ max ≤ vehicle.seats`, deadline before the
- * concert date) is enforced in TripsService, which has access to the vehicle
- * and concert entities.
+ * Cross-field validation (`min ≤ max ≤ vehicle.seats`,
+ * deadline < departure ≤ concert date) is enforced in TripsService, which has
+ * access to the vehicle and concert entities.
  */
 export class CreateTripDto {
   @ApiProperty({ description: 'Vehicle used for this trip' })

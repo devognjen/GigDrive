@@ -204,6 +204,28 @@ describe('TripsService', () => {
         ConflictException,
       );
     });
+
+    it('rejects a deadline on or after departure', async () => {
+      await expect(
+        service.create(driver.id, {
+          ...createDto,
+          confirmationDeadline: future(40).toISOString(),
+          departureAt: future(40).toISOString(),
+        }),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(tripsRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('rejects a departure after the concert', async () => {
+      await expect(
+        service.create(driver.id, {
+          ...createDto,
+          confirmationDeadline: future(30).toISOString(),
+          departureAt: future(50).toISOString(),
+        }),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(tripsRepository.save).not.toHaveBeenCalled();
+    });
   });
 
   describe('confirm', () => {
@@ -364,6 +386,13 @@ describe('TripsService', () => {
       await expect(
         service.update(tripId, { notes: 'x' }),
       ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it('rejects moving departure before the existing deadline', async () => {
+      await expect(
+        service.update(tripId, { departureAt: future(10).toISOString() }),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(tripsRepository.save).not.toHaveBeenCalled();
     });
   });
 
