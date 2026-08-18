@@ -23,7 +23,6 @@ import { TripService } from '../trip.service';
   selector: 'app-trip-details',
   imports: [DatePipe, RouterLink, ReactiveFormsModule, PickupMap, TripChat],
   templateUrl: './trip-details.html',
-  styleUrl: './trip-details.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TripDetails {

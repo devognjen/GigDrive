@@ -1,8 +1,8 @@
 <div class="trip-list">
-  <header class="trips-header">
-    <h1>{{ concertId() ? 'Trips to this concert' : 'Shared rides' }}</h1>
+  <header class="trips-header mb-6 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
+    <h1 class="m-0">{{ concertId() ? 'Trips to this concert' : 'Shared rides' }}</h1>
     <a
-      class="new-trip"
+      class="new-trip btn btn-primary no-underline"
       routerLink="/trips/new"
       [queryParams]="concertId() ? { concertId: concertId() } : {}"
     >
@@ -10,7 +10,7 @@
     </a>
   </header>
 
-  <form class="filters" [formGroup]="filters">
+  <form class="filters grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" [formGroup]="filters">
     <div class="field">
       <label for="from">Departure</label>
       <input id="from" type="text" formControlName="from" placeholder="City" autocomplete="off" />
@@ -51,11 +51,11 @@
   </form>
 
   @if (loading()) {
-    <p class="state">Loading rides…</p>
+    <p class="state mt-6">Loading rides…</p>
   } @else if (trips().length === 0) {
-    <p class="state">No rides match your filters.</p>
+    <p class="state mt-6">No rides match your filters.</p>
   } @else {
-    <ul class="trips">
+    <ul class="trips mt-6 m-0 flex list-none flex-col gap-3 p-0">
       @for (trip of trips(); track trip.id) {
         <li>
           <app-trip-card [trip]="trip" />

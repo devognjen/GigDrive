@@ -33,7 +33,6 @@ type StopFormGroup = FormGroup<{
   selector: 'app-trip-create',
   imports: [ReactiveFormsModule, ConcertPicker],
   templateUrl: './trip-create.html',
-  styleUrl: './trip-create.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TripCreate implements OnInit {

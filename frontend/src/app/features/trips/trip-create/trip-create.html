@@ -1,4 +1,4 @@
-<div class="trip-create">
+<div class="trip-create card mx-auto max-w-2xl">
   <h1>{{ editingId() ? 'Edit trip' : 'Offer a shared ride' }}</h1>
 
   @if (serverError()) {
@@ -6,11 +6,11 @@
   }
 
   @if (loadingVehicles() || loadingTrip()) {
-    <p>Loading…</p>
+    <p class="state mt-4">Loading…</p>
   } @else if (vehicles().length === 0) {
-    <p>You need a vehicle before you can offer a trip.</p>
+    <p class="mt-4">You need a vehicle before you can offer a trip.</p>
   } @else {
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 flex flex-col gap-4">
       <div class="field">
         <label for="vehicle">Vehicle</label>
         <select id="vehicle" formControlName="vehicleId">
@@ -56,7 +56,7 @@
         </select>
       </div>
 
-      <div class="field-row">
+      <div class="field-row grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div class="field">
           <label for="minPassengers">Min passengers</label>
           <input
@@ -79,7 +79,7 @@
         </div>
       </div>
 
-      <div class="field-row">
+      <div class="field-row grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div class="field">
           <label for="confirmationDeadline">Confirmation deadline</label>
           <input
@@ -120,7 +120,7 @@
       }
 
       <div class="field">
-        <label>
+        <label class="flex items-center gap-2 font-semibold">
           <input type="checkbox" formControlName="roundTrip" />
           Round trip
         </label>
@@ -134,7 +134,7 @@
       <section class="stops">
         <h2>Pickup stops</h2>
         @for (stop of stops.controls; track $index) {
-          <div class="stop">
+          <div class="stop mt-4 rounded-xl border border-mist p-4">
             <div class="field">
               <label [attr.for]="'stop-place-' + $index">Place</label>
               <input
@@ -144,7 +144,7 @@
                 placeholder="Stop location"
               />
             </div>
-            <div class="stop-coords">
+            <div class="stop-coords mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div class="field">
                 <label [attr.for]="'stop-lat-' + $index">Latitude (optional)</label>
                 <input
@@ -164,13 +164,15 @@
                 />
               </div>
             </div>
-            <button type="button" class="secondary" (click)="removeStop($index)">Remove</button>
+            <button type="button" class="secondary btn btn-ghost mt-3" (click)="removeStop($index)">
+              Remove
+            </button>
           </div>
         }
-        <button type="button" class="secondary" (click)="addStop()">Add stop</button>
+        <button type="button" class="secondary btn btn-ghost mt-4" (click)="addStop()">Add stop</button>
       </section>
 
-      <button type="submit" [disabled]="form.invalid || pending()">
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid || pending()">
         {{ pending() ? 'Saving…' : editingId() ? 'Save changes' : 'Create trip' }}
       </button>
     </form>

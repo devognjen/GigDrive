@@ -1,25 +1,31 @@
-<article class="trip-card">
-  <a [routerLink]="['/trips', trip.id]" class="trip-main">
-    <div class="title">
+<article class="trip-card card">
+  <a [routerLink]="['/trips', trip.id]" class="trip-main flex flex-wrap items-baseline gap-x-4 gap-y-2 text-night no-underline">
+    <div class="title min-w-40 flex-1">
       @if (trip.concertArtist) {
-        <span class="concert">{{ trip.concertArtist }}</span>
+        <span class="concert font-semibold">{{ trip.concertArtist }}</span>
         @if (trip.concertTitle) {
-          <span class="concert-title">{{ trip.concertTitle }}</span>
+          <span class="concert-title block text-sm text-night/60">{{ trip.concertTitle }}</span>
         }
       } @else if (showDriver) {
-        <span class="driver">{{ trip.driverName }}</span>
+        <span class="driver font-semibold">{{ trip.driverName }}</span>
       } @else {
-        <span class="concert">Trip</span>
+        <span class="concert font-semibold">Trip</span>
       }
     </div>
-    <div class="price">{{ formatPrice(trip.livePrice.perPerson) }}</div>
-    <div class="band">
+    <div class="price font-display text-xl font-bold text-foil">{{ formatPrice(trip.livePrice.perPerson) }}</div>
+    <div class="band text-sm text-night/60">
       {{ formatPrice(trip.livePrice.lowerBound) }}
       – {{ formatPrice(trip.livePrice.upperBound) }} / person
     </div>
   </a>
-  <div class="trip-meta">
-    <span class="badge">{{ trip.status }}</span>
+  <div class="trip-meta mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-night/60">
+    <span
+      class="badge"
+      [class.badge-confirm]="trip.status === 'CONFIRMED'"
+      [class.badge-foil]="trip.status === 'READY'"
+    >
+      {{ trip.status }}
+    </span>
     <span>{{ trip.confirmedSeats }}/{{ trip.maxPassengers }} seats</span>
     @if (trip.concertCity) {
       <span>{{ trip.concertCity }}</span>

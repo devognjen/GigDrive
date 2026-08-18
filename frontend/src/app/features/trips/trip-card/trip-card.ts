@@ -12,7 +12,6 @@ import { formatMoney } from '../../../core/utils/money';
   selector: 'app-trip-card',
   imports: [DatePipe, RouterLink],
   templateUrl: './trip-card.html',
-  styleUrl: './trip-card.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TripCard {

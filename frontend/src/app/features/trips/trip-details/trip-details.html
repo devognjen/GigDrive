@@ -4,54 +4,64 @@
   } @else if (notFound()) {
     <div class="state">
       <h1>Trip not found</h1>
-      <a routerLink="/trips">Back to rides</a>
+      <a class="link" routerLink="/trips">Back to rides</a>
     </div>
   } @else if (trip(); as trip) {
-    <header>
-      <h1>
+    <header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <h1 class="m-0">
         Ride with
-        <a [routerLink]="['/users', trip.driverId]">{{ trip.driverName }}</a>
+        <a class="link" [routerLink]="['/users', trip.driverId]">{{ trip.driverName }}</a>
       </h1>
-      <span class="badge">{{ trip.status }}</span>
+      <span
+        class="badge"
+        [class.badge-confirm]="trip.status === 'CONFIRMED'"
+        [class.badge-foil]="trip.status === 'READY'"
+      >
+        {{ trip.status }}
+      </span>
     </header>
 
     @if (actionError()) {
       <p class="error" role="alert">{{ actionError() }}</p>
     }
 
-    <div class="price-card">
-      <div class="live-price">{{ formatPrice(trip.livePrice.perPerson) }}</div>
-      <div class="band">
-        {{ formatPrice(trip.livePrice.lowerBound) }}
-        – {{ formatPrice(trip.livePrice.upperBound) }} / person
+    <div class="mt-6 grid gap-6 md:grid-cols-2">
+      <div class="price-card card bg-night text-paper">
+        <div class="live-price font-display text-3xl font-bold text-foil">
+          {{ formatPrice(trip.livePrice.perPerson) }}
+        </div>
+        <div class="band mt-1 text-sm text-paper/70">
+          {{ formatPrice(trip.livePrice.lowerBound) }}
+          – {{ formatPrice(trip.livePrice.upperBound) }} / person
+        </div>
+        <div class="seats mt-4 font-semibold">{{ trip.confirmedSeats }}/{{ trip.maxPassengers }} seats filled</div>
+        <div class="seats-left text-sm text-paper/70">{{ trip.seatsLeft }} seats left</div>
       </div>
-      <div class="seats">{{ trip.confirmedSeats }}/{{ trip.maxPassengers }} seats filled</div>
-      <div class="seats-left">{{ trip.seatsLeft }} seats left</div>
+
+      <dl class="info card grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+        <dt class="font-semibold">Departure</dt>
+        <dd class="m-0">{{ trip.departureAt | date: 'medium' }}</dd>
+        <dt class="font-semibold">Confirmation deadline</dt>
+        <dd class="m-0">{{ trip.confirmationDeadline | date: 'medium' }}</dd>
+        <dt class="font-semibold">Pricing</dt>
+        <dd class="m-0">{{ trip.pricingMode }} · {{ trip.currency }}</dd>
+        <dt class="font-semibold">Passengers</dt>
+        <dd class="m-0">{{ trip.minPassengers }} – {{ trip.maxPassengers }}</dd>
+        <dt class="font-semibold">Round trip</dt>
+        <dd class="m-0">{{ trip.roundTrip ? 'Yes' : 'No' }}</dd>
+        @if (trip.driverAverageRating !== null) {
+          <dt class="font-semibold">Driver rating</dt>
+          <dd class="m-0">{{ trip.driverAverageRating }} ({{ trip.driverReviewCount }} reviews)</dd>
+        }
+      </dl>
     </div>
 
-    <dl class="info">
-      <dt>Departure</dt>
-      <dd>{{ trip.departureAt | date: 'medium' }}</dd>
-      <dt>Confirmation deadline</dt>
-      <dd>{{ trip.confirmationDeadline | date: 'medium' }}</dd>
-      <dt>Pricing</dt>
-      <dd>{{ trip.pricingMode }} · {{ trip.currency }}</dd>
-      <dt>Passengers</dt>
-      <dd>{{ trip.minPassengers }} – {{ trip.maxPassengers }}</dd>
-      <dt>Round trip</dt>
-      <dd>{{ trip.roundTrip ? 'Yes' : 'No' }}</dd>
-      @if (trip.driverAverageRating !== null) {
-        <dt>Driver rating</dt>
-        <dd>{{ trip.driverAverageRating }} ({{ trip.driverReviewCount }} reviews)</dd>
-      }
-    </dl>
-
-    <section class="stops">
+    <section class="stops mt-8">
       <h2>Pickup stops</h2>
       @if (trip.stops.length === 0) {
         <p class="state">No pickup stops listed.</p>
       } @else {
-        <ol>
+        <ol class="mt-3 list-decimal space-y-1 pl-5">
           @for (stop of trip.stops; track stop.id) {
             <li>{{ stop.place }}</li>
           }
@@ -61,7 +71,7 @@
     </section>
 
     @if (trip.notes) {
-      <p class="notes">{{ trip.notes }}</p>
+      <p class="notes card mt-6 text-night/80">{{ trip.notes }}</p>
     }
 
     @if (showChat()) {
@@ -69,7 +79,7 @@
     }
 
     @if (canRequestBooking()) {
-      <section class="booking-request">
+      <section class="booking-request card mt-8">
         <h2>Request seats</h2>
         @if (bookingDone()) {
           <p class="success">Your booking request has been sent.</p>
@@ -77,12 +87,12 @@
           @if (bookingError()) {
             <p class="error" role="alert">{{ bookingError() }}</p>
           }
-          <form (ngSubmit)="requestSeats()">
-            <label>
+          <form (ngSubmit)="requestSeats()" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+            <label class="field flex-1">
               Seats
               <input type="number" min="1" [max]="trip.seatsLeft" [formControl]="seats" />
             </label>
-            <button type="submit" [disabled]="seats.invalid || bookingPending()">
+            <button type="submit" class="btn btn-primary" [disabled]="seats.invalid || bookingPending()">
               Request seats
             </button>
           </form>
@@ -91,7 +101,7 @@
     }
 
     @if (canJoinWaitlist()) {
-      <section class="booking-request">
+      <section class="booking-request card mt-8">
         <h2>Join waitlist</h2>
         @if (waitlistEntry(); as entry) {
           <p class="success">
@@ -100,7 +110,7 @@
           </p>
           <button
             type="button"
-            class="danger"
+            class="danger btn btn-danger mt-3"
             (click)="leaveWaitlist()"
             [disabled]="waitlistPending()"
           >
@@ -110,12 +120,12 @@
           @if (waitlistError()) {
             <p class="error" role="alert">{{ waitlistError() }}</p>
           }
-          <form (ngSubmit)="joinWaitlist()">
-            <label>
+          <form (ngSubmit)="joinWaitlist()" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+            <label class="field flex-1">
               Seats
               <input type="number" min="1" [max]="trip.maxPassengers" [formControl]="seats" />
             </label>
-            <button type="submit" [disabled]="seats.invalid || waitlistPending()">
+            <button type="submit" class="btn btn-primary" [disabled]="seats.invalid || waitlistPending()">
               Join waitlist
             </button>
           </form>
@@ -124,22 +134,22 @@
     }
 
     @if (isDriver()) {
-      <div class="actions">
+      <div class="actions mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         @if (canExportCsv()) {
-          <button type="button" (click)="exportCsv()" [disabled]="actionPending()">
+          <button type="button" class="btn btn-ghost" (click)="exportCsv()" [disabled]="actionPending()">
             Export CSV
           </button>
         }
         @if (trip.status === 'OPEN') {
-          <a class="edit" [routerLink]="['/trips', trip.id, 'edit']">Edit trip</a>
+          <a class="edit btn btn-primary no-underline" [routerLink]="['/trips', trip.id, 'edit']">Edit trip</a>
         }
         @if (trip.status === 'READY') {
-          <button type="button" (click)="confirm()" [disabled]="actionPending()">
+          <button type="button" class="btn btn-confirm" (click)="confirm()" [disabled]="actionPending()">
             Confirm trip
           </button>
         }
         @if (trip.status !== 'CANCELLED' && trip.status !== 'COMPLETED') {
-          <button type="button" class="danger" (click)="cancel()" [disabled]="actionPending()">
+          <button type="button" class="danger btn btn-danger" (click)="cancel()" [disabled]="actionPending()">
             Cancel trip
           </button>
         }

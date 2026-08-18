@@ -31,7 +31,6 @@ interface TripFilters {
   selector: 'app-trip-list',
   imports: [ReactiveFormsModule, RouterLink, TripCard],
   templateUrl: './trip-list.html',
-  styleUrl: './trip-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TripList {
