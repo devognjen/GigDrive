@@ -1,5 +1,14 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { Concert } from '../../../core/models/concert.model';
@@ -7,11 +16,14 @@ import {
   CreateTripRequest,
   CreateTripStop,
   Currency,
+  LivePrice,
   PricingMode,
   Trip,
 } from '../../../core/models/trip.model';
 import { Vehicle } from '../../../core/models/vehicle.model';
 import { shiftLocalInput, toLocalInput } from '../../../core/utils/local-datetime';
+import { formatMoney, fromMinorUnits, toMinorUnits } from '../../../core/utils/money';
+import { calculateLivePrice } from '../../../core/utils/pricing';
 import { ConcertPicker } from '../../concerts/concert-picker/concert-picker';
 import { VehicleService } from '../../profile/vehicle.service';
 import { TripService } from '../trip.service';
@@ -20,6 +32,16 @@ import { scheduleOrderValidator, suggestSchedule } from './trip-schedule';
 interface PricingOption {
   value: PricingMode;
   label: string;
+}
+
+/** Snapshot used to render the live per-person preview under the amount field. */
+interface PricePreview {
+  mode: PricingMode;
+  min: number;
+  max: number;
+  perPerson: string;
+  lowerBound: string;
+  upperBound: string;
 }
 
 type StopFormGroup = FormGroup<{
@@ -46,7 +68,7 @@ export class TripCreate implements OnInit {
   protected readonly selectedConcert = signal<Concert | null>(null);
 
   protected readonly pricingOptions: PricingOption[] = [
-    { value: 'SHARED_TOTAL', label: 'Shared total (split across passengers)' },
+    { value: 'SHARED_TOTAL', label: 'Shared total' },
     { value: 'FIXED_PER_SEAT', label: 'Fixed per seat' },
   ];
 
@@ -54,6 +76,9 @@ export class TripCreate implements OnInit {
   protected readonly loadingVehicles = signal(true);
   protected readonly pending = signal(false);
   protected readonly serverError = signal<string | null>(null);
+
+  /** Last applied vehicle seat count, used to detect "follow the vehicle" vs a custom max. */
+  private previousVehicleSeats = 0;
 
   protected readonly form = new FormGroup(
     {
@@ -65,7 +90,7 @@ export class TripCreate implements OnInit {
       }),
       totalCost: new FormControl(0, {
         nonNullable: true,
-        validators: [Validators.required, Validators.min(1)],
+        validators: [Validators.required, Validators.min(0.01)],
       }),
       currency: new FormControl<Currency>('EUR', {
         nonNullable: true,
@@ -91,7 +116,14 @@ export class TripCreate implements OnInit {
       notes: new FormControl('', { nonNullable: true }),
       stops: new FormArray<StopFormGroup>([]),
     },
-    { validators: [scheduleOrderValidator(() => this.selectedConcert()?.startAt ?? null)] },
+    {
+      validators: [
+        scheduleOrderValidator(() => this.selectedConcert()?.startAt ?? null),
+        capacityValidator(
+          (vehicleId) => this.vehicles().find((vehicle) => vehicle.id === vehicleId)?.seats ?? null,
+        ),
+      ],
+    },
   );
 
   ngOnInit(): void {
@@ -166,6 +198,22 @@ export class TripCreate implements OnInit {
     return this.concertStartLocal();
   }
 
+  protected selectedVehicle(): Vehicle | undefined {
+    const id = this.form.controls.vehicleId.value;
+    return this.vehicles().find((vehicle) => vehicle.id === id);
+  }
+
+  /** Seat cap of the currently selected vehicle, or null if none is chosen. */
+  protected selectedVehicleSeats(): number | null {
+    return this.selectedVehicle()?.seats ?? null;
+  }
+
+  /** Defaults or clamps seats offered when the driver picks a vehicle. */
+  protected onVehicleChange(): void {
+    this.applyVehicleCapacity();
+    this.form.updateValueAndValidity();
+  }
+
   protected onConcertChange(concert: Concert | null): void {
     this.selectedConcert.set(concert);
     if (concert && this.datesAreEmpty()) {
@@ -177,6 +225,28 @@ export class TripCreate implements OnInit {
     this.form.updateValueAndValidity();
   }
 
+  /** Live per-person copy for the pricing preview, or null when values are incomplete. */
+  protected pricePreview(): PricePreview | null {
+    const mode = this.form.controls.pricingMode.value;
+    const major = Number(this.form.controls.totalCost.value);
+    const min = Number(this.form.controls.minPassengers.value);
+    const max = Number(this.form.controls.maxPassengers.value);
+    const currency = this.form.controls.currency.value;
+    if (!Number.isFinite(major) || major < 0.01 || min < 1 || max < 1 || min > max) {
+      return null;
+    }
+    const price: LivePrice = calculateLivePrice(mode, toMinorUnits(major), min, max);
+    const format = (minorUnits: number) => formatMoney(minorUnits, currency);
+    return {
+      mode,
+      min,
+      max,
+      perPerson: format(price.perPerson),
+      lowerBound: format(price.lowerBound),
+      upperBound: format(price.upperBound),
+    };
+  }
+
   private concertStartLocal(): string {
     const startAt = this.selectedConcert()?.startAt;
     return startAt ? toLocalInput(startAt) : '';
@@ -184,6 +254,26 @@ export class TripCreate implements OnInit {
 
   private datesAreEmpty(): boolean {
     return !this.form.controls.confirmationDeadline.value && !this.form.controls.departureAt.value;
+  }
+
+  private applyVehicleCapacity(): void {
+    const seats = this.selectedVehicleSeats();
+    if (seats === null) {
+      return;
+    }
+    const maxCtrl = this.form.controls.maxPassengers;
+    const minCtrl = this.form.controls.minPassengers;
+    const previousSeats = this.previousVehicleSeats;
+    this.previousVehicleSeats = seats;
+
+    if (maxCtrl.value > seats) {
+      maxCtrl.setValue(seats);
+    } else if (!this.editingId() && (maxCtrl.pristine || maxCtrl.value === previousSeats)) {
+      maxCtrl.setValue(seats);
+    }
+    if (minCtrl.value > maxCtrl.value) {
+      minCtrl.setValue(maxCtrl.value);
+    }
   }
 
   private stopGroup(
@@ -205,7 +295,7 @@ export class TripCreate implements OnInit {
       vehicleId: trip.vehicleId,
       concertId: trip.concertId,
       pricingMode: trip.pricingMode,
-      totalCost: trip.totalCost,
+      totalCost: fromMinorUnits(trip.totalCost),
       currency: trip.currency,
       minPassengers: trip.minPassengers,
       maxPassengers: trip.maxPassengers,
@@ -214,6 +304,7 @@ export class TripCreate implements OnInit {
       roundTrip: trip.roundTrip,
       notes: trip.notes ?? '',
     });
+    this.previousVehicleSeats = this.selectedVehicle()?.seats ?? trip.maxPassengers;
     this.stops.clear();
     for (const stop of [...trip.stops].sort((a, b) => a.seq - b.seq)) {
       this.stops.push(this.stopGroup(stop.seq, stop.place, stop.lat, stop.lng));
@@ -245,7 +336,7 @@ export class TripCreate implements OnInit {
       vehicleId: raw.vehicleId,
       concertId: raw.concertId,
       pricingMode: raw.pricingMode,
-      totalCost: Number(raw.totalCost),
+      totalCost: toMinorUnits(Number(raw.totalCost)),
       currency: raw.currency,
       minPassengers: Number(raw.minPassengers),
       maxPassengers: Number(raw.maxPassengers),
@@ -285,4 +376,25 @@ function earliestLocal(a: string, b: string): string {
     return a;
   }
   return a <= b ? a : b;
+}
+
+/** Form-level check: min ≤ max ≤ vehicle.seats (FR-TRIP-02). */
+function capacityValidator(seatsForVehicle: (vehicleId: string) => number | null): ValidatorFn {
+  return (group: AbstractControl): ValidationErrors | null => {
+    const min = Number(group.get('minPassengers')?.value);
+    const max = Number(group.get('maxPassengers')?.value);
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+      return null;
+    }
+    const errors: ValidationErrors = {};
+    if (min > max) {
+      errors['minExceedsMax'] = true;
+    }
+    const vehicleId = String(group.get('vehicleId')?.value ?? '');
+    const seats = vehicleId ? seatsForVehicle(vehicleId) : null;
+    if (seats !== null && max > seats) {
+      errors['maxExceedsSeats'] = true;
+    }
+    return Object.keys(errors).length > 0 ? errors : null;
+  };
 }

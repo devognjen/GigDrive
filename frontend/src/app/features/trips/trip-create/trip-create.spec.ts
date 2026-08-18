@@ -46,9 +46,9 @@ describe('TripCreate', () => {
     httpTesting.verify();
   });
 
-  function showForm(): void {
+  function showForm(list: Vehicle[] = [vehicle]): void {
     fixture.detectChanges();
-    httpTesting.expectOne('/api/vehicles').flush([vehicle]);
+    httpTesting.expectOne('/api/vehicles').flush(list);
     fixture.detectChanges();
     vi.advanceTimersByTime(300);
     httpTesting.expectOne('/api/concerts/upcoming').flush([concert]);
@@ -60,7 +60,7 @@ describe('TripCreate', () => {
       vehicleId: vehicle.id,
       concertId: concert.id,
       pricingMode: 'SHARED_TOTAL',
-      totalCost: 12000,
+      totalCost: 120,
       currency: 'EUR',
       minPassengers: 4,
       maxPassengers: 8,
@@ -169,6 +169,93 @@ describe('TripCreate', () => {
     const departure = fixture.nativeElement.querySelector('#departureAt') as HTMLInputElement;
     expect(departure.getAttribute('max')).toBe(toLocalInput(concert.startAt));
   });
+
+  it('submits the trip cost in minor units', () => {
+    showForm();
+    fillValidForm();
+    component['submit']();
+
+    const req = httpTesting.expectOne('/api/trips');
+    expect(req.request.body.totalCost).toBe(12000);
+    req.flush(buildTrip({ id: 't-new' }));
+  });
+
+  it('shows a shared-total price band preview', () => {
+    showForm();
+    fillValidForm();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('If 4 join');
+    expect(text).toContain('30.00 €');
+    expect(text).toContain('15.00 €');
+  });
+
+  it('shows a flat per-seat preview in fixed mode', () => {
+    showForm();
+    fillValidForm();
+    component['form'].patchValue({ pricingMode: 'FIXED_PER_SEAT', totalCost: 30 });
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Each passenger pays');
+    expect(text).toContain('30.00 €');
+    expect(text).toContain('Price per seat');
+  });
+
+  it('defaults seats offered to the selected vehicle capacity', () => {
+    showForm();
+    component['form'].controls.vehicleId.setValue(vehicle.id);
+    component['onVehicleChange']();
+
+    expect(component['form'].controls.maxPassengers.value).toBe(8);
+  });
+
+  it('clamps seats offered when switching to a smaller vehicle', () => {
+    const compact: Vehicle = {
+      ...vehicle,
+      id: 'v2',
+      make: 'Fiat',
+      model: 'Doblo',
+      seats: 4,
+    };
+    showForm([vehicle, compact]);
+    component['form'].controls.vehicleId.setValue(vehicle.id);
+    component['onVehicleChange']();
+    expect(component['form'].controls.maxPassengers.value).toBe(8);
+
+    component['form'].controls.vehicleId.setValue(compact.id);
+    component['onVehicleChange']();
+    expect(component['form'].controls.maxPassengers.value).toBe(4);
+  });
+
+  it('rejects a minimum that exceeds seats offered', () => {
+    showForm();
+    fillValidForm();
+    component['form'].patchValue({ minPassengers: 6, maxPassengers: 4 });
+    component['form'].controls.minPassengers.markAsTouched();
+    fixture.detectChanges();
+
+    expect(component['form'].invalid).toBe(true);
+    expect(component['form'].hasError('minExceedsMax')).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain(
+      'Minimum to go cannot exceed seats offered',
+    );
+  });
+
+  it('rejects seats offered above the vehicle capacity', () => {
+    showForm();
+    fillValidForm();
+    component['form'].patchValue({ maxPassengers: 99 });
+    component['form'].controls.maxPassengers.markAsTouched();
+    fixture.detectChanges();
+
+    expect(component['form'].invalid).toBe(true);
+    expect(component['form'].hasError('maxExceedsSeats')).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain(
+      "Seats offered cannot exceed your vehicle's 8 seats",
+    );
+  });
 });
 
 describe('TripCreate query prefill', () => {
@@ -219,5 +306,53 @@ describe('TripCreate query prefill', () => {
       suggestSchedule(concert.startAt)?.departureAt,
     );
     expect(fixture.nativeElement.textContent).toContain('M72 World Tour');
+  });
+});
+
+describe('TripCreate edit', () => {
+  let fixture: ComponentFixture<TripCreate>;
+  let httpTesting: HttpTestingController;
+
+  beforeEach(async () => {
+    vi.useFakeTimers();
+    await TestBed.configureTestingModule({
+      imports: [TripCreate],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: convertToParamMap({ id: 't1' }),
+              queryParamMap: convertToParamMap({}),
+            },
+          },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(TripCreate);
+    httpTesting = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    httpTesting.verify();
+  });
+
+  it('prefills the amount in major units without overwriting seats offered', () => {
+    fixture.detectChanges();
+    httpTesting.expectOne('/api/vehicles').flush([vehicle]);
+    httpTesting.expectOne('/api/trips/t1').flush(buildTrip());
+    fixture.detectChanges();
+
+    httpTesting.expectOne('/api/concerts/c1').flush({ concert, trips: [] });
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    expect(component['form'].controls.totalCost.value).toBe(120);
+    expect(component['form'].controls.maxPassengers.value).toBe(8);
   });
 });

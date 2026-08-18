@@ -13,7 +13,7 @@
     <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 flex flex-col gap-4">
       <div class="field">
         <label for="vehicle">Vehicle</label>
-        <select id="vehicle" formControlName="vehicleId">
+        <select id="vehicle" formControlName="vehicleId" (change)="onVehicleChange()">
           <option value="" disabled>Select a vehicle</option>
           @for (vehicle of vehicles(); track vehicle.id) {
             <option [value]="vehicle.id">
@@ -34,50 +34,131 @@
         }
       </div>
 
-      <div class="field">
-        <label for="pricingMode">Pricing mode</label>
-        <select id="pricingMode" formControlName="pricingMode">
-          @for (option of pricingOptions; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
-      </div>
+      <section class="rounded-xl border border-mist p-4">
+        <h2>Pricing</h2>
+        <fieldset class="mt-4">
+          <legend class="label">Pricing mode</legend>
+          <div class="mt-1 grid grid-cols-2 gap-1 rounded-lg border border-mist bg-paper p-1">
+            @for (option of pricingOptions; track option.value) {
+              <label
+                class="cursor-pointer rounded-md px-3 py-2 text-center text-sm font-semibold transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-stage/30"
+                [class.bg-stage]="form.controls.pricingMode.value === option.value"
+                [class.text-white]="form.controls.pricingMode.value === option.value"
+                [class.text-night]="form.controls.pricingMode.value !== option.value"
+              >
+                <input
+                  class="sr-only"
+                  type="radio"
+                  formControlName="pricingMode"
+                  [value]="option.value"
+                />
+                {{ option.label }}
+              </label>
+            }
+          </div>
+          <p class="mt-2 text-sm text-night/60">
+            @if (form.controls.pricingMode.value === 'SHARED_TOTAL') {
+              Fuel, tolls, and parking split across passengers.
+            } @else {
+              Each passenger pays this amount, no matter how many join.
+            }
+          </p>
+        </fieldset>
 
-      <div class="field">
-        <label for="totalCost">Total cost (minor units, e.g. cents)</label>
-        <input id="totalCost" type="number" min="1" step="1" formControlName="totalCost" />
-      </div>
-
-      <div class="field">
-        <label for="currency">Currency</label>
-        <select id="currency" formControlName="currency">
-          <option value="EUR">EUR</option>
-          <option value="RSD">RSD</option>
-        </select>
-      </div>
-
-      <div class="field-row grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div class="field">
-          <label for="minPassengers">Min passengers</label>
-          <input
-            id="minPassengers"
-            type="number"
-            min="1"
-            step="1"
-            formControlName="minPassengers"
-          />
+        <div class="field mt-4">
+          <label for="totalCost">
+            {{ form.controls.pricingMode.value === 'FIXED_PER_SEAT' ? 'Price per seat' : 'Trip cost' }}
+          </label>
+          <div
+            class="flex overflow-hidden rounded-lg border border-mist bg-raised shadow-sm focus-within:border-stage focus-within:ring-2 focus-within:ring-stage/30"
+          >
+            <input
+              id="totalCost"
+              class="min-w-0 flex-1 rounded-none border-0 shadow-none focus:ring-0"
+              type="number"
+              min="0.01"
+              step="0.01"
+              formControlName="totalCost"
+            />
+            <select
+              id="currency"
+              class="w-auto shrink-0 rounded-none border-0 border-l border-mist bg-paper px-3 shadow-none focus:ring-0"
+              formControlName="currency"
+              aria-label="Currency"
+            >
+              <option value="EUR">EUR</option>
+              <option value="RSD">RSD</option>
+            </select>
+          </div>
         </div>
-        <div class="field">
-          <label for="maxPassengers">Max passengers</label>
-          <input
-            id="maxPassengers"
-            type="number"
-            min="1"
-            step="1"
-            formControlName="maxPassengers"
-          />
+
+        @if (pricePreview(); as preview) {
+          <p class="mt-3 rounded-lg bg-paper px-3 py-2 text-sm text-night/70">
+            @if (preview.mode === 'FIXED_PER_SEAT') {
+              Each passenger pays
+              <span class="font-semibold text-night">{{ preview.perPerson }}</span>.
+            } @else if (preview.min === preview.max) {
+              If {{ preview.min }} join:
+              <span class="font-semibold text-night">{{ preview.lowerBound }}</span> each.
+            } @else {
+              If {{ preview.min }} join:
+              <span class="font-semibold text-night">{{ preview.lowerBound }}</span> each. If all
+              {{ preview.max }} seats fill:
+              <span class="font-semibold text-night">{{ preview.upperBound }}</span> each.
+            }
+          </p>
+        }
+      </section>
+
+      <section class="rounded-xl border border-mist p-4">
+        <h2>Capacity</h2>
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="field">
+            <label for="minPassengers">Minimum to go</label>
+            <input
+              id="minPassengers"
+              type="number"
+              min="1"
+              step="1"
+              [attr.max]="selectedVehicleSeats() ?? null"
+              formControlName="minPassengers"
+            />
+            <p class="text-sm text-night/60">Trip is cancelled if fewer people confirm.</p>
+          </div>
+          <div class="field">
+            <label for="maxPassengers">Seats offered</label>
+            <input
+              id="maxPassengers"
+              type="number"
+              min="1"
+              step="1"
+              [attr.max]="selectedVehicleSeats() ?? null"
+              formControlName="maxPassengers"
+            />
+            <p class="text-sm text-night/60">
+              @if (selectedVehicleSeats(); as seats) {
+                Up to your vehicle's {{ seats }} seats.
+              } @else {
+                Select a vehicle to set the seat cap.
+              }
+            </p>
+          </div>
         </div>
-      </div>
+        @if (
+          form.hasError('minExceedsMax') &&
+          (form.controls.minPassengers.touched || form.controls.maxPassengers.touched)
+        ) {
+          <p class="error mt-3">Minimum to go cannot exceed seats offered.</p>
+        }
+        @if (
+          form.hasError('maxExceedsSeats') &&
+          (form.controls.minPassengers.touched || form.controls.maxPassengers.touched)
+        ) {
+          <p class="error mt-3">
+            Seats offered cannot exceed your vehicle's {{ selectedVehicleSeats() }} seats.
+          </p>
+        }
+      </section>
 
       <div class="field-row grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div class="field">
