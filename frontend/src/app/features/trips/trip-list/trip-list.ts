@@ -19,7 +19,7 @@ interface TripFilters {
   maxPrice: string;
   minRating: string;
   seatsMin: string;
-  sort: 'cheapest' | 'likely' | '';
+  sort: 'soonest' | 'cheapest' | 'likely';
 }
 
 /**
@@ -54,7 +54,7 @@ export class TripList {
     maxPrice: new FormControl('', { nonNullable: true }),
     minRating: new FormControl('', { nonNullable: true }),
     seatsMin: new FormControl('', { nonNullable: true }),
-    sort: new FormControl<'cheapest' | 'likely' | ''>('', { nonNullable: true }),
+    sort: new FormControl<'soonest' | 'cheapest' | 'likely'>('soonest', { nonNullable: true }),
   });
 
   protected readonly trips = signal<Trip[]>([]);

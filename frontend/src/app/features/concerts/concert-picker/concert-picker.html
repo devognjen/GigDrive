@@ -2,17 +2,20 @@
   @if (loading() && !selected() && !open()) {
     <p class="state">Loading concerts…</p>
   } @else if (selected(); as concert) {
-    <div class="selected card">
-      <p class="headline m-0">
-        <strong>{{ concert.artist }}</strong>
-        @if (showTitle(concert)) {
-          — {{ concert.title }}
-        }
-      </p>
-      <p class="meta mt-1 text-sm text-night/60">
-        {{ concert.venue }}, {{ concert.city }} · {{ concert.startAt | date: 'medium' }}
-      </p>
-      <button type="button" class="change btn btn-ghost mt-3" (click)="clear()">Change</button>
+    <div class="selected card flex items-start gap-3">
+      <app-concert-media [imageUrl]="concert.imageUrl" [artist]="concert.artist" variant="thumb" />
+      <div class="min-w-0 flex-1">
+        <p class="headline m-0">
+          <strong>{{ concert.artist }}</strong>
+          @if (showTitle(concert)) {
+            — {{ concert.title }}
+          }
+        </p>
+        <p class="meta mt-1 text-sm text-night/60">
+          {{ concert.venue }}, {{ concert.city }} · {{ concert.startAt | date: 'MMM d, y · h:mm a' }}
+        </p>
+        <button type="button" class="change btn btn-ghost mt-3" (click)="clear()">Change</button>
+      </div>
     </div>
   } @else {
     <div class="relative">
@@ -50,21 +53,28 @@
               @for (concert of results(); track concert.id) {
                 <li
                   role="option"
-                  class="result cursor-pointer px-3 py-2 hover:bg-paper"
+                  class="result flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-paper"
                   [id]="optionId(concert.id)"
                   [class.bg-paper]="activeIndex() === $index"
                   [attr.aria-selected]="activeIndex() === $index"
                   (mousedown)="select(concert, $event)"
                 >
-                  <span class="headline block">
-                    <strong>{{ concert.artist }}</strong>
-                    @if (showTitle(concert)) {
-                      — {{ concert.title }}
-                    }
-                  </span>
-                  <span class="meta text-sm text-night/60">
-                    {{ concert.venue }}, {{ concert.city }} ·
-                    {{ concert.startAt | date: 'mediumDate' }}
+                  <app-concert-media
+                    [imageUrl]="concert.imageUrl"
+                    [artist]="concert.artist"
+                    variant="thumb"
+                  />
+                  <span class="min-w-0">
+                    <span class="headline block">
+                      <strong>{{ concert.artist }}</strong>
+                      @if (showTitle(concert)) {
+                        — {{ concert.title }}
+                      }
+                    </span>
+                    <span class="meta text-sm text-night/60">
+                      {{ concert.venue }}, {{ concert.city }} ·
+                      {{ concert.startAt | date: 'MMM d, y' }}
+                    </span>
                   </span>
                 </li>
               }

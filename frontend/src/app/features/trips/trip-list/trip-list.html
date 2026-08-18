@@ -43,7 +43,7 @@
     <div class="field">
       <label for="sort">Sort</label>
       <select id="sort" formControlName="sort">
-        <option value="">Default</option>
+        <option value="soonest">Soonest</option>
         <option value="cheapest">Cheapest</option>
         <option value="likely">Most likely to happen</option>
       </select>
@@ -55,7 +55,7 @@
   } @else if (trips().length === 0) {
     <p class="state mt-6">No rides match your filters.</p>
   } @else {
-    <ul class="trips mt-6 m-0 flex list-none flex-col gap-3 p-0">
+    <ul class="trips mt-6 m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
       @for (trip of trips(); track trip.id) {
         <li>
           <app-trip-card [trip]="trip" />

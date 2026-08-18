@@ -19,6 +19,7 @@ const mockTrips: Trip[] = [
     concertArtist: 'The Demo Band',
     concertTitle: 'Summer Open Air',
     concertCity: 'Novi Sad',
+    concertImageUrl: null,
     pricingMode: 'SHARED_TOTAL',
     totalCost: 12000,
     currency: 'EUR',
@@ -62,7 +63,9 @@ describe('TripList', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
     vi.advanceTimersByTime(300);
-    httpTesting.expectOne((r) => r.url === '/api/trips').flush([]);
+    const req = httpTesting.expectOne((r) => r.url === '/api/trips');
+    expect(req.request.params.get('sort')).toBe('soonest');
+    req.flush([]);
   });
 
   it('renders trips with their live price', () => {

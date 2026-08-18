@@ -26,6 +26,23 @@ describe('TripCard', () => {
     expect(text).toContain('0/8 seats');
     expect(text).toContain('30.00 €');
     expect(text).toContain('Novi Sad');
+    expect(text).toContain('Sep 10, 2026');
+  });
+
+  it('hides a concert title that repeats the artist', () => {
+    fixture.componentRef.setInput(
+      'trip',
+      buildTrip({ concertArtist: 'Gojira', concertTitle: 'Gojira' }),
+    );
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.concert-title')).toBeNull();
+  });
+
+  it('dims cancelled trips and uses a danger badge', () => {
+    fixture.componentRef.setInput('trip', buildTrip({ status: 'CANCELLED' }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.badge-danger')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.opacity-50')).toBeTruthy();
   });
 
   it('omits the driver name on the driver dashboard', () => {

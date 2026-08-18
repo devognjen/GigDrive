@@ -125,6 +125,14 @@
     @apply bg-foil/20 text-night;
   }
 
+  .badge-danger {
+    @apply bg-danger/15 text-danger;
+  }
+
+  .badge-muted {
+    @apply bg-night/10 text-night/50;
+  }
+
   .link {
     @apply font-semibold text-stage no-underline hover:text-stage-bright;
   }

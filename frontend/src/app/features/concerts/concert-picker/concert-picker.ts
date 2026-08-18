@@ -27,11 +27,12 @@ import {
 
 import { Concert } from '../../../core/models/concert.model';
 import { todayIsoDate } from '../../../core/utils/local-datetime';
+import { ConcertMedia } from '../concert-media/concert-media';
 import { ConcertService } from '../concert.service';
 
 @Component({
   selector: 'app-concert-picker',
-  imports: [DatePipe, ReactiveFormsModule, RouterLink],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink, ConcertMedia],
   templateUrl: './concert-picker.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -32,7 +32,7 @@
 
       <dl class="info mt-6 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
         <dt class="font-semibold">Date</dt>
-        <dd class="m-0">{{ data.concert.startAt | date: 'medium' }}</dd>
+        <dd class="m-0">{{ data.concert.startAt | date: 'MMM d, y · h:mm a' }}</dd>
         <dt class="font-semibold">Venue</dt>
         <dd class="m-0">{{ data.concert.venue }}</dd>
         <dt class="font-semibold">City</dt>
@@ -76,9 +76,15 @@
                   [routerLink]="['/trips', trip.id]"
                 >
                   <span class="driver font-semibold">{{ trip.driverName }}</span>
-                  <span class="badge status">{{ trip.status }}</span>
+                  <span
+                    class="badge status"
+                    [class.badge-confirm]="trip.status === 'CONFIRMED'"
+                    [class.badge-foil]="trip.status === 'READY'"
+                    [class.badge-danger]="trip.status === 'CANCELLED'"
+                    [class.badge-muted]="trip.status === 'COMPLETED'"
+                  >{{ trip.status }}</span>
                   <span class="meta text-sm text-night/60">
-                    Departs {{ trip.departureAt | date: 'medium' }} · {{ trip.minPassengers }}–{{
+                    Departs {{ trip.departureAt | date: 'MMM d, y · h:mm a' }} · {{ trip.minPassengers }}–{{
                       trip.maxPassengers
                     }}
                     passengers

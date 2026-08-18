@@ -36,7 +36,7 @@
       @if (trips().length === 0) {
         <p class="state">You have not organized any trips yet.</p>
       } @else {
-        <ul class="trips mt-3 m-0 flex list-none flex-col gap-3 p-0">
+        <ul class="trips mt-3 m-0 flex list-none flex-col gap-4 p-0">
           @for (trip of trips(); track trip.id) {
             <li class="grid gap-2">
               <app-trip-card [trip]="trip" [showDriver]="false" />

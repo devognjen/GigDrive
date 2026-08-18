@@ -5,16 +5,21 @@
     @for (entry of entries; track entry.id) {
       <li class="entry card flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div class="position font-display text-lg font-bold text-foil">#{{ entry.position }}</div>
-        <div class="trip flex-1">
+        <div class="trip flex min-w-0 flex-1 items-center gap-3">
+          <app-concert-media
+            [imageUrl]="entry.trip.concertImageUrl"
+            [artist]="entry.trip.concertArtist || 'Trip'"
+            variant="thumb"
+          />
           <a class="link" [routerLink]="['/trips', entry.tripId]">
             {{ entry.trip.concertArtist || 'Trip' }}
-            @if (entry.trip.concertTitle) {
+            @if (showTitle(entry)) {
               — {{ entry.trip.concertTitle }}
             }
           </a>
         </div>
         <div class="seats text-sm text-night/60">{{ entry.seats }} seat{{ entry.seats === 1 ? '' : 's' }}</div>
-        <div class="joined text-sm text-night/60">Joined {{ entry.createdAt | date: 'medium' }}</div>
+        <div class="joined text-sm text-night/60">Joined {{ entry.createdAt | date: 'MMM d, y · h:mm a' }}</div>
         <div class="actions">
           <button
             type="button"

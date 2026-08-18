@@ -41,6 +41,7 @@ export interface Trip {
   concertArtist: string;
   concertTitle: string;
   concertCity: string;
+  concertImageUrl: string | null;
   pricingMode: PricingMode;
   totalCost: number;
   currency: Currency;
@@ -92,5 +93,5 @@ export interface TripSearchParams {
   maxPrice?: number;
   minRating?: number;
   seatsMin?: number;
-  sort?: 'cheapest' | 'likely';
+  sort?: 'soonest' | 'cheapest' | 'likely';
 }

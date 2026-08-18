@@ -5,10 +5,15 @@
     @for (booking of bookings; track booking.id) {
       <li class="booking card grid gap-2 sm:grid-cols-[1fr_auto]">
         <div class="status font-semibold capitalize">{{ booking.status }}</div>
-        <div class="trip">
+        <div class="trip flex items-center gap-3">
+          <app-concert-media
+            [imageUrl]="booking.trip.concertImageUrl"
+            [artist]="booking.trip.concertArtist || 'Trip'"
+            variant="thumb"
+          />
           <a class="link" [routerLink]="['/trips', booking.tripId]">
             {{ booking.trip.concertArtist || 'Trip' }}
-            @if (booking.trip.concertTitle) {
+            @if (showTitle(booking)) {
               — {{ booking.trip.concertTitle }}
             }
           </a>
@@ -19,7 +24,7 @@
         @if (mode === 'driver') {
           <div class="passenger text-sm text-night/60">{{ booking.passengerName }}</div>
         }
-        <div class="requested text-sm text-night/60">Requested {{ booking.createdAt | date: 'medium' }}</div>
+        <div class="requested text-sm text-night/60">Requested {{ booking.createdAt | date: 'MMM d, y · h:mm a' }}</div>
 
         <div class="actions col-span-full mt-2 flex flex-col gap-2 sm:flex-row">
           @if (mode === 'driver' && booking.status === 'PENDING') {

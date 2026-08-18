@@ -24,6 +24,7 @@ const mockTrip: Trip = {
   concertArtist: 'The Demo Band',
   concertTitle: 'Summer Open Air',
   concertCity: 'Novi Sad',
+  concertImageUrl: null,
   pricingMode: 'SHARED_TOTAL',
   totalCost: 12000,
   currency: 'EUR',

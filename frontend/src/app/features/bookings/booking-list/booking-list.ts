@@ -3,7 +3,9 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { RouterLink } from '@angular/router';
 
 import { Booking } from '../../../core/models/booking.model';
+import { concertTitleDiffers } from '../../../core/utils/concert-display';
 import { formatMoney } from '../../../core/utils/money';
+import { ConcertMedia } from '../../concerts/concert-media/concert-media';
 import { ReviewForm } from '../../reviews/review-form/review-form';
 
 export type BookingListMode = 'driver' | 'passenger';
@@ -21,7 +23,7 @@ export interface ReviewSubmission {
  */
 @Component({
   selector: 'app-booking-list',
-  imports: [DatePipe, RouterLink, ReviewForm],
+  imports: [DatePipe, RouterLink, ReviewForm, ConcertMedia],
   templateUrl: './booking-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -44,5 +46,9 @@ export class BookingList {
 
   protected formatPrice(booking: Booking): string {
     return formatMoney(booking.trip.livePrice.perPerson, booking.trip.currency);
+  }
+
+  protected showTitle(booking: Booking): boolean {
+    return concertTitleDiffers(booking.trip.concertArtist, booking.trip.concertTitle);
   }
 }
