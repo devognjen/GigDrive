@@ -31,7 +31,6 @@ import { ConcertService } from '../concert.service';
   selector: 'app-concert-picker',
   imports: [DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './concert-picker.html',
-  styleUrl: './concert-picker.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConcertPicker implements OnInit {

@@ -8,7 +8,6 @@ import { shouldShowWeatherWidget, weatherEmptyMessage } from './weather-widget.v
   selector: 'app-weather-widget',
   imports: [DecimalPipe],
   templateUrl: './weather-widget.html',
-  styleUrl: './weather-widget.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WeatherWidget {

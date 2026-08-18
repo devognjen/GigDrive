@@ -1,7 +1,7 @@
 <div class="concert-search">
   <h1>Find concerts</h1>
 
-  <form [formGroup]="filters" class="filters">
+  <form [formGroup]="filters" class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
     <div class="field">
       <label for="q">Keyword</label>
       <input id="q" type="text" formControlName="q" placeholder="Artist or title" />
@@ -39,35 +39,40 @@
   </form>
 
   @if (authService.isAuthenticated()) {
-    <p class="add-manual">
-      Can't find your concert? <a routerLink="/concerts/new">Add it manually</a>
+    <p class="add-manual mt-4 text-sm text-night/70">
+      Can't find your concert? <a class="link" routerLink="/concerts/new">Add it manually</a>
     </p>
   }
 
   @if (loading()) {
-    <p class="state">Searching…</p>
+    <p class="state mt-6">Searching…</p>
   } @else if (searchFailed()) {
-    <p class="state">Couldn't search concerts. Please try again.</p>
+    <p class="state mt-6">Couldn't search concerts. Please try again.</p>
   } @else if (results().length === 0) {
-    <p class="state">No concerts found. Try adjusting your filters.</p>
+    <p class="state mt-6">No concerts found. Try adjusting your filters.</p>
   } @else {
-    <ul class="results">
+    <ul class="results mt-6 flex list-none flex-col gap-3 p-0">
       @for (concert of results(); track concert.id) {
         <li>
-          <a class="result" [routerLink]="['/concerts', concert.id]">
+          <a
+            class="result card flex flex-col gap-1 text-night no-underline transition hover:border-stage"
+            [routerLink]="['/concerts', concert.id]"
+          >
             <span class="headline">
               <strong>{{ concert.artist }}</strong> — {{ concert.title }}
             </span>
-            <span class="meta">
+            <span class="meta text-sm text-night/60">
               {{ concert.venue }}, {{ concert.city }}, {{ concert.country }} ·
               {{ concert.startAt | date: 'mediumDate' }}
             </span>
-            @if (concert.genre) {
-              <span class="badge genre">{{ concert.genre }}</span>
-            }
-            @if (concert.userSubmitted) {
-              <span class="badge user-submitted">user-submitted</span>
-            }
+            <span class="mt-1 flex flex-wrap gap-2">
+              @if (concert.genre) {
+                <span class="badge genre">{{ concert.genre }}</span>
+              }
+              @if (concert.userSubmitted) {
+                <span class="badge user-submitted">user-submitted</span>
+              }
+            </span>
           </a>
         </li>
       }

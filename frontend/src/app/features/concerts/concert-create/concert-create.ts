@@ -12,7 +12,6 @@ const URL_PATTERN = /^https?:\/\/.+/;
   selector: 'app-concert-create',
   imports: [ReactiveFormsModule],
   templateUrl: './concert-create.html',
-  styleUrl: './concert-create.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConcertCreate {

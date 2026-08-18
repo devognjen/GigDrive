@@ -13,7 +13,6 @@ import { ConcertService } from '../concert.service';
   selector: 'app-concert-search',
   imports: [ReactiveFormsModule, RouterLink, DatePipe],
   templateUrl: './concert-search.html',
-  styleUrl: './concert-search.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConcertSearch {

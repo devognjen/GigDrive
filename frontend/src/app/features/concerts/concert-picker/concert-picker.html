@@ -2,14 +2,14 @@
   @if (loading() && !selected() && results().length === 0 && !open()) {
     <p class="state">Loading concerts…</p>
   } @else if (selected(); as concert) {
-    <div class="selected">
-      <p class="headline">
+    <div class="selected card">
+      <p class="headline m-0">
         <strong>{{ concert.artist }}</strong> — {{ concert.title }}
       </p>
-      <p class="meta">
+      <p class="meta mt-1 text-sm text-night/60">
         {{ concert.venue }}, {{ concert.city }} · {{ concert.startAt | date: 'medium' }}
       </p>
-      <button type="button" class="change" (click)="clear()">Change</button>
+      <button type="button" class="change btn btn-ghost mt-3" (click)="clear()">Change</button>
     </div>
   } @else {
     <input
@@ -27,19 +27,27 @@
     />
     @if (open()) {
       @if (loading()) {
-        <p class="state">Searching…</p>
+        <p class="state mt-2">Searching…</p>
       } @else if (searchFailed()) {
-        <p class="state">Couldn't load concerts. Try again.</p>
+        <p class="state mt-2">Couldn't load concerts. Try again.</p>
       } @else if (results().length === 0) {
-        <p class="state">No upcoming concerts match.</p>
+        <p class="state mt-2">No upcoming concerts match.</p>
       } @else {
-        <ul id="concert-results" class="results" role="listbox">
+        <ul
+          id="concert-results"
+          class="results mt-2 m-0 flex list-none flex-col gap-1 overflow-hidden rounded-xl border border-mist bg-raised p-0"
+          role="listbox"
+        >
           @for (concert of results(); track concert.id) {
-            <li role="option" class="result" (mousedown)="select(concert, $event)">
-              <span class="headline">
+            <li
+              role="option"
+              class="result cursor-pointer px-3 py-2 hover:bg-paper"
+              (mousedown)="select(concert, $event)"
+            >
+              <span class="headline block">
                 <strong>{{ concert.artist }}</strong> — {{ concert.title }}
               </span>
-              <span class="meta">
+              <span class="meta text-sm text-night/60">
                 {{ concert.venue }}, {{ concert.city }} ·
                 {{ concert.startAt | date: 'mediumDate' }}
               </span>
@@ -50,5 +58,7 @@
     }
   }
 
-  <p class="add-manual">Can't find it? <a routerLink="/concerts/new">Add a concert</a></p>
+  <p class="add-manual mt-2 text-sm text-night/70">
+    Can't find it? <a class="link" routerLink="/concerts/new">Add a concert</a>
+  </p>
 </div>

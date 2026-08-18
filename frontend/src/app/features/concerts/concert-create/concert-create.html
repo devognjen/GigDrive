@@ -1,11 +1,11 @@
-<div class="form-card">
+<div class="form-card card mx-auto max-w-2xl">
   <h1>Add a concert</h1>
 
   @if (serverError()) {
     <p class="error server-error" role="alert">{{ serverError() }}</p>
   }
 
-  <form [formGroup]="form" (ngSubmit)="submit()">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 flex flex-col gap-4">
     <div class="field">
       <label for="artist">Artist</label>
       <input id="artist" type="text" formControlName="artist" />
@@ -75,7 +75,7 @@
       }
     </div>
 
-    <div class="coordinates">
+    <div class="coordinates grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div class="field">
         <label for="lat">Latitude (optional)</label>
         <input id="lat" type="number" step="any" formControlName="lat" />
@@ -87,7 +87,7 @@
       </div>
     </div>
 
-    <button type="submit" [disabled]="form.invalid || pending()">
+    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || pending()">
       {{ pending() ? 'Saving…' : 'Save concert' }}
     </button>
   </form>

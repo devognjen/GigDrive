@@ -15,7 +15,6 @@ import { WeatherWidget } from '../weather-widget/weather-widget';
   selector: 'app-concert-details',
   imports: [DatePipe, RouterLink, WeatherWidget],
   templateUrl: './concert-details.html',
-  styleUrl: './concert-details.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConcertDetails {

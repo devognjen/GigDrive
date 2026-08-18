@@ -5,49 +5,60 @@
     <div class="state">
       <h1>Concert not found</h1>
       <p>The concert you are looking for does not exist or has been removed.</p>
-      <a routerLink="/concerts">Back to search</a>
+      <a class="link" routerLink="/concerts">Back to search</a>
     </div>
   } @else if (details(); as data) {
     <article>
       @if (data.concert.imageUrl) {
-        <img class="cover" [src]="data.concert.imageUrl" [alt]="data.concert.title" />
+        <img
+          class="cover mb-6 h-48 w-full rounded-2xl object-cover sm:h-72"
+          [src]="data.concert.imageUrl"
+          [alt]="data.concert.title"
+        />
       }
 
       <header>
         <h1>{{ data.concert.artist }}</h1>
-        <h2>{{ data.concert.title }}</h2>
-        @if (data.concert.genre) {
-          <span class="badge genre">{{ data.concert.genre }}</span>
-        }
-        @if (data.concert.userSubmitted) {
-          <span class="badge user-submitted">user-submitted</span>
-        }
+        <h2 class="mt-1 font-medium text-night/70">{{ data.concert.title }}</h2>
+        <div class="mt-3 flex flex-wrap gap-2">
+          @if (data.concert.genre) {
+            <span class="badge genre">{{ data.concert.genre }}</span>
+          }
+          @if (data.concert.userSubmitted) {
+            <span class="badge user-submitted">user-submitted</span>
+          }
+        </div>
       </header>
 
-      <dl class="info">
-        <dt>Date</dt>
-        <dd>{{ data.concert.startAt | date: 'medium' }}</dd>
-        <dt>Venue</dt>
-        <dd>{{ data.concert.venue }}</dd>
-        <dt>City</dt>
-        <dd>{{ data.concert.city }}, {{ data.concert.country }}</dd>
+      <dl class="info mt-6 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+        <dt class="font-semibold">Date</dt>
+        <dd class="m-0">{{ data.concert.startAt | date: 'medium' }}</dd>
+        <dt class="font-semibold">Venue</dt>
+        <dd class="m-0">{{ data.concert.venue }}</dd>
+        <dt class="font-semibold">City</dt>
+        <dd class="m-0">{{ data.concert.city }}, {{ data.concert.country }}</dd>
       </dl>
 
       <app-weather-widget [weather]="weather()" />
 
       @if (data.concert.ticketUrl) {
-        <p>
-          <a class="tickets" [href]="data.concert.ticketUrl" target="_blank" rel="noopener">
+        <p class="mt-6">
+          <a
+            class="tickets btn btn-primary no-underline"
+            [href]="data.concert.ticketUrl"
+            target="_blank"
+            rel="noopener"
+          >
             Buy tickets
           </a>
         </p>
       }
 
-      <section class="trips">
-        <div class="trips-header">
-          <h3>Trips to this concert</h3>
+      <section class="trips mt-10">
+        <div class="trips-header mb-4 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
+          <h3 class="m-0">Trips to this concert</h3>
           <a
-            class="offer-ride"
+            class="offer-ride btn btn-primary no-underline"
             [routerLink]="['/trips/new']"
             [queryParams]="{ concertId: data.concert.id }"
           >
@@ -57,13 +68,16 @@
         @if (data.trips.length === 0) {
           <p class="state">No trips yet</p>
         } @else {
-          <ul>
+          <ul class="m-0 flex list-none flex-col gap-3 p-0">
             @for (trip of data.trips; track trip.id) {
               <li>
-                <a [routerLink]="['/trips', trip.id]">
-                  <span class="driver">{{ trip.driverName }}</span>
+                <a
+                  class="card flex flex-col gap-1 text-night no-underline transition hover:border-stage sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4"
+                  [routerLink]="['/trips', trip.id]"
+                >
+                  <span class="driver font-semibold">{{ trip.driverName }}</span>
                   <span class="badge status">{{ trip.status }}</span>
-                  <span class="meta">
+                  <span class="meta text-sm text-night/60">
                     Departs {{ trip.departureAt | date: 'medium' }} · {{ trip.minPassengers }}–{{
                       trip.maxPassengers
                     }}
