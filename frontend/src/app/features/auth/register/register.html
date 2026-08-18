@@ -1,11 +1,11 @@
-<div class="auth-card">
+<div class="auth-card card mx-auto max-w-md">
   <h1>Create your account</h1>
 
   @if (serverError()) {
     <p class="error server-error" role="alert">{{ serverError() }}</p>
   }
 
-  <form [formGroup]="form" (ngSubmit)="submit()">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 flex flex-col gap-4">
     <div class="field">
       <label for="firstName">First name</label>
       <input id="firstName" type="text" formControlName="firstName" autocomplete="given-name" />
@@ -49,10 +49,12 @@
       <input id="phone" type="tel" formControlName="phone" autocomplete="tel" />
     </div>
 
-    <button type="submit" [disabled]="form.invalid || pending()">
+    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || pending()">
       {{ pending() ? 'Creating account…' : 'Register' }}
     </button>
   </form>
 
-  <p class="switch">Already have an account? <a routerLink="/auth/login">Log in</a></p>
+  <p class="switch mt-4 text-sm text-night/70">
+    Already have an account? <a class="link" routerLink="/auth/login">Log in</a>
+  </p>
 </div>
