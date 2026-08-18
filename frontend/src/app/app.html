@@ -1,21 +1,53 @@
-<header class="shell-header">
-  <a class="brand" routerLink="/">🎵 GigDrive</a>
-  <nav>
-    <a routerLink="/concerts" routerLinkActive="active">Concerts</a>
-    <a routerLink="/trips" routerLinkActive="active">Trips</a>
-    @if (authService.currentUser(); as user) {
-      <a routerLink="/dashboard/driver" routerLinkActive="active">Driver</a>
-      <a routerLink="/dashboard/passenger" routerLinkActive="active">Passenger</a>
-      <a routerLink="/profile" routerLinkActive="active">Profile</a>
-      <span class="user-name">{{ user.firstName }}</span>
-      <button type="button" class="logout" (click)="logout()">Log out</button>
-    } @else {
-      <a routerLink="/auth/login" routerLinkActive="active">Log in</a>
-      <a routerLink="/auth/register" routerLinkActive="active">Register</a>
-    }
-  </nav>
-</header>
+<div class="flex min-h-screen flex-col">
+  <header class="sticky top-0 z-50 bg-night text-paper">
+    <div
+      class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-3 sm:px-8"
+    >
+      <a class="brand" routerLink="/" (click)="closeMenu()">
+        <span class="text-foil">Gig</span>Drive
+      </a>
 
-<main class="shell-content">
-  <router-outlet />
-</main>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center rounded-md p-2 text-paper hover:bg-night-soft md:hidden"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="menuOpen()"
+        aria-controls="app-nav"
+        aria-label="Toggle navigation"
+      >
+        @if (menuOpen()) {
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-6" aria-hidden="true">
+            <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-6" aria-hidden="true">
+            <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        }
+      </button>
+
+      <nav
+        id="app-nav"
+        class="flex w-full flex-col gap-3 md:flex md:w-auto md:flex-1 md:flex-row md:items-center md:justify-end md:gap-5"
+        [class.max-md:hidden]="!menuOpen()"
+      >
+        <a routerLink="/concerts" routerLinkActive="active" (click)="closeMenu()">Concerts</a>
+        <a routerLink="/trips" routerLinkActive="active" (click)="closeMenu()">Trips</a>
+        @if (authService.currentUser(); as user) {
+          <a routerLink="/dashboard/driver" routerLinkActive="active" (click)="closeMenu()">Driver</a>
+          <a routerLink="/dashboard/passenger" routerLinkActive="active" (click)="closeMenu()">Passenger</a>
+          <a routerLink="/profile" routerLinkActive="active" (click)="closeMenu()">Profile</a>
+          <span class="user-name">{{ user.firstName }}</span>
+          <button type="button" class="logout" (click)="logout()">Log out</button>
+        } @else {
+          <a routerLink="/auth/login" routerLinkActive="active" (click)="closeMenu()">Log in</a>
+          <a routerLink="/auth/register" routerLinkActive="active" (click)="closeMenu()">Register</a>
+        }
+      </nav>
+    </div>
+  </header>
+
+  <main class="page flex-1">
+    <router-outlet />
+  </main>
+</div>
