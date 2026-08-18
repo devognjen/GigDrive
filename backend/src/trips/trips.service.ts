@@ -24,6 +24,10 @@ import { TripDto } from './dto/trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { Trip } from './entities/trip.entity';
 import { TripStop } from './entities/trip-stop.entity';
+import {
+  buildPassengerManifestCsv,
+  manifestFilename,
+} from './passenger-manifest';
 import { PricingService } from './pricing.service';
 import { TripStateMachine } from './trip-state-machine';
 
@@ -179,6 +183,39 @@ export class TripsService {
     }
 
     return this.getDetails(id);
+  }
+
+  /**
+   * CSV passenger manifest of confirmed bookings for the trip driver.
+   * Ownership is enforced by TripOwnershipGuard on the controller.
+   */
+  async exportManifest(
+    tripId: string,
+  ): Promise<{ csv: string; filename: string }> {
+    const trip = await this.findTripOrFail(tripId);
+    const bookings = await this.bookingsRepository.find({
+      where: { tripId, status: BookingStatus.Confirmed },
+      relations: { passenger: true },
+      order: { createdAt: 'ASC' },
+    });
+    return {
+      csv: buildPassengerManifestCsv(
+        bookings.map((booking) => ({
+          firstName: booking.passenger.firstName,
+          lastName: booking.passenger.lastName,
+          email: booking.passenger.email,
+          phone: booking.passenger.phone,
+          seats: booking.seats,
+          paid: booking.paid,
+          status: booking.status,
+        })),
+      ),
+      filename: manifestFilename(
+        trip.concert?.artist ?? '',
+        trip.concert?.city ?? '',
+        trip.concert?.startAt ?? trip.departureAt,
+      ),
+    };
   }
 
   /** Driver cancels a trip that is not already finished. */

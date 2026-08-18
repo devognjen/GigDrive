@@ -2,17 +2,20 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
+  StreamableFile,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiProduces,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -42,6 +45,20 @@ export class TripsController {
   @ApiOkResponse({ type: [TripDto] })
   listMine(@CurrentUser() user: User): Promise<TripDto[]> {
     return this.tripsService.listMine(user.id);
+  }
+
+  @Get(':id/manifest')
+  @UseGuards(TripOwnershipGuard)
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  @ApiProduces('text/csv')
+  async exportManifest(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<StreamableFile> {
+    const { csv, filename } = await this.tripsService.exportManifest(id);
+    return new StreamableFile(Buffer.from(csv, 'utf-8'), {
+      type: 'text/csv; charset=utf-8',
+      disposition: `attachment; filename="${filename}"`,
+    });
   }
 
   @Get(':id')

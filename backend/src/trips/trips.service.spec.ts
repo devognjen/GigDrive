@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Booking } from '../bookings/entities/booking.entity';
 import {
+  BookingStatus,
   Currency,
   PricingMode,
   TripStatus,
@@ -259,6 +260,72 @@ describe('TripsService', () => {
       );
       expect(notifications.notify).not.toHaveBeenCalled();
       expect(signalAutomation.onTripConfirmed).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('exportManifest', () => {
+    it('exports only confirmed bookings with seats and paid flags', async () => {
+      const concertStart = new Date('2026-09-10T18:00:00.000Z');
+      tripsRepository.findOne.mockResolvedValue(
+        buildTrip({ concert: { ...buildConcert(), startAt: concertStart } }),
+      );
+      bookingsRepository.find.mockResolvedValue([
+        {
+          seats: 2,
+          paid: true,
+          status: BookingStatus.Confirmed,
+          passenger: {
+            firstName: 'Ana',
+            lastName: 'Passenger',
+            email: 'ana@gigdrive.demo',
+            phone: '+38160111222',
+          },
+        },
+        {
+          seats: 1,
+          paid: false,
+          status: BookingStatus.Confirmed,
+          passenger: {
+            firstName: 'Pat',
+            lastName: 'Rider',
+            email: 'pat@gigdrive.demo',
+            phone: null,
+          },
+        },
+      ]);
+
+      const result = await service.exportManifest(tripId);
+
+      expect(bookingsRepository.find).toHaveBeenCalledWith({
+        where: { tripId, status: BookingStatus.Confirmed },
+        relations: { passenger: true },
+        order: { createdAt: 'ASC' },
+      });
+      expect(result.filename).toBe(
+        'manifest-the-demo-band-novi-sad-2026-09-10.csv',
+      );
+      expect(result.csv).toBe(
+        'name,email,phone,seats,paid,status\n' +
+          'Ana Passenger,ana@gigdrive.demo,+38160111222,2,yes,CONFIRMED\n' +
+          'Pat Rider,pat@gigdrive.demo,,1,no,CONFIRMED\n',
+      );
+    });
+
+    it('returns a header-only CSV when there are no confirmed bookings', async () => {
+      bookingsRepository.find.mockResolvedValue([]);
+
+      const result = await service.exportManifest(tripId);
+
+      expect(result.csv).toBe('name,email,phone,seats,paid,status\n');
+    });
+
+    it('throws NotFound for an unknown trip', async () => {
+      tripsRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.exportManifest('missing')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(bookingsRepository.find).not.toHaveBeenCalled();
     });
   });
 
