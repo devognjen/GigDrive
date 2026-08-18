@@ -1,0 +1,22 @@
+<a
+  class="result card flex h-full flex-col overflow-hidden p-0 text-night no-underline transition hover:border-stage"
+  [routerLink]="['/concerts', concert().id]"
+>
+  <app-concert-media [imageUrl]="concert().imageUrl" [artist]="concert().artist" />
+  <div class="flex flex-1 flex-col gap-2 p-4 sm:p-5">
+    <h2 class="m-0 font-display text-lg font-bold leading-tight">{{ concert().artist }}</h2>
+    @if (showTitle()) {
+      <p class="m-0 text-sm text-night/60">{{ concert().title }}</p>
+    }
+    <p class="m-0 font-semibold">{{ concert().startAt | date: 'MMM d, y' }}</p>
+    <p class="m-0 text-sm text-night/60">{{ concert().city }} · {{ concert().venue }}</p>
+    <span class="mt-auto flex flex-wrap gap-2">
+      @if (concert().genre) {
+        <span class="badge genre">{{ concert().genre }}</span>
+      }
+      @if (concert().userSubmitted) {
+        <span class="badge user-submitted">user-submitted</span>
+      }
+    </span>
+  </div>
+</a>

@@ -51,29 +51,10 @@
   } @else if (results().length === 0) {
     <p class="state mt-6">No concerts found. Try adjusting your filters.</p>
   } @else {
-    <ul class="results mt-6 flex list-none flex-col gap-3 p-0">
+    <ul class="results mt-6 m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
       @for (concert of results(); track concert.id) {
         <li>
-          <a
-            class="result card flex flex-col gap-1 text-night no-underline transition hover:border-stage"
-            [routerLink]="['/concerts', concert.id]"
-          >
-            <span class="headline">
-              <strong>{{ concert.artist }}</strong> — {{ concert.title }}
-            </span>
-            <span class="meta text-sm text-night/60">
-              {{ concert.venue }}, {{ concert.city }}, {{ concert.country }} ·
-              {{ concert.startAt | date: 'mediumDate' }}
-            </span>
-            <span class="mt-1 flex flex-wrap gap-2">
-              @if (concert.genre) {
-                <span class="badge genre">{{ concert.genre }}</span>
-              }
-              @if (concert.userSubmitted) {
-                <span class="badge user-submitted">user-submitted</span>
-              }
-            </span>
-          </a>
+          <app-concert-card [concert]="concert" />
         </li>
       }
     </ul>

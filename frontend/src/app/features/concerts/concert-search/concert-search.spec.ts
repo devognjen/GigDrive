@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { Concert } from '../../../core/models/concert.model';
+import { todayIsoDate } from '../../../core/utils/local-datetime';
 import { ConcertSearch } from './concert-search';
 
 const mockConcerts: Concert[] = [
@@ -87,12 +88,12 @@ describe('ConcertSearch', () => {
     httpTesting.expectOne((r) => r.url === '/api/concerts/search').flush([]);
   });
 
-  it('triggers an initial unfiltered search', () => {
+  it('triggers an initial search from today', () => {
     vi.advanceTimersByTime(300);
 
     const req = httpTesting.expectOne((r) => r.url === '/api/concerts/search');
     expect(req.request.method).toBe('GET');
-    expect(req.request.params.keys().length).toBe(0);
+    expect(req.request.params.get('dateFrom')).toBe(todayIsoDate());
     req.flush(mockConcerts);
   });
 
@@ -157,7 +158,7 @@ describe('ConcertSearch', () => {
 
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Metallica');
-    expect(text).toContain('Stade de France, Paris, France');
+    expect(text).toContain('Paris · Stade de France');
     expect(text).toContain('Metal');
 
     const first = items[0];

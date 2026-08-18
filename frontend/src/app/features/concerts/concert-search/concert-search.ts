@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -7,11 +6,13 @@ import { catchError, debounceTime, distinctUntilChanged, map, of, startWith, swi
 
 import { AuthService } from '../../../core/services/auth.service';
 import { Concert, ConcertSearchParams } from '../../../core/models/concert.model';
+import { todayIsoDate } from '../../../core/utils/local-datetime';
+import { ConcertCard } from '../concert-card/concert-card';
 import { ConcertService } from '../concert.service';
 
 @Component({
   selector: 'app-concert-search',
-  imports: [ReactiveFormsModule, RouterLink, DatePipe],
+  imports: [ReactiveFormsModule, RouterLink, ConcertCard],
   templateUrl: './concert-search.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -22,7 +23,7 @@ export class ConcertSearch {
   protected readonly filters = new FormGroup({
     q: new FormControl('', { nonNullable: true }),
     city: new FormControl('', { nonNullable: true }),
-    dateFrom: new FormControl('', { nonNullable: true }),
+    dateFrom: new FormControl(todayIsoDate(), { nonNullable: true }),
     dateTo: new FormControl('', { nonNullable: true }),
     genre: new FormControl('', { nonNullable: true }),
   });

@@ -1,0 +1,7 @@
+@if (imageUrl(); as url) {
+  <img [src]="url" [alt]="artist()" [class]="imageClass()" />
+} @else {
+  <div [class]="placeholderClass()" aria-hidden="true">
+    <span [class]="initialClass()">{{ initial() }}</span>
+  </div>
+}
