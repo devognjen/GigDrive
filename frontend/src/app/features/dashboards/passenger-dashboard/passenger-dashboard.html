@@ -1,7 +1,7 @@
 <div class="dashboard">
-  <header class="dash-header">
-    <h1>Passenger dashboard</h1>
-    <a routerLink="/dashboard/driver">Driver dashboard</a>
+  <header class="dash-header mb-6 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
+    <h1 class="m-0">Passenger dashboard</h1>
+    <a class="link" routerLink="/dashboard/driver">Driver dashboard</a>
   </header>
 
   @if (loading()) {
@@ -24,7 +24,7 @@
       (review)="submitReview($event)"
     />
 
-    <section class="waitlist">
+    <section class="waitlist mt-8">
       <h2>Waitlist</h2>
       @if (waitlistError()) {
         <p class="error" role="alert">{{ waitlistError() }}</p>

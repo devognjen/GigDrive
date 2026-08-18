@@ -23,7 +23,6 @@ export interface ReviewSubmission {
   selector: 'app-booking-list',
   imports: [DatePipe, RouterLink, ReviewForm],
   templateUrl: './booking-list.html',
-  styleUrl: './booking-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingList {

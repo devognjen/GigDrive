@@ -1,24 +1,24 @@
 @if (entries.length === 0) {
   <p class="state">{{ emptyMessage }}</p>
 } @else {
-  <ul class="waitlist-list">
+  <ul class="waitlist-list mt-3 m-0 grid list-none gap-3 p-0">
     @for (entry of entries; track entry.id) {
-      <li class="entry">
-        <div class="position">#{{ entry.position }}</div>
-        <div class="trip">
-          <a [routerLink]="['/trips', entry.tripId]">
+      <li class="entry card flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div class="position font-display text-lg font-bold text-foil">#{{ entry.position }}</div>
+        <div class="trip flex-1">
+          <a class="link" [routerLink]="['/trips', entry.tripId]">
             {{ entry.trip.concertArtist || 'Trip' }}
             @if (entry.trip.concertTitle) {
               — {{ entry.trip.concertTitle }}
             }
           </a>
         </div>
-        <div class="seats">{{ entry.seats }} seat{{ entry.seats === 1 ? '' : 's' }}</div>
-        <div class="joined">Joined {{ entry.createdAt | date: 'medium' }}</div>
+        <div class="seats text-sm text-night/60">{{ entry.seats }} seat{{ entry.seats === 1 ? '' : 's' }}</div>
+        <div class="joined text-sm text-night/60">Joined {{ entry.createdAt | date: 'medium' }}</div>
         <div class="actions">
           <button
             type="button"
-            class="danger"
+            class="danger btn btn-danger"
             (click)="leave.emit(entry)"
             [disabled]="pendingTripId === entry.tripId"
           >

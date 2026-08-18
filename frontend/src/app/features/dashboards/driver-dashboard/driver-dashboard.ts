@@ -31,7 +31,6 @@ import {
   selector: 'app-driver-dashboard',
   imports: [RouterLink, TripCard, BookingList],
   templateUrl: './driver-dashboard.html',
-  styleUrl: './driver-dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DriverDashboard {

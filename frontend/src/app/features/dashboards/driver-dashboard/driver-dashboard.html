@@ -1,7 +1,7 @@
 <div class="dashboard">
-  <header class="dash-header">
-    <h1>Driver dashboard</h1>
-    <a routerLink="/dashboard/passenger">Passenger dashboard</a>
+  <header class="dash-header mb-6 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
+    <h1 class="m-0">Driver dashboard</h1>
+    <a class="link" routerLink="/dashboard/passenger">Passenger dashboard</a>
   </header>
 
   @if (loading()) {
@@ -14,15 +14,15 @@
       <p class="error" role="alert">{{ exportError() }}</p>
     }
 
-    <section class="earnings">
+    <section class="earnings mb-8">
       <h2>Earnings</h2>
       @if (earnings().length === 0) {
         <p class="state">No confirmed bookings yet, so there are no earnings to show.</p>
       } @else {
-        <ul>
+        <ul class="mt-3 m-0 grid list-none gap-3 p-0">
           @for (row of earnings(); track row.currency) {
-            <li>
-              <strong>{{ formatTotal(row.total, row.currency) }}</strong>
+            <li class="card flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-4">
+              <strong class="text-foil">{{ formatTotal(row.total, row.currency) }}</strong>
               <span>paid {{ formatTotal(row.paid, row.currency) }}</span>
               <span>unpaid {{ formatTotal(row.unpaid, row.currency) }}</span>
             </li>
@@ -31,17 +31,17 @@
       }
     </section>
 
-    <section>
+    <section class="mb-8">
       <h2>Your trips</h2>
       @if (trips().length === 0) {
         <p class="state">You have not organized any trips yet.</p>
       } @else {
-        <ul class="trips">
+        <ul class="trips mt-3 m-0 flex list-none flex-col gap-3 p-0">
           @for (trip of trips(); track trip.id) {
-            <li>
+            <li class="grid gap-2">
               <app-trip-card [trip]="trip" [showDriver]="false" />
               @if (trip.confirmedSeats > 0) {
-                <button type="button" class="export" (click)="exportCsv(trip)">
+                <button type="button" class="export btn btn-ghost w-fit" (click)="exportCsv(trip)">
                   Export CSV
                 </button>
               }

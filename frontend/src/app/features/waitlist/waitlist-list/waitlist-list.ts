@@ -12,7 +12,6 @@ import { WaitlistEntry } from '../../../core/models/waitlist.model';
   selector: 'app-waitlist-list',
   imports: [DatePipe, RouterLink],
   templateUrl: './waitlist-list.html',
-  styleUrl: './waitlist-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WaitlistList {

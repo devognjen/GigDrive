@@ -1,31 +1,31 @@
 @if (bookings.length === 0) {
   <p class="state">{{ emptyMessage }}</p>
 } @else {
-  <ul class="booking-list">
+  <ul class="booking-list mt-3 m-0 grid list-none gap-3 p-0">
     @for (booking of bookings; track booking.id) {
-      <li class="booking">
-        <div class="status">{{ booking.status }}</div>
+      <li class="booking card grid gap-2 sm:grid-cols-[1fr_auto]">
+        <div class="status font-semibold capitalize">{{ booking.status }}</div>
         <div class="trip">
-          <a [routerLink]="['/trips', booking.tripId]">
+          <a class="link" [routerLink]="['/trips', booking.tripId]">
             {{ booking.trip.concertArtist || 'Trip' }}
             @if (booking.trip.concertTitle) {
               — {{ booking.trip.concertTitle }}
             }
           </a>
         </div>
-        <div class="price">{{ formatPrice(booking) }} / person</div>
-        <div class="seats">{{ booking.seats }} seat{{ booking.seats === 1 ? '' : 's' }}</div>
-        <div class="paid">{{ booking.paid ? 'Paid' : 'Not paid' }}</div>
+        <div class="price font-semibold text-foil">{{ formatPrice(booking) }} / person</div>
+        <div class="seats text-sm text-night/60">{{ booking.seats }} seat{{ booking.seats === 1 ? '' : 's' }}</div>
+        <div class="paid text-sm text-night/60">{{ booking.paid ? 'Paid' : 'Not paid' }}</div>
         @if (mode === 'driver') {
-          <div class="passenger">{{ booking.passengerName }}</div>
+          <div class="passenger text-sm text-night/60">{{ booking.passengerName }}</div>
         }
-        <div class="requested">Requested {{ booking.createdAt | date: 'medium' }}</div>
+        <div class="requested text-sm text-night/60">Requested {{ booking.createdAt | date: 'medium' }}</div>
 
-        <div class="actions">
+        <div class="actions col-span-full mt-2 flex flex-col gap-2 sm:flex-row">
           @if (mode === 'driver' && booking.status === 'PENDING') {
             <button
               type="button"
-              class="accept"
+              class="accept btn btn-confirm"
               (click)="accept.emit(booking)"
               [disabled]="pendingId === booking.id"
             >
@@ -33,7 +33,7 @@
             </button>
             <button
               type="button"
-              class="danger"
+              class="danger btn btn-danger"
               (click)="reject.emit(booking)"
               [disabled]="pendingId === booking.id"
             >
@@ -43,6 +43,7 @@
           @if (mode === 'driver' && booking.status === 'CONFIRMED') {
             <button
               type="button"
+              class="btn btn-ghost"
               (click)="togglePaid.emit(booking)"
               [disabled]="pendingId === booking.id"
             >
@@ -52,7 +53,7 @@
           @if (mode === 'passenger' && canCancel(booking)) {
             <button
               type="button"
-              class="danger"
+              class="danger btn btn-danger"
               (click)="cancel.emit(booking)"
               [disabled]="pendingId === booking.id"
             >
@@ -63,6 +64,7 @@
 
         @if (mode === 'passenger' && booking.canReview) {
           <app-review-form
+            class="col-span-full"
             [pending]="reviewPendingTripId === booking.tripId"
             (submitted)="review.emit({ booking, rating: $event.rating, comment: $event.comment })"
           />

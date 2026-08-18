@@ -25,7 +25,6 @@ import {
   selector: 'app-passenger-dashboard',
   imports: [RouterLink, BookingList, WaitlistList],
   templateUrl: './passenger-dashboard.html',
-  styleUrl: './passenger-dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PassengerDashboard {
