@@ -3,6 +3,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
+  HostListener,
   inject,
   input,
   OnInit,
@@ -36,6 +38,7 @@ import { ConcertService } from '../concert.service';
 export class ConcertPicker implements OnInit {
   private readonly concertService = inject(ConcertService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly host = inject(ElementRef<HTMLElement>);
 
   /** Trip form control that stores the selected concert UUID. */
   readonly concertIdControl = input.required<FormControl<string>>();
@@ -47,6 +50,7 @@ export class ConcertPicker implements OnInit {
   protected readonly open = signal(false);
   protected readonly loading = signal(false);
   protected readonly searchFailed = signal(false);
+  protected readonly activeIndex = signal(-1);
 
   private searchStarted = false;
 
@@ -54,8 +58,52 @@ export class ConcertPicker implements OnInit {
     const id = this.concertIdControl().value.trim();
     if (id) {
       this.loadSelected(id);
-    } else {
-      this.startSearch();
+    }
+  }
+
+  protected onFocus(): void {
+    this.openPanel();
+  }
+
+  protected onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      this.open.set(false);
+      return;
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (!this.open()) {
+        this.openPanel();
+        return;
+      }
+      this.moveActive(1);
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!this.open()) {
+        this.openPanel();
+        return;
+      }
+      this.moveActive(-1);
+      return;
+    }
+    if (event.key === 'Enter' && this.open()) {
+      event.preventDefault();
+      const concert = this.results()[this.activeIndex()];
+      if (concert) {
+        this.select(concert);
+      }
+    }
+  }
+
+  @HostListener('document:pointerdown', ['$event'])
+  protected onDocumentPointerDown(event: PointerEvent): void {
+    if (!this.open()) {
+      return;
+    }
+    if (!this.host.nativeElement.contains(event.target as Node)) {
+      this.open.set(false);
     }
   }
 
@@ -66,14 +114,49 @@ export class ConcertPicker implements OnInit {
     this.concertIdControl().markAsTouched();
     this.concertChange.emit(concert);
     this.open.set(false);
-    this.query.setValue('');
+    this.query.setValue('', { emitEvent: false });
   }
 
   protected clear(): void {
     this.selected.set(null);
     this.concertIdControl().setValue('');
     this.concertChange.emit(null);
+    this.openPanel();
+  }
+
+  /** Ticketmaster often repeats the artist as the title; show the name once. */
+  protected showTitle(concert: Concert): boolean {
+    return concert.artist !== concert.title;
+  }
+
+  protected optionId(id: string): string {
+    return `concert-option-${id}`;
+  }
+
+  protected activeOptionId(): string | null {
+    if (!this.open()) {
+      return null;
+    }
+    const concert = this.results()[this.activeIndex()];
+    return concert ? this.optionId(concert.id) : null;
+  }
+
+  private openPanel(): void {
+    this.open.set(true);
+    if (!this.searchStarted) {
+      this.loading.set(true);
+    }
     this.startSearch();
+  }
+
+  private moveActive(delta: number): void {
+    const count = this.results().length;
+    if (count === 0) {
+      this.activeIndex.set(-1);
+      return;
+    }
+    const next = (this.activeIndex() + delta + count) % count;
+    this.activeIndex.set(next);
   }
 
   private loadSelected(id: string): void {
@@ -89,14 +172,12 @@ export class ConcertPicker implements OnInit {
         this.concertIdControl().setValue('');
         this.concertChange.emit(null);
         this.loading.set(false);
-        this.startSearch();
       },
     });
   }
 
   private startSearch(): void {
     if (this.searchStarted) {
-      this.open.set(true);
       return;
     }
     this.searchStarted = true;
@@ -109,7 +190,6 @@ export class ConcertPicker implements OnInit {
         tap(() => {
           this.loading.set(true);
           this.searchFailed.set(false);
-          this.open.set(true);
         }),
         switchMap((q) => {
           const request$ = q
@@ -126,6 +206,7 @@ export class ConcertPicker implements OnInit {
       )
       .subscribe((concerts) => {
         this.results.set(concerts);
+        this.activeIndex.set(concerts.length > 0 ? 0 : -1);
         this.loading.set(false);
       });
   }

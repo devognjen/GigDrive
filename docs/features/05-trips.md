@@ -48,7 +48,7 @@ All transitions are server-side only; transitions trigger email notifications (s
 
 ### Frontend (Angular)
 - Trip creation/edit reactive form with validation (incl. pickup stops).
-- Concert picker on create/edit: searchable combobox of upcoming concerts (no raw UUID). Prefills from `?concertId=`; concert details and per-concert trip lists link here. Choosing a concert with empty dates suggests departure 3 hours before start and a deadline a day before departure.
+- Concert picker on create/edit: searchable combobox of upcoming concerts (no raw UUID). The list opens as a scrollable overlay on focus (upcoming when empty, search as you type) so it does not push the rest of the form. Prefills from `?concertId=`; concert details and per-concert trip lists link here. Choosing a concert with empty dates suggests departure 3 hours before start and a deadline a day before departure.
 - Create/edit pricing is grouped as mode + major-unit amount with a compact currency suffix and a live per-person preview; capacity is min-to-go / seats offered with `min ≤ max ≤ vehicle.seats` checked in the form.
 - Native `datetime-local` min/max plus a cross-field validator enforce deadline < departure ≤ concert start (also enforced in TripsService).
 - Trip browsing per concert with reactive filters (`combineLatest([trips$, filters$])`) and live price recompute.

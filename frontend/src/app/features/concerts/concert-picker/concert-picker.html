@@ -1,10 +1,13 @@
 <div class="concert-picker">
-  @if (loading() && !selected() && results().length === 0 && !open()) {
+  @if (loading() && !selected() && !open()) {
     <p class="state">Loading concerts…</p>
   } @else if (selected(); as concert) {
     <div class="selected card">
       <p class="headline m-0">
-        <strong>{{ concert.artist }}</strong> — {{ concert.title }}
+        <strong>{{ concert.artist }}</strong>
+        @if (showTitle(concert)) {
+          — {{ concert.title }}
+        }
       </p>
       <p class="meta mt-1 text-sm text-night/60">
         {{ concert.venue }}, {{ concert.city }} · {{ concert.startAt | date: 'medium' }}
@@ -12,50 +15,64 @@
       <button type="button" class="change btn btn-ghost mt-3" (click)="clear()">Change</button>
     </div>
   } @else {
-    <input
-      id="concert-query"
-      type="text"
-      role="combobox"
-      [formControl]="query"
-      [attr.aria-expanded]="open()"
-      aria-autocomplete="list"
-      aria-controls="concert-results"
-      aria-labelledby="concert-label"
-      placeholder="Search by artist or title"
-      autocomplete="off"
-      (focus)="open.set(true)"
-    />
-    @if (open()) {
-      @if (loading()) {
-        <p class="state mt-2">Searching…</p>
-      } @else if (searchFailed()) {
-        <p class="state mt-2">Couldn't load concerts. Try again.</p>
-      } @else if (results().length === 0) {
-        <p class="state mt-2">No upcoming concerts match.</p>
-      } @else {
-        <ul
-          id="concert-results"
-          class="results mt-2 m-0 flex list-none flex-col gap-1 overflow-hidden rounded-xl border border-mist bg-raised p-0"
-          role="listbox"
+    <div class="relative">
+      <input
+        id="concert-query"
+        type="text"
+        role="combobox"
+        [formControl]="query"
+        [attr.aria-expanded]="open()"
+        [attr.aria-activedescendant]="activeOptionId()"
+        aria-autocomplete="list"
+        aria-controls="concert-results"
+        aria-labelledby="concert-label"
+        placeholder="Search by artist or title"
+        autocomplete="off"
+        (focus)="onFocus()"
+        (keydown)="onKeydown($event)"
+      />
+      @if (open()) {
+        <div
+          class="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-mist bg-raised shadow-sm"
         >
-          @for (concert of results(); track concert.id) {
-            <li
-              role="option"
-              class="result cursor-pointer px-3 py-2 hover:bg-paper"
-              (mousedown)="select(concert, $event)"
+          @if (loading()) {
+            <p class="state px-3 py-2">Searching…</p>
+          } @else if (searchFailed()) {
+            <p class="state px-3 py-2">Couldn't load concerts. Try again.</p>
+          } @else if (results().length === 0) {
+            <p class="state px-3 py-2">No upcoming concerts match.</p>
+          } @else {
+            <ul
+              id="concert-results"
+              class="results m-0 max-h-64 list-none overflow-y-auto p-0"
+              role="listbox"
             >
-              <span class="headline block">
-                <strong>{{ concert.artist }}</strong> — {{ concert.title }}
-              </span>
-              <span class="meta text-sm text-night/60">
-                {{ concert.venue }}, {{ concert.city }} ·
-                {{ concert.startAt | date: 'mediumDate' }}
-              </span>
-            </li>
+              @for (concert of results(); track concert.id) {
+                <li
+                  role="option"
+                  class="result cursor-pointer px-3 py-2 hover:bg-paper"
+                  [id]="optionId(concert.id)"
+                  [class.bg-paper]="activeIndex() === $index"
+                  [attr.aria-selected]="activeIndex() === $index"
+                  (mousedown)="select(concert, $event)"
+                >
+                  <span class="headline block">
+                    <strong>{{ concert.artist }}</strong>
+                    @if (showTitle(concert)) {
+                      — {{ concert.title }}
+                    }
+                  </span>
+                  <span class="meta text-sm text-night/60">
+                    {{ concert.venue }}, {{ concert.city }} ·
+                    {{ concert.startAt | date: 'mediumDate' }}
+                  </span>
+                </li>
+              }
+            </ul>
           }
-        </ul>
+        </div>
       }
-    }
+    </div>
   }
 
   <p class="add-manual mt-2 text-sm text-night/70">

@@ -44,6 +44,18 @@ describe('ConcertPicker', () => {
     httpTesting.verify();
   });
 
+  function queryInput(): HTMLInputElement {
+    return fixture.nativeElement.querySelector('#concert-query') as HTMLInputElement;
+  }
+
+  function focusQuery(): HTMLInputElement {
+    fixture.detectChanges();
+    const input = queryInput();
+    input.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    return input;
+  }
+
   function flushUpcoming(concerts: Concert[] = [concert]): void {
     vi.advanceTimersByTime(300);
     const req = httpTesting.expectOne('/api/concerts/upcoming');
@@ -52,20 +64,34 @@ describe('ConcertPicker', () => {
     fixture.detectChanges();
   }
 
-  it('lists upcoming concerts when the query is empty', () => {
+  function openUpcoming(concerts: Concert[] = [concert]): HTMLInputElement {
+    const input = focusQuery();
+    flushUpcoming(concerts);
+    return input;
+  }
+
+  it('does not fetch or list concerts until the field is focused', () => {
     fixture.detectChanges();
-    flushUpcoming();
+
+    httpTesting.expectNone('/api/concerts/upcoming');
+    expect(queryInput()).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.results')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Metallica');
+  });
+
+  it('lists upcoming concerts in an overlay when the query is empty', () => {
+    openUpcoming();
 
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Metallica');
     expect(text).toContain('Stade de France, Paris');
+    expect(fixture.nativeElement.querySelector('.results')).toBeTruthy();
+    expect(queryInput()).toBeTruthy();
   });
 
   it('searches upcoming concerts as the user types', () => {
-    fixture.detectChanges();
-    flushUpcoming([]);
+    const input = openUpcoming([]);
 
-    const input = fixture.nativeElement.querySelector('#concert-query') as HTMLInputElement;
     input.value = 'metal';
     input.dispatchEvent(new Event('input'));
     vi.advanceTimersByTime(300);
@@ -80,8 +106,7 @@ describe('ConcertPicker', () => {
   });
 
   it('writes the concert id on select and emits the concert', () => {
-    fixture.detectChanges();
-    flushUpcoming();
+    openUpcoming();
 
     const option = fixture.nativeElement.querySelector('.result') as HTMLElement;
     option.dispatchEvent(new Event('mousedown'));
@@ -90,7 +115,7 @@ describe('ConcertPicker', () => {
     expect(host.control.value).toBe('c1');
     expect(host.lastConcert).toEqual(concert);
     expect(fixture.nativeElement.textContent).toContain('Change');
-    expect(fixture.nativeElement.querySelector('#concert-query')).toBeNull();
+    expect(queryInput()).toBeNull();
   });
 
   it('loads a preselected concert by id', () => {
@@ -104,10 +129,10 @@ describe('ConcertPicker', () => {
 
     expect(host.lastConcert).toEqual(concert);
     expect(fixture.nativeElement.textContent).toContain('M72 World Tour');
-    expect(fixture.nativeElement.querySelector('#concert-query')).toBeNull();
+    expect(queryInput()).toBeNull();
   });
 
-  it('falls back to search when the preselected concert is missing', () => {
+  it('falls back to the search field when the preselected concert is missing', () => {
     host.control.setValue('missing');
     fixture.detectChanges();
 
@@ -115,10 +140,76 @@ describe('ConcertPicker', () => {
       .expectOne('/api/concerts/missing')
       .flush({ message: 'Not Found' }, { status: 404, statusText: 'Not Found' });
     fixture.detectChanges();
-    flushUpcoming([]);
 
     expect(host.control.value).toBe('');
     expect(host.lastConcert).toBeNull();
-    expect(fixture.nativeElement.querySelector('#concert-query')).toBeTruthy();
+    expect(queryInput()).toBeTruthy();
+    httpTesting.expectNone('/api/concerts/upcoming');
+  });
+
+  it('omits a duplicate title when artist and title are the same', () => {
+    const duplicate = buildConcert({ artist: 'MATT GOLD', title: 'MATT GOLD' });
+    openUpcoming([duplicate]);
+
+    const headline = fixture.nativeElement.querySelector('.headline') as HTMLElement;
+    expect(headline.textContent).toContain('MATT GOLD');
+    expect(headline.textContent).not.toContain('—');
+  });
+
+  it('closes the overlay on Escape', () => {
+    const input = openUpcoming();
+
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.results')).toBeNull();
+    expect(queryInput()).toBeTruthy();
+  });
+
+  it('closes the overlay on pointerdown outside the picker', () => {
+    openUpcoming();
+
+    document.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.results')).toBeNull();
+  });
+
+  it('selects the highlighted concert on Enter', () => {
+    const input = openUpcoming();
+
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(host.control.value).toBe('c1');
+    expect(host.lastConcert).toEqual(concert);
+    expect(fixture.nativeElement.textContent).toContain('Change');
+  });
+
+  it('moves the highlight with arrow keys', () => {
+    const second = buildConcert({ id: 'c2', artist: 'Opeth', title: 'Ghost Reveries' });
+    const input = openUpcoming([concert, second]);
+
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(host.control.value).toBe('c2');
+    expect(host.lastConcert).toEqual(second);
+  });
+
+  it('reopens the overlay when Change is clicked', () => {
+    openUpcoming();
+
+    const option = fixture.nativeElement.querySelector('.result') as HTMLElement;
+    option.dispatchEvent(new Event('mousedown'));
+    fixture.detectChanges();
+
+    const change = fixture.nativeElement.querySelector('.change') as HTMLButtonElement;
+    change.click();
+    fixture.detectChanges();
+
+    expect(queryInput()).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.results')).toBeTruthy();
   });
 });

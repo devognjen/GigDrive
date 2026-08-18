@@ -50,9 +50,6 @@ describe('TripCreate', () => {
     fixture.detectChanges();
     httpTesting.expectOne('/api/vehicles').flush(list);
     fixture.detectChanges();
-    vi.advanceTimersByTime(300);
-    httpTesting.expectOne('/api/concerts/upcoming').flush([concert]);
-    fixture.detectChanges();
   }
 
   function fillValidForm(): void {
@@ -116,7 +113,7 @@ describe('TripCreate', () => {
     showForm();
 
     expect(fixture.nativeElement.querySelector('#concertId')).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Metallica');
+    expect(fixture.nativeElement.querySelector('#concert-query')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('a[href="/concerts/new"]')).toBeTruthy();
   });
 
