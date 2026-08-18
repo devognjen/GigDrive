@@ -44,7 +44,16 @@
       }
 
       <section class="trips">
-        <h3>Trips to this concert</h3>
+        <div class="trips-header">
+          <h3>Trips to this concert</h3>
+          <a
+            class="offer-ride"
+            [routerLink]="['/trips/new']"
+            [queryParams]="{ concertId: data.concert.id }"
+          >
+            Offer a ride to this concert
+          </a>
+        </div>
         @if (data.trips.length === 0) {
           <p class="state">No trips yet</p>
         } @else {
@@ -55,8 +64,10 @@
                   <span class="driver">{{ trip.driverName }}</span>
                   <span class="badge status">{{ trip.status }}</span>
                   <span class="meta">
-                    Departs {{ trip.departureAt | date: 'medium' }} ·
-                    {{ trip.minPassengers }}–{{ trip.maxPassengers }} passengers
+                    Departs {{ trip.departureAt | date: 'medium' }} · {{ trip.minPassengers }}–{{
+                      trip.maxPassengers
+                    }}
+                    passengers
                   </span>
                 </a>
               </li>

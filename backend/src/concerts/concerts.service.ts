@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { OpenMeteoService } from '../integrations/open-meteo/open-meteo.service';
 import {
   ProviderConcert,
@@ -20,6 +20,9 @@ import { SearchConcertsDto } from './dto/search-concerts.dto';
 import { Concert } from './entities/concert.entity';
 
 export const CONCERTS_PAGE_SIZE = 20;
+
+/** Upcoming concerts returned to the trip-create picker (cache only). */
+export const UPCOMING_CONCERTS_LIMIT = 100;
 
 @Injectable()
 export class ConcertsService {
@@ -62,6 +65,19 @@ export class ConcertsService {
     await this.upsertProviderConcerts(fetched);
     const cachedAfterSync = await this.searchCache(dto);
     return cachedAfterSync.map((concert) => ConcertDto.fromEntity(concert));
+  }
+
+  /**
+   * Upcoming concerts from the local cache, for the trip-create picker.
+   * Cache-only (no Ticketmaster) so typing a ride offer never burns quota.
+   */
+  async listUpcoming(): Promise<ConcertDto[]> {
+    const concerts = await this.concertsRepository.find({
+      where: { startAt: MoreThanOrEqual(new Date()) },
+      order: { startAt: 'ASC' },
+      take: UPCOMING_CONCERTS_LIMIT,
+    });
+    return concerts.map((concert) => ConcertDto.fromEntity(concert));
   }
 
   /**
@@ -173,9 +189,7 @@ export class ConcertsService {
     return qb.getMany();
   }
 
-  private async distinctColumn(
-    column: 'city' | 'genre',
-  ): Promise<string[]> {
+  private async distinctColumn(column: 'city' | 'genre'): Promise<string[]> {
     const rows = await this.concertsRepository
       .createQueryBuilder('concert')
       .select(`MIN(concert.${column})`, 'value')

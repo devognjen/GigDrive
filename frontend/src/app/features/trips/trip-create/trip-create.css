@@ -21,7 +21,8 @@
       flex-direction: column;
       gap: 0.25rem;
 
-      label {
+      label,
+      .label {
         font-weight: 500;
       }
 

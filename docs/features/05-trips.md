@@ -31,7 +31,7 @@ All transitions are server-side only; transitions trigger email notifications (s
 ## Functional requirements
 
 - **FR-TRIP-01 (Must):** Create trip: vehicle, concert, totalCost, min/max passengers, deadline, pickup stops, round-trip flag, pricing mode.
-- **FR-TRIP-02 (Must):** Validation: `min ≤ max ≤ vehicle.seats`, deadline < concert date.
+- **FR-TRIP-02 (Must):** Validation: `min ≤ max ≤ vehicle.seats`, confirmation deadline < departure ≤ concert date.
 - **FR-TRIP-03 (Must):** Browse/filter trips per concert: departure city, vehicle type, price band, seats left, min driver rating; sorting (cheapest, "most likely to happen").
 - **FR-TRIP-04 (Must):** Live per-person price displayed and reactively recomputed.
 - **FR-TRIP-05 (Must):** Driver actions: edit (while OPEN), confirm (READY→CONFIRMED), cancel.
@@ -48,6 +48,8 @@ All transitions are server-side only; transitions trigger email notifications (s
 
 ### Frontend (Angular)
 - Trip creation/edit reactive form with validation (incl. pickup stops).
+- Concert picker on create/edit: searchable combobox of upcoming concerts (no raw UUID). Prefills from `?concertId=`; concert details and per-concert trip lists link here. Choosing a concert with empty dates suggests departure 3 hours before start and a deadline a day before departure.
+- Native `datetime-local` min/max plus a cross-field validator enforce deadline < departure ≤ concert start (also enforced in TripsService).
 - Trip browsing per concert with reactive filters (`combineLatest([trips$, filters$])`) and live price recompute.
 - Trip details page (param route) with price band, live price, stops, driver rating.
 - Sorting: cheapest, "most likely to happen".
@@ -72,7 +74,7 @@ Enums: `TripStatus`, `PricingMode` (module-level).
 
 ## Acceptance criteria
 
-- Trip creation enforces FR-TRIP-02 validation rules.
+- Trip creation enforces FR-TRIP-02 validation rules (`min ≤ max ≤ vehicle.seats`, deadline < departure ≤ concert date).
 - Live price matches the §4.1 formula for both pricing modes and updates on every confirmed-seat change.
 - Filters and sorting work per FR-TRIP-03.
 - Only the driver can edit (while OPEN), confirm (READY→CONFIRMED) or cancel.

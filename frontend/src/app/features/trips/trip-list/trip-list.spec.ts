@@ -74,4 +74,16 @@ describe('TripList', () => {
     expect(text).toContain('Demo Driver');
     expect(text).toContain('30.00 €');
   });
+
+  it('passes a concert filter through to the offer-a-ride link', () => {
+    vi.advanceTimersByTime(300);
+    httpTesting.expectOne((r) => r.url === '/api/trips').flush([]);
+
+    component['concertId'].set('c1');
+    fixture.detectChanges();
+    httpTesting.match((r) => r.url === '/api/trips').forEach((req) => req.flush([]));
+
+    const link = fixture.nativeElement.querySelector('.new-trip') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe('/trips/new?concertId=c1');
+  });
 });

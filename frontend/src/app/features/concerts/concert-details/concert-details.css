@@ -60,6 +60,22 @@
   .trips {
     margin-top: 2rem;
 
+    .trips-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+
+      h3 {
+        margin: 0;
+      }
+
+      .offer-ride {
+        font-size: 0.9rem;
+      }
+    }
+
     ul {
       list-style: none;
       margin: 0;

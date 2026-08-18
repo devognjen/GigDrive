@@ -24,12 +24,10 @@
       </div>
 
       <div class="field">
-        <label for="concertId">Concert ID</label>
-        <input
-          id="concertId"
-          type="text"
-          formControlName="concertId"
-          placeholder="UUID of the concert"
+        <span class="label" id="concert-label">Concert</span>
+        <app-concert-picker
+          [concertIdControl]="form.controls.concertId"
+          (concertChange)="onConcertChange($event)"
         />
         @if (form.controls.concertId.touched && form.controls.concertId.hasError('required')) {
           <p class="error">A concert is required.</p>
@@ -88,13 +86,38 @@
             id="confirmationDeadline"
             type="datetime-local"
             formControlName="confirmationDeadline"
+            [attr.max]="deadlineMax() || null"
           />
         </div>
         <div class="field">
           <label for="departureAt">Departure</label>
-          <input id="departureAt" type="datetime-local" formControlName="departureAt" />
+          <input
+            id="departureAt"
+            type="datetime-local"
+            formControlName="departureAt"
+            [attr.min]="departureMin() || null"
+            [attr.max]="departureMax() || null"
+          />
         </div>
       </div>
+      @if (
+        form.hasError('deadlineAfterDeparture') &&
+        (form.controls.confirmationDeadline.touched || form.controls.departureAt.touched)
+      ) {
+        <p class="error">Departure must be after the confirmation deadline.</p>
+      }
+      @if (
+        form.hasError('deadlineAfterConcert') &&
+        (form.controls.confirmationDeadline.touched || form.controls.departureAt.touched)
+      ) {
+        <p class="error">Confirmation deadline must be before the concert.</p>
+      }
+      @if (
+        form.hasError('departureAfterConcert') &&
+        (form.controls.confirmationDeadline.touched || form.controls.departureAt.touched)
+      ) {
+        <p class="error">Departure must be on or before the concert.</p>
+      }
 
       <div class="field">
         <label>

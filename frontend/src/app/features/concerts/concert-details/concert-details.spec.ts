@@ -138,6 +138,10 @@ describe('ConcertDetails', () => {
 
     const tickets = element.querySelector('a.tickets') as HTMLAnchorElement;
     expect(tickets.getAttribute('href')).toBe('https://tickets.example.com/m72');
+
+    const offer = element.querySelector('a.offer-ride') as HTMLAnchorElement;
+    expect(offer.getAttribute('href')).toBe('/trips/new?concertId=c1');
+    expect(offer.textContent).toContain('Offer a ride to this concert');
   });
 
   it('renders the trips linked to the concert', () => {

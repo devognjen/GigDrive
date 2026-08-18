@@ -2,7 +2,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { Concert, ConcertDetails, ConcertFilterOptions, ConcertWeather } from '../../core/models/concert.model';
+import {
+  Concert,
+  ConcertDetails,
+  ConcertFilterOptions,
+  ConcertWeather,
+} from '../../core/models/concert.model';
 import { ConcertService } from './concert.service';
 
 const mockConcert: Concert = {
@@ -101,6 +106,19 @@ describe('ConcertService', () => {
       service.search({ q: 'metal' }).subscribe((concerts) => (result = concerts));
 
       httpTesting.expectOne((r) => r.url === '/api/concerts/search').flush([mockConcert]);
+
+      expect(result).toEqual([mockConcert]);
+    });
+  });
+
+  describe('listUpcoming', () => {
+    it('requests the upcoming concerts endpoint', () => {
+      let result: Concert[] | undefined;
+      service.listUpcoming().subscribe((concerts) => (result = concerts));
+
+      const req = httpTesting.expectOne('/api/concerts/upcoming');
+      expect(req.request.method).toBe('GET');
+      req.flush([mockConcert]);
 
       expect(result).toEqual([mockConcert]);
     });

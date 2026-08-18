@@ -46,6 +46,14 @@ export class ConcertsController {
   }
 
   @Public()
+  @Get('upcoming')
+  @Header('Cache-Control', 'no-store')
+  @ApiOkResponse({ type: [ConcertDto] })
+  listUpcoming(): Promise<ConcertDto[]> {
+    return this.concertsService.listUpcoming();
+  }
+
+  @Public()
   @Get(':id/weather')
   @ApiOkResponse({ type: ConcertWeatherDto })
   getWeather(

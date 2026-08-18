@@ -1,7 +1,13 @@
 <div class="trip-list">
   <header class="trips-header">
     <h1>{{ concertId() ? 'Trips to this concert' : 'Shared rides' }}</h1>
-    <a class="new-trip" routerLink="/trips/new">Offer a ride</a>
+    <a
+      class="new-trip"
+      routerLink="/trips/new"
+      [queryParams]="concertId() ? { concertId: concertId() } : {}"
+    >
+      Offer a ride
+    </a>
   </header>
 
   <form class="filters" [formGroup]="filters">

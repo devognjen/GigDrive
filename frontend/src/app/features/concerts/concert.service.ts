@@ -28,6 +28,11 @@ export class ConcertService {
     return this.http.get<Concert[]>(`${API_BASE}/concerts/search`, { params: httpParams });
   }
 
+  /** Upcoming concerts from the cache, for the trip-create picker. Public endpoint. */
+  listUpcoming(): Observable<Concert[]> {
+    return this.http.get<Concert[]>(`${API_BASE}/concerts/upcoming`);
+  }
+
   /** Distinct cities and genres in the concert cache. Public endpoint. */
   getFilterOptions(): Observable<ConcertFilterOptions> {
     return this.http.get<ConcertFilterOptions>(`${API_BASE}/concerts/filter-options`);

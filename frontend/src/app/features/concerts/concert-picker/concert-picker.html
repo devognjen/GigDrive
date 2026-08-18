@@ -1,0 +1,54 @@
+<div class="concert-picker">
+  @if (loading() && !selected() && results().length === 0 && !open()) {
+    <p class="state">Loading concerts…</p>
+  } @else if (selected(); as concert) {
+    <div class="selected">
+      <p class="headline">
+        <strong>{{ concert.artist }}</strong> — {{ concert.title }}
+      </p>
+      <p class="meta">
+        {{ concert.venue }}, {{ concert.city }} · {{ concert.startAt | date: 'medium' }}
+      </p>
+      <button type="button" class="change" (click)="clear()">Change</button>
+    </div>
+  } @else {
+    <input
+      id="concert-query"
+      type="text"
+      role="combobox"
+      [formControl]="query"
+      [attr.aria-expanded]="open()"
+      aria-autocomplete="list"
+      aria-controls="concert-results"
+      aria-labelledby="concert-label"
+      placeholder="Search by artist or title"
+      autocomplete="off"
+      (focus)="open.set(true)"
+    />
+    @if (open()) {
+      @if (loading()) {
+        <p class="state">Searching…</p>
+      } @else if (searchFailed()) {
+        <p class="state">Couldn't load concerts. Try again.</p>
+      } @else if (results().length === 0) {
+        <p class="state">No upcoming concerts match.</p>
+      } @else {
+        <ul id="concert-results" class="results" role="listbox">
+          @for (concert of results(); track concert.id) {
+            <li role="option" class="result" (mousedown)="select(concert, $event)">
+              <span class="headline">
+                <strong>{{ concert.artist }}</strong> — {{ concert.title }}
+              </span>
+              <span class="meta">
+                {{ concert.venue }}, {{ concert.city }} ·
+                {{ concert.startAt | date: 'mediumDate' }}
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    }
+  }
+
+  <p class="add-manual">Can't find it? <a routerLink="/concerts/new">Add a concert</a></p>
+</div>

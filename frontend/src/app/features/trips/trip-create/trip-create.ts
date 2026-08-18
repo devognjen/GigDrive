@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { Concert } from '../../../core/models/concert.model';
 import {
   CreateTripRequest,
   CreateTripStop,
@@ -10,8 +11,11 @@ import {
   Trip,
 } from '../../../core/models/trip.model';
 import { Vehicle } from '../../../core/models/vehicle.model';
+import { shiftLocalInput, toLocalInput } from '../../../core/utils/local-datetime';
+import { ConcertPicker } from '../../concerts/concert-picker/concert-picker';
 import { VehicleService } from '../../profile/vehicle.service';
 import { TripService } from '../trip.service';
+import { scheduleOrderValidator, suggestSchedule } from './trip-schedule';
 
 interface PricingOption {
   value: PricingMode;
@@ -27,7 +31,7 @@ type StopFormGroup = FormGroup<{
 
 @Component({
   selector: 'app-trip-create',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ConcertPicker],
   templateUrl: './trip-create.html',
   styleUrl: './trip-create.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +44,7 @@ export class TripCreate implements OnInit {
 
   protected readonly editingId = signal<string | null>(this.route.snapshot.paramMap.get('id'));
   protected readonly loadingTrip = signal(!!this.editingId());
+  protected readonly selectedConcert = signal<Concert | null>(null);
 
   protected readonly pricingOptions: PricingOption[] = [
     { value: 'SHARED_TOTAL', label: 'Shared total (split across passengers)' },
@@ -51,43 +56,51 @@ export class TripCreate implements OnInit {
   protected readonly pending = signal(false);
   protected readonly serverError = signal<string | null>(null);
 
-  protected readonly form = new FormGroup({
-    vehicleId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    concertId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    pricingMode: new FormControl<PricingMode>('SHARED_TOTAL', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
-    totalCost: new FormControl(0, {
-      nonNullable: true,
-      validators: [Validators.required, Validators.min(1)],
-    }),
-    currency: new FormControl<Currency>('EUR', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
-    minPassengers: new FormControl(1, {
-      nonNullable: true,
-      validators: [Validators.required, Validators.min(1)],
-    }),
-    maxPassengers: new FormControl(1, {
-      nonNullable: true,
-      validators: [Validators.required, Validators.min(1)],
-    }),
-    confirmationDeadline: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
-    departureAt: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
-    roundTrip: new FormControl(false, { nonNullable: true }),
-    notes: new FormControl('', { nonNullable: true }),
-    stops: new FormArray<StopFormGroup>([]),
-  });
+  protected readonly form = new FormGroup(
+    {
+      vehicleId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      concertId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      pricingMode: new FormControl<PricingMode>('SHARED_TOTAL', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      totalCost: new FormControl(0, {
+        nonNullable: true,
+        validators: [Validators.required, Validators.min(1)],
+      }),
+      currency: new FormControl<Currency>('EUR', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      minPassengers: new FormControl(1, {
+        nonNullable: true,
+        validators: [Validators.required, Validators.min(1)],
+      }),
+      maxPassengers: new FormControl(1, {
+        nonNullable: true,
+        validators: [Validators.required, Validators.min(1)],
+      }),
+      confirmationDeadline: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      departureAt: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      roundTrip: new FormControl(false, { nonNullable: true }),
+      notes: new FormControl('', { nonNullable: true }),
+      stops: new FormArray<StopFormGroup>([]),
+    },
+    { validators: [scheduleOrderValidator(() => this.selectedConcert()?.startAt ?? null)] },
+  );
 
   ngOnInit(): void {
+    const queryConcertId = this.route.snapshot.queryParamMap.get('concertId');
+    if (queryConcertId && !this.editingId()) {
+      this.form.controls.concertId.setValue(queryConcertId);
+    }
+
     this.vehicleService.list().subscribe({
       next: (vehicles) => {
         this.vehicles.set(vehicles);
@@ -133,6 +146,45 @@ export class TripCreate implements OnInit {
 
   protected lngControl(index: number): FormControl<number | null> {
     return this.stops.at(index).controls.lng;
+  }
+
+  /** Inclusive max for the confirmation deadline picker. */
+  protected deadlineMax(): string {
+    const departureCap = shiftLocalInput(this.form.controls.departureAt.value, -1);
+    const concertCap = this.concertStartLocal()
+      ? shiftLocalInput(this.concertStartLocal(), -1)
+      : '';
+    return earliestLocal(departureCap, concertCap);
+  }
+
+  /** Inclusive min for the departure picker. */
+  protected departureMin(): string {
+    return shiftLocalInput(this.form.controls.confirmationDeadline.value, 1);
+  }
+
+  /** Inclusive max for the departure picker (concert start, if known). */
+  protected departureMax(): string {
+    return this.concertStartLocal();
+  }
+
+  protected onConcertChange(concert: Concert | null): void {
+    this.selectedConcert.set(concert);
+    if (concert && this.datesAreEmpty()) {
+      const suggested = suggestSchedule(concert.startAt);
+      if (suggested) {
+        this.form.patchValue(suggested);
+      }
+    }
+    this.form.updateValueAndValidity();
+  }
+
+  private concertStartLocal(): string {
+    const startAt = this.selectedConcert()?.startAt;
+    return startAt ? toLocalInput(startAt) : '';
+  }
+
+  private datesAreEmpty(): boolean {
+    return !this.form.controls.confirmationDeadline.value && !this.form.controls.departureAt.value;
   }
 
   private stopGroup(
@@ -226,10 +278,12 @@ export class TripCreate implements OnInit {
   }
 }
 
-function toLocalInput(iso: string): string {
-  const date = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
-    date.getHours(),
-  )}:${pad(date.getMinutes())}`;
+function earliestLocal(a: string, b: string): string {
+  if (!a) {
+    return b;
+  }
+  if (!b) {
+    return a;
+  }
+  return a <= b ? a : b;
 }

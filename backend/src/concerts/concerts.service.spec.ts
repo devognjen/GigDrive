@@ -8,7 +8,7 @@ import {
 } from '../integrations/ticketmaster/ticketmaster.service';
 import { OpenMeteoService } from '../integrations/open-meteo/open-meteo.service';
 import { Trip } from '../trips/entities/trip.entity';
-import { ConcertsService } from './concerts.service';
+import { ConcertsService, UPCOMING_CONCERTS_LIMIT } from './concerts.service';
 import { WeatherUnavailableReason } from './dto/concert-weather.dto';
 import { SearchConcertsDto } from './dto/search-concerts.dto';
 import { Concert } from './entities/concert.entity';
@@ -17,6 +17,7 @@ describe('ConcertsService', () => {
   let service: ConcertsService;
   let concertsRepository: {
     createQueryBuilder: jest.Mock;
+    find: jest.Mock;
     findOneBy: jest.Mock;
     create: jest.Mock;
     save: jest.Mock;
@@ -89,6 +90,7 @@ describe('ConcertsService', () => {
     };
     concertsRepository = {
       createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
+      find: jest.fn(),
       findOneBy: jest.fn(),
       create: jest.fn((data: Partial<Concert>) => data),
       save: jest.fn((concert: Concert) => Promise.resolve(concert)),
@@ -207,6 +209,27 @@ describe('ConcertsService', () => {
       );
       expect(queryBuilder.skip).toHaveBeenCalledWith(40);
       expect(queryBuilder.take).toHaveBeenCalledWith(20);
+    });
+  });
+
+  describe('listUpcoming', () => {
+    it('returns cached concerts from now onward, oldest first', async () => {
+      concertsRepository.find.mockResolvedValue([buildConcert()]);
+
+      const result = await service.listUpcoming();
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('concert-uuid');
+      expect(concertsRepository.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          order: { startAt: 'ASC' },
+          take: UPCOMING_CONCERTS_LIMIT,
+        }),
+      );
+      const where = concertsRepository.find.mock.calls[0][0].where as {
+        startAt: { type: string };
+      };
+      expect(where.startAt.type).toBe('moreThanOrEqual');
     });
   });
 
