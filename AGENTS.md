@@ -6,3 +6,4 @@ Be aware of the provided PRD.md file.
 - Feature specifications live in `docs/features/` (one .md file per feature, extracted from the PRD)
 - Implementation progress is tracked in `PROGRESS.md` (single source of truth for feature status) — keep it updated as features are implemented
 - Use pnpm as the package manager
+- Style the Angular frontend with Tailwind CSS v4 (utilities in templates; shared primitives and `@theme` tokens in `frontend/src/styles.css`). Do not add per-component CSS except where utilities cannot reach (for example Leaflet `DivIcon` markup)
