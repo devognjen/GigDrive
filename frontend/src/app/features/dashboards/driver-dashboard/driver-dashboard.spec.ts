@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -24,6 +26,8 @@ describe('DriverDashboard', () => {
       imports: [DriverDashboard],
       providers: [
         provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         provideMockStore({
           selectors: [
             { selector: selectDriverTrips, value: [buildTrip()] },
@@ -71,5 +75,15 @@ describe('DriverDashboard', () => {
     expect(text).toContain('You have not organized any trips yet.');
     expect(text).toContain('No booking requests yet.');
     expect(text).toContain('No confirmed bookings yet');
+  });
+
+  it('shows Export CSV only for trips with confirmed bookings', () => {
+    expect(fixture.nativeElement.textContent).not.toContain('Export CSV');
+
+    store.overrideSelector(selectDriverTrips, [buildTrip({ confirmedSeats: 3, seatsLeft: 5 })]);
+    store.refreshState();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Export CSV');
   });
 });

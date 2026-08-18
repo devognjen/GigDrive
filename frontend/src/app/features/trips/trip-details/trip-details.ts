@@ -8,6 +8,11 @@ import { AuthService } from '../../../core/services/auth.service';
 import { FeaturesService } from '../../../core/services/features.service';
 import { Trip } from '../../../core/models/trip.model';
 import { WaitlistEntry } from '../../../core/models/waitlist.model';
+import {
+  fallbackManifestFilename,
+  filenameFromContentDisposition,
+  triggerBrowserDownload,
+} from '../../../core/utils/download';
 import { BookingService } from '../../bookings/booking.service';
 import { TripChat } from '../../chat/trip-chat/trip-chat';
 import { WaitlistService } from '../../waitlist/waitlist.service';
@@ -75,6 +80,11 @@ export class TripDetails {
       this.featuresService.chatEnabled() &&
       (this.isDriver() || this.isConfirmedPassenger()),
   );
+
+  protected readonly canExportCsv = computed(() => {
+    const currentTrip = this.trip();
+    return Boolean(this.isDriver() && currentTrip && currentTrip.confirmedSeats > 0);
+  });
 
   constructor() {
     this.featuresService.load().subscribe(() => this.maybeLoadMembership());
@@ -243,6 +253,33 @@ export class TripDetails {
       error: () => {
         this.actionPending.set(false);
         this.actionError.set('Could not cancel the trip.');
+      },
+    });
+  }
+
+  protected exportCsv(): void {
+    const trip = this.trip();
+    if (!trip || this.actionPending()) {
+      return;
+    }
+    this.actionPending.set(true);
+    this.actionError.set(null);
+    this.tripService.exportManifest(trip.id).subscribe({
+      next: (response) => {
+        this.actionPending.set(false);
+        const blob = response.body;
+        if (!blob) {
+          return;
+        }
+        triggerBrowserDownload(
+          blob,
+          filenameFromContentDisposition(response.headers.get('Content-Disposition')) ??
+            fallbackManifestFilename(trip),
+        );
+      },
+      error: () => {
+        this.actionPending.set(false);
+        this.actionError.set('Could not export the passenger manifest.');
       },
     });
   }

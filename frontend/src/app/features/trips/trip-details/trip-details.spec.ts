@@ -218,4 +218,32 @@ describe('TripDetails', () => {
     expect(text).toContain('Join waitlist');
     expect(text).not.toContain('Request seats');
   });
+
+  it('shows Export CSV for the driver when the trip has confirmed seats', () => {
+    currentUser.set(driver);
+    fixture.detectChanges();
+    flushPage();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Export CSV');
+  });
+
+  it('hides Export CSV for a passenger', () => {
+    currentUser.set(passenger);
+    fixture.detectChanges();
+    flushPage();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).not.toContain('Export CSV');
+  });
+
+  it('hides Export CSV when the driver has no confirmed passengers', () => {
+    currentUser.set(driver);
+    fixture.detectChanges();
+    httpTesting.expectOne('/api/features').flush({ chat: false });
+    httpTesting.expectOne('/api/trips/t1').flush({ ...mockTrip, confirmedSeats: 0, seatsLeft: 8 });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).not.toContain('Export CSV');
+  });
 });

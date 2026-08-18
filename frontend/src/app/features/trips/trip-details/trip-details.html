@@ -125,6 +125,11 @@
 
     @if (isDriver()) {
       <div class="actions">
+        @if (canExportCsv()) {
+          <button type="button" (click)="exportCsv()" [disabled]="actionPending()">
+            Export CSV
+          </button>
+        }
         @if (trip.status === 'OPEN') {
           <a class="edit" [routerLink]="['/trips', trip.id, 'edit']">Edit trip</a>
         }

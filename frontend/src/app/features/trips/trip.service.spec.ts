@@ -42,4 +42,12 @@ describe('TripService', () => {
     expect(req.request.method).toBe('POST');
     req.flush({});
   });
+
+  it('exports the passenger manifest as a blob', () => {
+    service.exportManifest('t1').subscribe();
+    const req = httpMock.expectOne('/api/trips/t1/manifest');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    req.flush(new Blob(['csv']));
+  });
 });

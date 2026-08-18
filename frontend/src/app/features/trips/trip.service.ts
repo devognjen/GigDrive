@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -49,5 +49,13 @@ export class TripService {
   /** Driver cancels a trip. */
   cancel(id: string): Observable<Trip> {
     return this.http.post<Trip>(`${API_BASE}/trips/${id}/cancel`, {});
+  }
+
+  /** Downloads the confirmed-passenger CSV for a trip the user drives. */
+  exportManifest(id: string): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${API_BASE}/trips/${id}/manifest`, {
+      responseType: 'blob',
+      observe: 'response',
+    });
   }
 }

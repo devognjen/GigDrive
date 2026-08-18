@@ -10,6 +10,9 @@
     @if (error()) {
       <p class="error" role="alert">{{ error() }}</p>
     }
+    @if (exportError()) {
+      <p class="error" role="alert">{{ exportError() }}</p>
+    }
 
     <section class="earnings">
       <h2>Earnings</h2>
@@ -37,6 +40,11 @@
           @for (trip of trips(); track trip.id) {
             <li>
               <app-trip-card [trip]="trip" [showDriver]="false" />
+              @if (trip.confirmedSeats > 0) {
+                <button type="button" class="export" (click)="exportCsv(trip)">
+                  Export CSV
+                </button>
+              }
             </li>
           }
         </ul>

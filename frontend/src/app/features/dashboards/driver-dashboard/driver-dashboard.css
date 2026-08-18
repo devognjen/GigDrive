@@ -63,4 +63,18 @@ section {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+
+  li {
+    display: grid;
+    gap: 0.5rem;
+  }
+}
+
+.export {
+  justify-self: start;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #c4c4c4;
+  border-radius: 4px;
+  background: #eee;
+  cursor: pointer;
 }
