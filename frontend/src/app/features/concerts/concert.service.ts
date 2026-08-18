@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import {
   Concert,
   ConcertDetails,
+  ConcertFilterOptions,
   ConcertSearchParams,
   ConcertWeather,
   CreateConcertRequest,
@@ -25,6 +26,11 @@ export class ConcertService {
       }
     }
     return this.http.get<Concert[]>(`${API_BASE}/concerts/search`, { params: httpParams });
+  }
+
+  /** Distinct cities and genres in the concert cache. Public endpoint. */
+  getFilterOptions(): Observable<ConcertFilterOptions> {
+    return this.http.get<ConcertFilterOptions>(`${API_BASE}/concerts/filter-options`);
   }
 
   /** Loads a concert together with the trips linked to it. Public endpoint. */

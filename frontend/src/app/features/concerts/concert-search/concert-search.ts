@@ -31,8 +31,21 @@ export class ConcertSearch {
   protected readonly results = signal<Concert[]>([]);
   protected readonly loading = signal(true);
   protected readonly searchFailed = signal(false);
+  protected readonly cities = signal<string[]>([]);
+  protected readonly genres = signal<string[]>([]);
 
   constructor() {
+    this.concertService
+      .getFilterOptions()
+      .pipe(
+        catchError(() => of({ cities: [], genres: [] })),
+        takeUntilDestroyed(),
+      )
+      .subscribe((options) => {
+        this.cities.set(options.cities);
+        this.genres.set(options.genres);
+      });
+
     // Instant search: debounce keystrokes, skip emissions that do not change
     // the serialized params, and let switchMap cancel a stale request when a
     // newer search comes in before the previous one answered. A failing

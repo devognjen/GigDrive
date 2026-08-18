@@ -21,12 +21,13 @@ Concerts are discovered via the Ticketmaster Discovery API, proxied through the 
 - `concerts` module + `integrations/ticketmaster` service.
 - Backend proxies all Ticketmaster calls (architectural rule); API key in `.env` (quota: 2 rps, 5000 req/day → cache mandatory).
 - Search endpoint upserts provider results into `concert` (unique `externalId`).
+- Filter-options endpoint returns distinct cities and genres from the cache (for search dropdowns).
 - Graceful degradation: serve cached data when the provider is down or quota exhausted.
 - Manual creation endpoint setting `externalId = NULL`, `userSubmitted = true`.
 
 ### Frontend (Angular)
 - Concert search page with debounced, cancel-stale instant search (`switchMap`).
-- Filters: keyword, city, radius, date range, genre.
+- Filters: keyword, city (dropdown of cached cities), date range, genre (dropdown of cached genres).
 - Concert details page: concert info + list of linked trips.
 - Manual concert creation form (registered users).
 
@@ -37,6 +38,7 @@ Concerts are discovered via the Ticketmaster Discovery API, proxied through the 
 ## API endpoints
 
 - `GET /concerts/search?q&city&dateFrom&dateTo&genre&page`
+- `GET /concerts/filter-options` (distinct cities/genres from the cache)
 - `GET /concerts/:id`
 - `POST /concerts` (manual creation, authenticated)
 
@@ -47,4 +49,5 @@ Concerts are discovered via the Ticketmaster Discovery API, proxied through the 
 - Search/details still work with cached data when Ticketmaster is unreachable.
 - Concert details show the concert and its linked trips.
 - Authenticated users can create manual concerts flagged `userSubmitted`.
+- City and genre filters are dropdowns populated from distinct cached values.
 - Unit tests cover cache upsert logic, provider fallback, and search DTO validation.

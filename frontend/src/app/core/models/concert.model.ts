@@ -67,6 +67,12 @@ export interface CreateConcertRequest {
   ticketUrl?: string;
 }
 
+/** Response of GET /concerts/filter-options. */
+export interface ConcertFilterOptions {
+  cities: string[];
+  genres: string[];
+}
+
 /** Query params for GET /concerts/search (all optional, page is 0-based). */
 export interface ConcertSearchParams {
   q?: string;

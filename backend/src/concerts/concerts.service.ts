@@ -8,6 +8,7 @@ import {
 } from '../integrations/ticketmaster/ticketmaster.service';
 import { Trip } from '../trips/entities/trip.entity';
 import { ConcertDetailsDto } from './dto/concert-details.dto';
+import { ConcertFilterOptionsDto } from './dto/concert-filter-options.dto';
 import { ConcertTripDto } from './dto/concert-trip.dto';
 import {
   ConcertWeatherDto,
@@ -61,6 +62,19 @@ export class ConcertsService {
     await this.upsertProviderConcerts(fetched);
     const cachedAfterSync = await this.searchCache(dto);
     return cachedAfterSync.map((concert) => ConcertDto.fromEntity(concert));
+  }
+
+  /**
+   * Distinct cities and genres in the cache, for search dropdowns.
+   * Values are grouped case-insensitively so "Vienna" and "vienna" collapse
+   * to a single option; empty and null genres are omitted.
+   */
+  async getFilterOptions(): Promise<ConcertFilterOptionsDto> {
+    const [cities, genres] = await Promise.all([
+      this.distinctColumn('city'),
+      this.distinctColumn('genre'),
+    ]);
+    return ConcertFilterOptionsDto.from(cities, genres);
   }
 
   async getDetails(id: string): Promise<ConcertDetailsDto> {
@@ -157,6 +171,22 @@ export class ConcertsService {
       });
     }
     return qb.getMany();
+  }
+
+  private async distinctColumn(
+    column: 'city' | 'genre',
+  ): Promise<string[]> {
+    const rows = await this.concertsRepository
+      .createQueryBuilder('concert')
+      .select(`MIN(concert.${column})`, 'value')
+      .where(`concert.${column} IS NOT NULL`)
+      .andWhere(`concert.${column} <> ''`)
+      .groupBy(`LOWER(concert.${column})`)
+      .orderBy(`MIN(concert.${column})`, 'ASC')
+      .getRawMany<{ value: string }>();
+    return rows
+      .map((row) => row.value)
+      .filter((value): value is string => Boolean(value));
   }
 
   /** Upserts provider results into the cache (unique externalId, FR-CON-02). */

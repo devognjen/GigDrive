@@ -9,7 +9,12 @@
 
     <div class="field">
       <label for="city">City</label>
-      <input id="city" type="text" formControlName="city" />
+      <select id="city" formControlName="city">
+        <option value="">Any city</option>
+        @for (city of cities(); track city) {
+          <option [value]="city">{{ city }}</option>
+        }
+      </select>
     </div>
 
     <div class="field">
@@ -24,7 +29,12 @@
 
     <div class="field">
       <label for="genre">Genre</label>
-      <input id="genre" type="text" formControlName="genre" />
+      <select id="genre" formControlName="genre">
+        <option value="">Any genre</option>
+        @for (genre of genres(); track genre) {
+          <option [value]="genre">{{ genre }}</option>
+        }
+      </select>
     </div>
   </form>
 

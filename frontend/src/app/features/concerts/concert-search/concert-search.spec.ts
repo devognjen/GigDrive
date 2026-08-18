@@ -41,6 +41,11 @@ const mockConcerts: Concert[] = [
   },
 ];
 
+const mockFilterOptions = {
+  cities: ['Paris', 'Vienna'],
+  genres: ['Metal', 'Rock'],
+};
+
 describe('ConcertSearch', () => {
   let component: ConcertSearch;
   let fixture: ComponentFixture<ConcertSearch>;
@@ -60,7 +65,8 @@ describe('ConcertSearch', () => {
     fixture = TestBed.createComponent(ConcertSearch);
     component = fixture.componentInstance;
     httpTesting = TestBed.inject(HttpTestingController);
-    httpTesting = TestBed.inject(HttpTestingController);
+    fixture.detectChanges();
+    httpTesting.expectOne('/api/concerts/filter-options').flush(mockFilterOptions);
     fixture.detectChanges();
   });
 
@@ -190,4 +196,48 @@ describe('ConcertSearch', () => {
     expect(fixture.nativeElement.querySelector('a[href="/concerts/new"]')).toBeNull();
   });
 
+  it('populates city and genre selects from the filter options', () => {
+    vi.advanceTimersByTime(300);
+    httpTesting.expectOne((r) => r.url === '/api/concerts/search').flush([]);
+    fixture.detectChanges();
+
+    const cityOptions = [
+      ...(fixture.nativeElement.querySelectorAll('#city option') as NodeListOf<HTMLOptionElement>),
+    ].map((option) => option.value);
+    const genreOptions = [
+      ...(fixture.nativeElement.querySelectorAll('#genre option') as NodeListOf<HTMLOptionElement>),
+    ].map((option) => option.value);
+
+    expect(cityOptions).toEqual(['', 'Paris', 'Vienna']);
+    expect(genreOptions).toEqual(['', 'Metal', 'Rock']);
+  });
+
+  it('searches with the selected city and genre', () => {
+    vi.advanceTimersByTime(300);
+    httpTesting.expectOne((r) => r.url === '/api/concerts/search').flush([]);
+
+    component['filters'].controls.city.setValue('Paris');
+    component['filters'].controls.genre.setValue('Metal');
+    vi.advanceTimersByTime(300);
+
+    const req = httpTesting.expectOne((r) => r.url === '/api/concerts/search');
+    expect(req.request.params.get('city')).toBe('Paris');
+    expect(req.request.params.get('genre')).toBe('Metal');
+    req.flush([]);
+  });
+
+  it('omits city and genre when Any is selected', () => {
+    vi.advanceTimersByTime(300);
+    httpTesting.expectOne((r) => r.url === '/api/concerts/search').flush([]);
+
+    component['filters'].controls.city.setValue('Paris');
+    vi.advanceTimersByTime(300);
+    httpTesting.expectOne((r) => r.params.get('city') === 'Paris').flush([]);
+
+    component['filters'].controls.city.setValue('');
+    vi.advanceTimersByTime(300);
+    const req = httpTesting.expectOne((r) => r.url === '/api/concerts/search');
+    expect(req.request.params.has('city')).toBe(false);
+    req.flush([]);
+  });
 });

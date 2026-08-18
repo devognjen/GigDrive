@@ -18,7 +18,8 @@
       gap: 0.25rem;
       flex: 1 1 10rem;
 
-      input {
+      input,
+      select {
         padding: 0.5rem;
         border: 1px solid #c4c4c4;
         border-radius: 4px;

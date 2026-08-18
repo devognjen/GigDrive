@@ -29,8 +29,12 @@ describe('ConcertsService', () => {
     orderBy: jest.Mock;
     skip: jest.Mock;
     take: jest.Mock;
+    select: jest.Mock;
+    where: jest.Mock;
     andWhere: jest.Mock;
+    groupBy: jest.Mock;
     getMany: jest.Mock;
+    getRawMany: jest.Mock;
   };
 
   const buildConcert = (overrides: Partial<Concert> = {}): Concert => ({
@@ -76,8 +80,12 @@ describe('ConcertsService', () => {
       orderBy: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       take: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
       andWhere: jest.fn().mockReturnThis(),
+      groupBy: jest.fn().mockReturnThis(),
       getMany: jest.fn(),
+      getRawMany: jest.fn(),
     };
     concertsRepository = {
       createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
@@ -199,6 +207,52 @@ describe('ConcertsService', () => {
       );
       expect(queryBuilder.skip).toHaveBeenCalledWith(40);
       expect(queryBuilder.take).toHaveBeenCalledWith(20);
+    });
+  });
+
+  describe('getFilterOptions', () => {
+    it('returns distinct cities and genres from the cache', async () => {
+      queryBuilder.getRawMany
+        .mockResolvedValueOnce([{ value: 'Vienna' }, { value: 'Zagreb' }])
+        .mockResolvedValueOnce([{ value: 'Metal' }, { value: 'Rock' }]);
+
+      const result = await service.getFilterOptions();
+
+      expect(result).toEqual({
+        cities: ['Vienna', 'Zagreb'],
+        genres: ['Metal', 'Rock'],
+      });
+      expect(queryBuilder.select).toHaveBeenCalledWith(
+        'MIN(concert.city)',
+        'value',
+      );
+      expect(queryBuilder.select).toHaveBeenCalledWith(
+        'MIN(concert.genre)',
+        'value',
+      );
+      expect(queryBuilder.groupBy).toHaveBeenCalledWith('LOWER(concert.city)');
+      expect(queryBuilder.groupBy).toHaveBeenCalledWith('LOWER(concert.genre)');
+    });
+
+    it('omits empty and missing values', async () => {
+      queryBuilder.getRawMany
+        .mockResolvedValueOnce([{ value: 'Vienna' }, { value: '' }])
+        .mockResolvedValueOnce([{ value: null }, { value: 'Metal' }]);
+
+      const result = await service.getFilterOptions();
+
+      expect(result).toEqual({
+        cities: ['Vienna'],
+        genres: ['Metal'],
+      });
+    });
+
+    it('returns empty lists when the cache has no values', async () => {
+      queryBuilder.getRawMany.mockResolvedValue([]);
+
+      const result = await service.getFilterOptions();
+
+      expect(result).toEqual({ cities: [], genres: [] });
     });
   });
 
