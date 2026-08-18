@@ -1,1 +1,167 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'tailwindcss';
+
+@theme {
+  --color-night: #0f1221;
+  --color-night-soft: #1a1f36;
+  --color-paper: #f7f3ea;
+  --color-raised: #fffdf8;
+  --color-stage: #6d28d9;
+  --color-stage-bright: #8b5cf6;
+  --color-foil: #c9a227;
+  --color-neon: #c026d3;
+  --color-confirm: #0f766e;
+  --color-danger: #be123c;
+  --color-mist: #e4dfd2;
+  --font-display: 'Syne', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    @apply bg-paper text-night antialiased;
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-paper font-sans;
+  }
+
+  app-root {
+    @apply block min-h-screen;
+  }
+
+  app-trip-card,
+  app-booking-list,
+  app-waitlist-list,
+  app-review-form,
+  app-weather-widget,
+  app-pickup-map,
+  app-trip-chat,
+  app-vehicles,
+  app-concert-picker {
+    @apply block;
+  }
+
+  h1 {
+    @apply font-display text-2xl font-bold tracking-tight text-night sm:text-3xl;
+  }
+
+  h2 {
+    @apply font-display text-xl font-semibold text-night;
+  }
+
+  h3 {
+    @apply font-display text-lg font-semibold text-night;
+  }
+
+  input:not([type='checkbox']):not([type='radio']):not([type='hidden']),
+  select,
+  textarea {
+    @apply w-full rounded-lg border border-mist bg-raised px-3 py-2 text-night shadow-sm outline-none transition;
+    @apply placeholder:text-night/40 focus:border-stage focus:ring-2 focus:ring-stage/30;
+  }
+
+  input[type='checkbox'] {
+    @apply size-4 accent-stage;
+  }
+}
+
+@layer components {
+  .page {
+    @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-8 sm:py-8;
+  }
+
+  .card {
+    @apply rounded-2xl border border-mist bg-raised p-4 shadow-sm sm:p-6;
+  }
+
+  .field {
+    @apply flex flex-col gap-1;
+  }
+
+  .field > label,
+  .label {
+    @apply text-sm font-semibold text-night;
+  }
+
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply border border-transparent bg-stage text-white hover:bg-stage-bright;
+  }
+
+  .btn-danger {
+    @apply border border-transparent bg-danger text-white hover:bg-danger/90;
+  }
+
+  .btn-ghost {
+    @apply border border-mist bg-raised text-night hover:border-stage hover:text-stage;
+  }
+
+  .btn-confirm {
+    @apply border border-transparent bg-confirm text-white hover:bg-confirm/90;
+  }
+
+  .badge {
+    @apply inline-flex w-fit items-center rounded-full bg-stage/15 px-2.5 py-0.5 text-xs font-semibold tracking-wide text-stage uppercase;
+  }
+
+  .badge.genre {
+    @apply bg-neon/15 text-neon;
+  }
+
+  .badge.user-submitted {
+    @apply bg-foil/20 text-night;
+  }
+
+  .badge-confirm {
+    @apply bg-confirm/15 text-confirm;
+  }
+
+  .badge-foil {
+    @apply bg-foil/20 text-night;
+  }
+
+  .link {
+    @apply font-semibold text-stage no-underline hover:text-stage-bright;
+  }
+
+  .state {
+    @apply text-night/60;
+  }
+
+  .success {
+    @apply rounded-lg bg-confirm/10 px-3 py-2 text-sm font-medium text-confirm;
+  }
+
+  .error {
+    @apply m-0 text-sm text-danger;
+  }
+
+  .error[role='alert'],
+  .server-error {
+    @apply mb-4 rounded-lg bg-danger/10 px-3 py-2 text-base;
+  }
+
+  .brand {
+    @apply font-display text-lg font-bold tracking-tight text-paper no-underline;
+  }
+
+  .user-name {
+    @apply font-semibold text-foil;
+  }
+
+  button.logout {
+    @apply cursor-pointer border-0 bg-transparent p-0 text-sm text-paper/80 hover:text-foil;
+  }
+
+  #app-nav a {
+    @apply rounded-md px-1 py-1 text-sm text-paper/80 no-underline transition hover:text-foil;
+  }
+
+  #app-nav a.active {
+    @apply font-semibold text-foil;
+  }
+}
