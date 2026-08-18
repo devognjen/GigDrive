@@ -314,6 +314,36 @@ describe('ConcertsService', () => {
       });
     });
 
+    it('lists cancelled trips after active ones', async () => {
+      concertsRepository.findOneBy.mockResolvedValue(buildConcert());
+      const cancelled = {
+        id: 'cancelled-trip',
+        status: TripStatus.Cancelled,
+        departureAt: new Date('2026-07-01T10:00:00Z'),
+        minPassengers: 2,
+        maxPassengers: 4,
+        driverId: 'driver-uuid',
+        driver: { firstName: 'Ada', lastName: 'Lovelace' },
+      } as Trip;
+      const open = {
+        id: 'open-trip',
+        status: TripStatus.Open,
+        departureAt: new Date('2026-07-01T18:00:00Z'),
+        minPassengers: 2,
+        maxPassengers: 4,
+        driverId: 'driver-2',
+        driver: { firstName: 'Grace', lastName: 'Hopper' },
+      } as Trip;
+      tripsRepository.find.mockResolvedValue([cancelled, open]);
+
+      const details = await service.getDetails('concert-uuid');
+
+      expect(details.trips.map((trip) => trip.id)).toEqual([
+        'open-trip',
+        'cancelled-trip',
+      ]);
+    });
+
     it('throws NotFoundException for an unknown concert', async () => {
       concertsRepository.findOneBy.mockResolvedValue(null);
 

@@ -7,6 +7,7 @@ import {
   TicketmasterService,
 } from '../integrations/ticketmaster/ticketmaster.service';
 import { Trip } from '../trips/entities/trip.entity';
+import { compareTripsActiveFirst } from '../trips/trip-listing';
 import { ConcertDetailsDto } from './dto/concert-details.dto';
 import { ConcertFilterOptionsDto } from './dto/concert-filter-options.dto';
 import { ConcertTripDto } from './dto/concert-trip.dto';
@@ -105,7 +106,9 @@ export class ConcertsService {
     });
     const dto = new ConcertDetailsDto();
     dto.concert = ConcertDto.fromEntity(concert);
-    dto.trips = trips.map((trip) => ConcertTripDto.fromEntity(trip));
+    dto.trips = trips
+      .map((trip) => ConcertTripDto.fromEntity(trip))
+      .sort(compareTripsActiveFirst);
     return dto;
   }
 

@@ -56,10 +56,10 @@ export class ListTripsDto {
   seatsMin?: number;
 
   @ApiPropertyOptional({
-    description: 'Sort order',
-    enum: ['cheapest', 'likely'],
+    description: 'Sort order. Default (or soonest) is departure time ascending.',
+    enum: ['soonest', 'cheapest', 'likely'],
   })
   @IsOptional()
   @IsString()
-  sort?: string;
+  sort?: 'soonest' | 'cheapest' | 'likely';
 }

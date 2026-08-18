@@ -25,6 +25,10 @@ import { UpdateTripDto } from './dto/update-trip.dto';
 import { Trip } from './entities/trip.entity';
 import { TripStop } from './entities/trip-stop.entity';
 import {
+  BROWSE_HIDDEN_STATUSES,
+  compareTripsActiveFirst,
+} from './trip-listing';
+import {
   buildPassengerManifestCsv,
   manifestFilename,
 } from './passenger-manifest';
@@ -279,9 +283,9 @@ export class TripsService {
     const trips = await this.tripsRepository.find({
       where: { driverId },
       relations: { vehicle: true, driver: true, concert: true, stops: true },
-      order: { createdAt: 'DESC' },
     });
-    return this.hydrateTrips(trips, {});
+    const result = await this.hydrateTrips(trips, {});
+    return result.sort(compareTripsActiveFirst);
   }
 
   /** Loads a single trip with live price (FR-TRIP-04). */
@@ -373,6 +377,10 @@ export class TripsService {
       .leftJoinAndSelect('trip.driver', 'driver')
       .leftJoinAndSelect('trip.concert', 'concert')
       .leftJoinAndSelect('trip.stops', 'stops')
+      .andWhere('trip.status NOT IN (:...hidden)', {
+        hidden: BROWSE_HIDDEN_STATUSES,
+      })
+      .orderBy('trip.departureAt', 'ASC')
       .take(TRIPS_PAGE_SIZE);
 
     if (dto.concertId) {
@@ -458,6 +466,10 @@ export class TripsService {
         const ratioB = b.confirmedSeats / Math.max(b.maxPassengers, 1);
         return ratioB - ratioA;
       });
+    } else {
+      result.sort(
+        (a, b) => a.departureAt.getTime() - b.departureAt.getTime(),
+      );
     }
 
     return result;

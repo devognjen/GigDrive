@@ -37,6 +37,13 @@ interface TmEventSearchResponse {
   _embedded?: { events?: TmEvent[] };
 }
 
+interface TmImage {
+  url?: string;
+  ratio?: string;
+  width?: number;
+  height?: number;
+}
+
 interface TmEvent {
   id?: string;
   name?: string;
@@ -44,7 +51,7 @@ interface TmEvent {
   dates?: {
     start?: { dateTime?: string; localDate?: string; localTime?: string };
   };
-  images?: { url?: string }[];
+  images?: TmImage[];
   classifications?: { genre?: { name?: string } }[];
   _embedded?: {
     attractions?: { name?: string }[];
@@ -164,10 +171,38 @@ export class TicketmasterService {
       lat: location?.latitude ? Number(location.latitude) : null,
       lng: location?.longitude ? Number(location.longitude) : null,
       startAt,
-      imageUrl: event.images?.[0]?.url ?? null,
+      imageUrl: this.pickImageUrl(event.images),
       genre: event.classifications?.[0]?.genre?.name ?? null,
       ticketUrl: event.url ?? null,
     };
+  }
+
+  /**
+   * Prefers the largest 16:9 image, then 4:3, then the widest remaining.
+   * Ticketmaster returns many sizes; `images[0]` is often a small thumbnail.
+   */
+  private pickImageUrl(images: TmImage[] | undefined): string | null {
+    const candidates = (images ?? []).filter(
+      (image): image is TmImage & { url: string } => Boolean(image.url),
+    );
+    if (candidates.length === 0) {
+      return null;
+    }
+    for (const ratio of ['16_9', '4_3']) {
+      const matches = candidates.filter((image) => image.ratio === ratio);
+      if (matches.length > 0) {
+        return this.widest(matches).url;
+      }
+    }
+    return this.widest(candidates).url;
+  }
+
+  private widest(
+    images: Array<TmImage & { url: string }>,
+  ): TmImage & { url: string } {
+    return images.reduce((best, image) =>
+      (image.width ?? 0) > (best.width ?? 0) ? image : best,
+    );
   }
 
   /** Prefers the precise UTC timestamp; falls back to local date/time. */

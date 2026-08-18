@@ -67,6 +67,7 @@ describe('TripsService', () => {
       title: 'Summer Open Air',
       city: 'Novi Sad',
       startAt: future(45),
+      imageUrl: 'https://img.example/demo.jpg',
     }) as Concert;
 
   const buildTrip = (overrides: Partial<Trip> = {}): Trip =>
@@ -491,6 +492,7 @@ describe('TripsService', () => {
       expect(result.concertArtist).toBe('The Demo Band');
       expect(result.concertTitle).toBe('Summer Open Air');
       expect(result.concertCity).toBe('Novi Sad');
+      expect(result.concertImageUrl).toBe('https://img.example/demo.jpg');
       expect(result.driverName).toBe('Demo Driver');
       expect(result.driverAverageRating).toBeNull();
       expect(result.driverReviewCount).toBe(0);
@@ -515,12 +517,15 @@ describe('TripsService', () => {
 
   describe('list', () => {
     const mockListQuery = (trips: Trip[]) => {
-      tripsRepository.createQueryBuilder.mockReturnValue({
+      const qb = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(trips),
-      });
+      };
+      tripsRepository.createQueryBuilder.mockReturnValue(qb);
+      return qb;
     };
 
     it('drops trips whose driver rating is below minRating', async () => {
@@ -544,6 +549,73 @@ describe('TripsService', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].driverAverageRating).toBe(4.5);
+    });
+
+    it('excludes cancelled and completed trips from public browse', async () => {
+      const qb = mockListQuery([]);
+
+      await service.list({});
+
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'trip.status NOT IN (:...hidden)',
+        { hidden: [TripStatus.Cancelled, TripStatus.Completed] },
+      );
+    });
+
+    it('sorts by soonest departure by default', async () => {
+      const later = buildTrip({
+        id: 'later',
+        departureAt: future(60),
+      });
+      const sooner = buildTrip({
+        id: 'sooner',
+        departureAt: future(10),
+      });
+      mockListQuery([later, sooner]);
+
+      const result = await service.list({});
+
+      expect(result.map((trip) => trip.id)).toEqual(['sooner', 'later']);
+    });
+
+    it('sorts by live per-person price when sort=cheapest', async () => {
+      const cheap = buildTrip({
+        id: 'cheap',
+        totalCost: 4000,
+        minPassengers: 4,
+        maxPassengers: 4,
+      });
+      const pricey = buildTrip({
+        id: 'pricey',
+        totalCost: 12000,
+        minPassengers: 4,
+        maxPassengers: 4,
+      });
+      mockListQuery([pricey, cheap]);
+
+      const result = await service.list({ sort: 'cheapest' });
+
+      expect(result.map((trip) => trip.id)).toEqual(['cheap', 'pricey']);
+    });
+  });
+
+  describe('listMine', () => {
+    it('lists upcoming trips before cancelled ones', async () => {
+      const cancelled = buildTrip({
+        id: 'cancelled',
+        status: TripStatus.Cancelled,
+        departureAt: future(5),
+      });
+      const upcoming = buildTrip({
+        id: 'upcoming',
+        status: TripStatus.Open,
+        departureAt: future(40),
+      });
+      tripsRepository.find.mockResolvedValue([cancelled, upcoming]);
+
+      const result = await service.listMine(driver.id);
+
+      expect(result.map((trip) => trip.id)).toEqual(['upcoming', 'cancelled']);
     });
   });
 

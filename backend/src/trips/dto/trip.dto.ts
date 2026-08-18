@@ -72,6 +72,9 @@ export class TripDto {
   @ApiProperty()
   concertCity: string;
 
+  @ApiProperty({ nullable: true })
+  concertImageUrl: string | null;
+
   @ApiProperty({ enum: PricingMode })
   pricingMode: PricingMode;
 
@@ -135,6 +138,7 @@ export class TripDto {
     dto.concertArtist = trip.concert?.artist ?? '';
     dto.concertTitle = trip.concert?.title ?? '';
     dto.concertCity = trip.concert?.city ?? '';
+    dto.concertImageUrl = trip.concert?.imageUrl ?? null;
     dto.pricingMode = trip.pricingMode;
     dto.totalCost = trip.totalCost;
     dto.currency = trip.currency;

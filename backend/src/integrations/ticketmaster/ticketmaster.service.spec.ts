@@ -100,6 +100,41 @@ describe('TicketmasterService', () => {
       ]);
     });
 
+    it('prefers the largest 16:9 image, then 4:3, then the widest', async () => {
+      const event = {
+        ...tmEvent,
+        images: [
+          { url: 'https://img.example/small-169.jpg', ratio: '16_9', width: 200 },
+          { url: 'https://img.example/wide-169.jpg', ratio: '16_9', width: 2048 },
+          { url: 'https://img.example/huge-43.jpg', ratio: '4_3', width: 4000 },
+        ],
+      };
+      fetchSpy.mockResolvedValue(
+        okResponse({ _embedded: { events: [event] } }),
+      );
+
+      const result = await createService('secret').searchEvents({});
+
+      expect(result?.[0]?.imageUrl).toBe('https://img.example/wide-169.jpg');
+    });
+
+    it('falls back to the widest image when no 16:9 or 4:3 is present', async () => {
+      const event = {
+        ...tmEvent,
+        images: [
+          { url: 'https://img.example/narrow.jpg', ratio: '3_2', width: 100 },
+          { url: 'https://img.example/wide.jpg', ratio: '3_2', width: 800 },
+        ],
+      };
+      fetchSpy.mockResolvedValue(
+        okResponse({ _embedded: { events: [event] } }),
+      );
+
+      const result = await createService('secret').searchEvents({});
+
+      expect(result?.[0]?.imageUrl).toBe('https://img.example/wide.jpg');
+    });
+
     it('falls back to localDate/localTime when dateTime is missing', async () => {
       const event = {
         ...tmEvent,
