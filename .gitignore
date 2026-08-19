@@ -16,6 +16,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# personal study / presentation notes (not part of the repo)
+USER_GUIDE.md
+
 # ai tooling
 .claude/
 .cursor/
