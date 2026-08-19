@@ -10,7 +10,7 @@ export type BookingNotificationEvent =
  *
  * Mirrors `TRIP_NOTIFICATIONS`: the bookings domain depends on this abstraction
  * instead of a concrete SMTP sender, so the domain logic stays testable and
- * the Mailtrap/Nodemailer transport can be swapped without touching booking
+ * the SMTP/Nodemailer transport can be swapped without touching booking
  * state transitions.
  */
 export const BOOKING_NOTIFICATIONS = Symbol('BOOKING_NOTIFICATIONS');

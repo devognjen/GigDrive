@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { createTransport, type Transporter } from 'nodemailer';
+import { type Transporter } from 'nodemailer';
+import { createMailTransport } from './create-mail-transport';
 import { Booking } from '../bookings/entities/booking.entity';
 import { Concert } from '../concerts/entities/concert.entity';
 import { Trip } from '../trips/entities/trip.entity';
@@ -27,18 +28,8 @@ import { WAITLIST_NOTIFICATIONS } from './waitlist-notifications.port';
     {
       provide: MAIL_TRANSPORT,
       inject: [ConfigService],
-      useFactory: (config: ConfigService): Transporter | null => {
-        const user = config.get<string>('smtp.user') ?? '';
-        const pass = config.get<string>('smtp.pass') ?? '';
-        if (!user || !pass) {
-          return null;
-        }
-        return createTransport({
-          host: config.get<string>('smtp.host'),
-          port: config.get<number>('smtp.port'),
-          auth: { user, pass },
-        });
-      },
+      useFactory: (config: ConfigService): Transporter | null =>
+        createMailTransport(config),
     },
     MailerService,
     EmailTripNotifications,

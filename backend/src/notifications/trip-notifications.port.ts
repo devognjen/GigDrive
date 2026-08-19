@@ -23,7 +23,7 @@ export type TripNotificationEvent = TripLifecycleEvent | SignalInviteEvent;
  * Port for outgoing trip-lifecycle emails.
  *
  * Trips depends on this abstraction rather than on a concrete SMTP sender, so
- * the domain logic stays testable and the Mailtrap/Nodemailer module can be
+ * the domain logic stays testable and the SMTP/Nodemailer module can be
  * swapped without touching the trip state machine.
  */
 export const TRIP_NOTIFICATIONS = Symbol('TRIP_NOTIFICATIONS');

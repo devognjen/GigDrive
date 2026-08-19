@@ -12,7 +12,7 @@ export interface MailEventContext {
 /**
  * Thin SMTP sender. Honors per-user `emailNotifications`, logs every attempt
  * (sent / skipped / failed), and never throws — trip and booking transitions
- * must not roll back because Mailtrap is down.
+ * must not roll back because SMTP is unavailable.
  */
 @Injectable()
 export class MailerService {

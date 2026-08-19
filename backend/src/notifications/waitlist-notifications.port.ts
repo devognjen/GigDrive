@@ -10,7 +10,7 @@ export type WaitlistNotificationEvent = {
  * Port for outgoing waitlist emails (FR-BOOK-05).
  *
  * Waitlist depends on this abstraction rather than on a concrete SMTP sender,
- * so the domain logic stays testable and the Mailtrap/Nodemailer module can
+ * so the domain logic stays testable and the SMTP/Nodemailer module can
  * be swapped without touching join/leave or the cancel hook.
  */
 export const WAITLIST_NOTIFICATIONS = Symbol('WAITLIST_NOTIFICATIONS');
