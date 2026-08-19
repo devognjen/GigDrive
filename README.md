@@ -13,7 +13,7 @@ automatically as more people join. Concerts are discovered through an external e
 | Backend  | NestJS · TypeORM · Passport.js (Local + JWT) · Nodemailer · Socket.IO |
 | Database | PostgreSQL (Docker) |
 | Infra    | docker-compose (`db`, `backend`, `frontend`, optional `signal-cli` profile) |
-| Extras   | Ticketmaster Discovery API · Mailtrap (SMTP) · signal-cli-rest-api (experimental) |
+| Extras   | Ticketmaster Discovery API · Nodemailer SMTP (Mailtrap / Brevo) · signal-cli-rest-api (experimental) |
 
 ## Project documentation
 
@@ -122,9 +122,75 @@ docker-compose.dev.yml    hot-reload development override
 
 All configuration lives in `.env` (never committed) — see
 [.env.example](.env.example) for every supported variable: PostgreSQL
-credentials, JWT secret, Ticketmaster API key, SMTP (Mailtrap) credentials,
+credentials, JWT secret, Ticketmaster API key, SMTP settings,
 `FEATURE_CHAT`, `FEATURE_SIGNAL`, and the Signal number. Datetimes are stored
 in UTC (ISO 8601) and displayed in local time.
+
+### Email (SMTP)
+
+Transactional emails (booking requests, trip confirmations, reminders, etc.)
+are sent by the backend via **Nodemailer**. The SMTP provider is chosen
+entirely through `.env` — no code changes when switching.
+
+#### Mailtrap (local development)
+
+The defaults in `.env.example` target [Mailtrap Email Testing](https://mailtrap.io):
+a sandbox inbox that catches all outgoing mail without delivering to real
+addresses. Ideal for everyday development.
+
+1. Create a Mailtrap account and open an inbox under **Email Testing**.
+2. Copy the inbox **SMTP credentials** into `.env`:
+   ```env
+   SMTP_HOST=sandbox.smtp.mailtrap.io
+   SMTP_PORT=2525
+   SMTP_USER=<mailtrap-username>
+   SMTP_PASS=<mailtrap-password>
+   ```
+3. Restart the backend: `docker compose restart backend`
+4. Trigger an email from the app (e.g. request seats on a trip) and view the
+   message in the Mailtrap inbox UI.
+
+#### Brevo (real delivery for demos)
+
+For live demos where recipients should receive mail in their real inbox,
+use [Brevo](https://www.brevo.com) (free tier: **300 emails/day**, no credit
+card required).
+
+1. Sign up at [brevo.com](https://www.brevo.com) and verify your account email.
+2. **Settings → SMTP & API → SMTP** — generate an **SMTP key** (this is
+   `SMTP_PASS`, not your login password).
+3. **Senders, Domains & Dedicated IPs → Senders** — add and verify a sender
+   address (required before Brevo will send).
+4. Set `.env` (replace the Mailtrap values):
+   ```env
+   SMTP_HOST=smtp-relay.brevo.com
+   SMTP_PORT=587
+   SMTP_USER=your-brevo-login-email@example.com
+   SMTP_PASS=your-brevo-smtp-key
+   MAIL_FROM="GigDrive <your-verified-sender@example.com>"
+   ```
+5. Restart the backend: `docker compose restart backend`
+6. Use **real email addresses** when registering demo users — messages are
+   delivered to those inboxes.
+
+#### Switching providers
+
+Change the `SMTP_*` variables in `.env` and restart the backend. Mailtrap
+and Brevo can coexist as commented blocks in `.env.example`; only one profile
+should be active at a time.
+
+#### Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Log shows `reason=smtp_unconfigured` | Empty `SMTP_USER` or `SMTP_PASS` | Fill credentials and restart backend |
+| Action succeeds, no mail (Mailtrap) | Wrong inbox credentials | Re-copy SMTP settings from Mailtrap |
+| Action succeeds, no mail (Brevo) | Sender not verified | Verify sender in Brevo dashboard |
+| Log shows `failed` | Auth or TLS error | Check host/port/key; Brevo uses port 587 |
+| User receives nothing | Notifications off | **Profile → Email notifications** must be ON |
+
+All send attempts are logged by the backend regardless of provider:
+`docker compose logs backend | grep -E 'sent|skipped|failed'`
 
 In-app trip chat (feature 10) is on by default (`FEATURE_CHAT=true`). The UI
 reads `GET /api/features` and, for trip members, opens a Socket.IO room at

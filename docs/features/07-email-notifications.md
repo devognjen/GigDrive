@@ -6,7 +6,7 @@
 
 ## Overview
 
-Transactional email via Mailtrap SMTP + Nodemailer. Email is the primary communication channel (chat and Signal are enhancements). All mail events are also logged, and the Mailtrap UI can be shown live during the demo.
+Transactional email via Nodemailer + SMTP. Email is the primary communication channel (chat and Signal are enhancements). All mail events are also logged. Use **Mailtrap** for local sandbox testing or **Brevo** (or any SMTP provider) for real delivery — switch via `.env` only.
 
 ## Functional requirements
 
@@ -22,7 +22,7 @@ Transactional email via Mailtrap SMTP + Nodemailer. Email is the primary communi
 ## Scope
 
 ### Backend (NestJS)
-- `notifications` module wrapping Nodemailer; SMTP config via `.env` (Mailtrap for dev/demo; real SMTP switchable via env only).
+- `notifications` module wrapping Nodemailer; SMTP config via `.env` (Mailtrap sandbox for local dev; Brevo or any SMTP for real delivery).
 - Email templates for each lifecycle event.
 - Hooks invoked from trip state transitions and booking transitions (never from the frontend).
 - T-24h reminder via `@nestjs/schedule` job.
