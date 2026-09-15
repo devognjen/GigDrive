@@ -8,7 +8,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 import { ChatMessage } from '../../../core/models/chat-message.model';
@@ -34,9 +34,11 @@ export class TripChat implements OnInit, OnDestroy {
   protected readonly loadError = signal<string | null>(null);
   protected readonly sendPending = signal(false);
 
-  protected readonly body = new FormControl('', {
-    nonNullable: true,
-    validators: [Validators.required, Validators.maxLength(2000)],
+  protected readonly form = new FormGroup({
+    body: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(2000)],
+    }),
   });
 
   protected readonly currentUserId = () => this.authService.currentUser()?.id ?? null;
@@ -64,14 +66,14 @@ export class TripChat implements OnInit, OnDestroy {
   }
 
   protected send(): void {
-    const body = this.body.value.trim();
-    if (!body || this.body.invalid || this.sendPending()) {
-      this.body.markAsTouched();
+    const body = this.form.controls.body.value.trim();
+    if (!body || this.form.controls.body.invalid || this.sendPending()) {
+      this.form.controls.body.markAsTouched();
       return;
     }
     this.sendPending.set(true);
     this.chatService.send(body);
-    this.body.setValue('');
+    this.form.controls.body.setValue('');
     this.sendPending.set(false);
   }
 

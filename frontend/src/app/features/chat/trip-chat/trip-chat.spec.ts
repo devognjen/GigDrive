@@ -69,11 +69,13 @@ describe('TripChat', () => {
     expect(fixture.nativeElement.textContent).toContain('On my way');
   });
 
-  it('sends a trimmed message', () => {
-    component['body'].setValue('  See you there  ');
-    component['send']();
+  it('sends a trimmed message on form submit', () => {
+    component['form'].controls.body.setValue('  See you there  ');
+    fixture.detectChanges();
+    const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+    form.dispatchEvent(new Event('submit'));
     expect(chatService.send).toHaveBeenCalledWith('See you there');
-    expect(component['body'].value).toBe('');
+    expect(component['form'].controls.body.value).toBe('');
   });
 
   it('shows an error when history fails to load', async () => {

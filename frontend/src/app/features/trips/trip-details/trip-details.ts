@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
@@ -48,9 +48,11 @@ export class TripDetails {
 
   private membershipRequested = false;
 
-  protected readonly seats = new FormControl(1, {
-    nonNullable: true,
-    validators: [Validators.required, Validators.min(1)],
+  protected readonly form = new FormGroup({
+    seats: new FormControl(1, {
+      nonNullable: true,
+      validators: [Validators.required, Validators.min(1)],
+    }),
   });
 
   protected readonly isDriver = computed(() => {
@@ -150,7 +152,7 @@ export class TripDetails {
 
   protected requestSeats(): void {
     const trip = this.trip();
-    const seats = this.seats.value;
+    const seats = this.form.controls.seats.value;
     if (!trip || seats < 1 || this.bookingPending()) {
       return;
     }
@@ -174,7 +176,7 @@ export class TripDetails {
 
   protected joinWaitlist(): void {
     const trip = this.trip();
-    const seats = this.seats.value;
+    const seats = this.form.controls.seats.value;
     if (!trip || seats < 1 || this.waitlistPending()) {
       return;
     }

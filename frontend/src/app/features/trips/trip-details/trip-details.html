@@ -89,12 +89,12 @@
           @if (bookingError()) {
             <p class="error" role="alert">{{ bookingError() }}</p>
           }
-          <form (ngSubmit)="requestSeats()" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+          <form [formGroup]="form" (ngSubmit)="requestSeats()" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
             <label class="field flex-1">
               Seats
-              <input type="number" min="1" [max]="trip.seatsLeft" [formControl]="seats" />
+              <input type="number" min="1" [max]="trip.seatsLeft" formControlName="seats" />
             </label>
-            <button type="submit" class="btn btn-primary" [disabled]="seats.invalid || bookingPending()">
+            <button type="submit" class="btn btn-primary" [disabled]="form.controls.seats.invalid || bookingPending()">
               Request seats
             </button>
           </form>
@@ -122,12 +122,12 @@
           @if (waitlistError()) {
             <p class="error" role="alert">{{ waitlistError() }}</p>
           }
-          <form (ngSubmit)="joinWaitlist()" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+          <form [formGroup]="form" (ngSubmit)="joinWaitlist()" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
             <label class="field flex-1">
               Seats
-              <input type="number" min="1" [max]="trip.maxPassengers" [formControl]="seats" />
+              <input type="number" min="1" [max]="trip.maxPassengers" formControlName="seats" />
             </label>
-            <button type="submit" class="btn btn-primary" [disabled]="seats.invalid || waitlistPending()">
+            <button type="submit" class="btn btn-primary" [disabled]="form.controls.seats.invalid || waitlistPending()">
               Join waitlist
             </button>
           </form>

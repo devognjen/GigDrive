@@ -8,7 +8,7 @@ import { EMPTY, of } from 'rxjs';
 import { User } from '../../../core/models/user.model';
 import { Trip } from '../../../core/models/trip.model';
 import { AuthService } from '../../../core/services/auth.service';
-import { buildBooking } from '../../../testing/trip.fixture';
+import { buildBooking, buildWaitlistEntry } from '../../../testing/trip.fixture';
 import { ChatService } from '../../chat/chat.service';
 import { TripDetails } from './trip-details';
 
@@ -202,6 +202,24 @@ describe('TripDetails', () => {
     expect(text).not.toContain('Join waitlist');
   });
 
+  it('posts a booking request when the passenger submits Request seats', () => {
+    currentUser.set(passenger);
+    fixture.detectChanges();
+    flushPage();
+    fixture.detectChanges();
+
+    const form = fixture.nativeElement.querySelector('.booking-request form') as HTMLFormElement;
+    form.dispatchEvent(new Event('submit'));
+
+    const req = httpTesting.expectOne('/api/trips/t1/bookings');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ seats: 1 });
+    req.flush(buildBooking({ seats: 1 }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Your booking request has been sent.');
+  });
+
   it('replaces the booking form with join waitlist on FULL trips', () => {
     currentUser.set(passenger);
     fixture.detectChanges();
@@ -218,6 +236,31 @@ describe('TripDetails', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Join waitlist');
     expect(text).not.toContain('Request seats');
+  });
+
+  it('posts a waitlist join when the passenger submits Join waitlist', () => {
+    currentUser.set(passenger);
+    fixture.detectChanges();
+    httpTesting.expectOne('/api/features').flush({ chat: false });
+    httpTesting.expectOne('/api/trips/t1').flush({
+      ...mockTrip,
+      status: 'FULL',
+      confirmedSeats: 8,
+      seatsLeft: 0,
+    });
+    httpTesting.expectOne('/api/waitlist/mine').flush([]);
+    fixture.detectChanges();
+
+    const form = fixture.nativeElement.querySelector('.booking-request form') as HTMLFormElement;
+    form.dispatchEvent(new Event('submit'));
+
+    const req = httpTesting.expectOne('/api/trips/t1/waitlist');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ seats: 1 });
+    req.flush(buildWaitlistEntry({ seats: 1 }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain("You're #1 on the waitlist");
   });
 
   it('shows Export CSV for the driver when the trip has confirmed seats', () => {

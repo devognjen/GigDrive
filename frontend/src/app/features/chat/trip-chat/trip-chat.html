@@ -27,11 +27,11 @@
       </ol>
     }
   }
-  <form (ngSubmit)="send()" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+  <form [formGroup]="form" (ngSubmit)="send()" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
     <label class="field flex-1">
       Message
-      <input type="text" maxlength="2000" [formControl]="body" autocomplete="off" />
+      <input type="text" maxlength="2000" formControlName="body" autocomplete="off" />
     </label>
-    <button type="submit" class="btn btn-primary" [disabled]="body.invalid || sendPending()">Send</button>
+    <button type="submit" class="btn btn-primary" [disabled]="form.controls.body.invalid || sendPending()">Send</button>
   </form>
 </section>
