@@ -1,79 +1,106 @@
 @if (bookings.length === 0) {
   <p class="state">{{ emptyMessage }}</p>
 } @else {
-  <ul class="booking-list mt-3 m-0 grid list-none gap-3 p-0">
+  <ul class="booking-list mt-3 m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
     @for (booking of bookings; track booking.id) {
-      <li class="booking card grid gap-2 sm:grid-cols-[1fr_auto]">
-        <div class="status font-semibold capitalize">{{ booking.status }}</div>
-        <div class="trip flex items-center gap-3">
-          <app-concert-media
-            [imageUrl]="booking.trip.concertImageUrl"
-            [artist]="booking.trip.concertArtist || 'Trip'"
-            variant="thumb"
-          />
-          <a class="link" [routerLink]="['/trips', booking.tripId]">
-            {{ booking.trip.concertArtist || 'Trip' }}
-            @if (showTitle(booking)) {
-              — {{ booking.trip.concertTitle }}
-            }
+      <li>
+        <article class="booking card flex h-full flex-col overflow-hidden p-0">
+          <a [routerLink]="['/trips', booking.tripId]" class="flex flex-1 flex-col text-night no-underline">
+            <app-concert-media
+              [imageUrl]="booking.trip.concertImageUrl"
+              [artist]="booking.trip.concertArtist || 'Trip'"
+            />
+            <div class="flex flex-1 flex-col gap-2 p-4 sm:p-5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="title min-w-0">
+                  <span class="concert font-display text-lg font-bold leading-tight">
+                    {{ booking.trip.concertArtist || 'Trip' }}
+                  </span>
+                  @if (showTitle(booking)) {
+                    <span class="concert-title block text-sm text-night/60">{{ booking.trip.concertTitle }}</span>
+                  }
+                </div>
+                <div class="price shrink-0 font-display text-xl font-bold text-foil">
+                  {{ formatPrice(booking) }}
+                </div>
+              </div>
+              <p class="requested m-0 font-semibold">
+                Requested {{ booking.createdAt | date: 'MMM d, y · h:mm a' }}
+              </p>
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-night/60">
+                <span
+                  class="status badge"
+                  [class.badge-confirm]="booking.status === 'CONFIRMED'"
+                  [class.badge-foil]="booking.status === 'PENDING'"
+                  [class.badge-danger]="
+                    booking.status === 'REJECTED' || booking.status === 'CANCELLED_BY_PASSENGER'
+                  "
+                >
+                  {{ booking.status }}
+                </span>
+                <span class="seats">{{ booking.seats }} seat{{ booking.seats === 1 ? '' : 's' }}</span>
+                <span class="paid">{{ booking.paid ? 'Paid' : 'Not paid' }}</span>
+              </div>
+              <div class="mt-auto flex flex-wrap gap-x-3 gap-y-1 text-sm text-night/60">
+                @if (mode === 'driver') {
+                  <span class="passenger">{{ booking.passengerName }}</span>
+                }
+                <span>{{ formatPrice(booking) }} / person</span>
+              </div>
+            </div>
           </a>
-        </div>
-        <div class="price font-semibold text-foil">{{ formatPrice(booking) }} / person</div>
-        <div class="seats text-sm text-night/60">{{ booking.seats }} seat{{ booking.seats === 1 ? '' : 's' }}</div>
-        <div class="paid text-sm text-night/60">{{ booking.paid ? 'Paid' : 'Not paid' }}</div>
-        @if (mode === 'driver') {
-          <div class="passenger text-sm text-night/60">{{ booking.passengerName }}</div>
-        }
-        <div class="requested text-sm text-night/60">Requested {{ booking.createdAt | date: 'MMM d, y · h:mm a' }}</div>
 
-        <div class="actions col-span-full mt-2 flex flex-col gap-2 sm:flex-row">
-          @if (mode === 'driver' && booking.status === 'PENDING') {
-            <button
-              type="button"
-              class="accept btn btn-confirm"
-              (click)="accept.emit(booking)"
-              [disabled]="pendingId === booking.id"
-            >
-              Accept
-            </button>
-            <button
-              type="button"
-              class="danger btn btn-danger"
-              (click)="reject.emit(booking)"
-              [disabled]="pendingId === booking.id"
-            >
-              Reject
-            </button>
+          @if (showActions(booking)) {
+            <div class="actions flex flex-col gap-2 px-4 pb-4 sm:flex-row sm:px-5 sm:pb-5">
+              @if (mode === 'driver' && booking.status === 'PENDING') {
+                <button
+                  type="button"
+                  class="accept btn btn-confirm"
+                  (click)="accept.emit(booking)"
+                  [disabled]="pendingId === booking.id"
+                >
+                  Accept
+                </button>
+                <button
+                  type="button"
+                  class="danger btn btn-danger"
+                  (click)="reject.emit(booking)"
+                  [disabled]="pendingId === booking.id"
+                >
+                  Reject
+                </button>
+              }
+              @if (mode === 'driver' && booking.status === 'CONFIRMED') {
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  (click)="togglePaid.emit(booking)"
+                  [disabled]="pendingId === booking.id"
+                >
+                  {{ booking.paid ? 'Mark unpaid' : 'Mark paid' }}
+                </button>
+              }
+              @if (mode === 'passenger' && canCancel(booking)) {
+                <button
+                  type="button"
+                  class="danger btn btn-danger"
+                  (click)="cancel.emit(booking)"
+                  [disabled]="pendingId === booking.id"
+                >
+                  Cancel
+                </button>
+              }
+            </div>
           }
-          @if (mode === 'driver' && booking.status === 'CONFIRMED') {
-            <button
-              type="button"
-              class="btn btn-ghost"
-              (click)="togglePaid.emit(booking)"
-              [disabled]="pendingId === booking.id"
-            >
-              {{ booking.paid ? 'Mark unpaid' : 'Mark paid' }}
-            </button>
-          }
-          @if (mode === 'passenger' && canCancel(booking)) {
-            <button
-              type="button"
-              class="danger btn btn-danger"
-              (click)="cancel.emit(booking)"
-              [disabled]="pendingId === booking.id"
-            >
-              Cancel
-            </button>
-          }
-        </div>
 
-        @if (mode === 'passenger' && booking.canReview) {
-          <app-review-form
-            class="col-span-full"
-            [pending]="reviewPendingTripId === booking.tripId"
-            (submitted)="review.emit({ booking, rating: $event.rating, comment: $event.comment })"
-          />
-        }
+          @if (mode === 'passenger' && booking.canReview) {
+            <app-review-form
+              class="mx-4 mb-4 sm:mx-5 sm:mb-5"
+              [pending]="reviewPendingTripId === booking.tripId"
+              (submitted)="review.emit({ booking, rating: $event.rating, comment: $event.comment })"
+            />
+          }
+        </article>
       </li>
     }
   </ul>

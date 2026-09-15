@@ -46,6 +46,17 @@ describe('BookingList', () => {
     expect(text).toContain('Not paid');
   });
 
+  it('lays out bookings as an image-top card grid', () => {
+    fixture.componentRef.setInput('bookings', bookings);
+    fixture.detectChanges();
+
+    const list = fixture.nativeElement.querySelector('ul.booking-list') as HTMLElement;
+    expect(list.className).toContain('sm:grid-cols-2');
+    expect(list.className).toContain('lg:grid-cols-3');
+    expect(fixture.nativeElement.querySelector('article.booking')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.aspect-video')).toBeTruthy();
+  });
+
   it('emits accept and reject in driver mode', () => {
     fixture.componentRef.setInput('bookings', bookings);
     fixture.componentRef.setInput('mode', 'driver');

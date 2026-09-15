@@ -44,6 +44,13 @@ export class BookingList {
     return booking.status === 'PENDING' || booking.status === 'CONFIRMED';
   }
 
+  protected showActions(booking: Booking): boolean {
+    if (this.mode === 'driver') {
+      return booking.status === 'PENDING' || booking.status === 'CONFIRMED';
+    }
+    return this.canCancel(booking);
+  }
+
   protected formatPrice(booking: Booking): string {
     return formatMoney(booking.trip.livePrice.perPerson, booking.trip.currency);
   }

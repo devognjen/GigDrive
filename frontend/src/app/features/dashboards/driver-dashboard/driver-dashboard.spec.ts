@@ -64,6 +64,12 @@ describe('DriverDashboard', () => {
     expect(text).toContain('Accept');
   });
 
+  it('lays out trips as a listing card grid', () => {
+    const trips = fixture.nativeElement.querySelector('ul.trips') as HTMLElement;
+    expect(trips.className).toContain('sm:grid-cols-2');
+    expect(trips.className).toContain('lg:grid-cols-3');
+  });
+
   it('shows empty states when there is no data', () => {
     store.overrideSelector(selectDriverTrips, []);
     store.overrideSelector(selectDriverBookings, []);

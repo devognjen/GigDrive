@@ -6,7 +6,7 @@ Each feature has a specification file in [docs/features/](docs/features/).
 
 **Status legend:** ⬜ Not started · 🔶 In progress · ✅ Done · ⏸️ Deferred/dropped
 
-Last updated: 2026-08-19
+Last updated: 2026-09-15
 
 ## Tier 0 — MVP (must have)
 
@@ -19,7 +19,7 @@ Last updated: 2026-08-19
 | 5 | Trip offers & dynamic shared pricing | [05-trips.md](docs/features/05-trips.md) | M3, M8, M9 | ✅ | Pricing calculator + state machine (pure, unit-tested); trips module CRUD, ownership guard, live price, filters/sorting, scheduled deadline sweep; notification seam (feature 07 swaps transport); Angular trip browse/create/edit/details with reactive filters & live price. Create/edit picks a concert by name (searchable overlay combobox, opens on focus) instead of a UUID; confirmation deadline must precede departure, and both are capped at concert start. Pricing/capacity on create/edit: major-unit amount + currency, live per-person preview, min-to-go / seats offered capped by vehicle. Trip DTO includes `concertImageUrl`; public browse hides CANCELLED/COMPLETED and defaults to soonest departure; trip cards share the concert media-card layout |
 | 6 | Booking flow | [06-bookings.md](docs/features/06-bookings.md) | M3, M10 | ✅ | Bookings module: request (PENDING), accept (transactional pessimistic-lock capacity re-check), reject, cancel (passenger), paid toggle (driver); booking-notification seam (feature 07 swaps transport); driver/passenger ownership guards; DTOs; Angular request form on trip details + My Bookings + driver incoming-requests views; service & guard unit tests |
 | 7 | Email notifications | [07-email-notifications.md](docs/features/07-email-notifications.md) | M4 | ✅ | Nodemailer + Mailtrap SMTP; lifecycle emails honor `emailNotifications`; T-24h reminder cron; mail events logged |
-| 8 | Driver & passenger dashboards | [08-dashboards.md](docs/features/08-dashboards.md) | M10 | ✅ | Driver/passenger home bases via NgRx entity adapters; map/reduce earnings; accept/reject/paid and cancel; presentational trip-card & booking-list; concert summary + nested trip on booking DTOs. Driver “Your trips” stays one column and sorts upcoming first (cancelled/completed last); booking and waitlist rows show a concert thumbnail |
+| 8 | Driver & passenger dashboards | [08-dashboards.md](docs/features/08-dashboards.md) | M10 | ✅ | Driver/passenger home bases via NgRx entity adapters; map/reduce earnings; accept/reject/paid and cancel; presentational trip-card & booking-list; concert summary + nested trip on booking DTOs. Driver trips and incoming requests use the same image-top card grid as concert/trip listings (upcoming-first sort unchanged); waitlist rows keep a concert thumbnail |
 | 9 | Reviews & driver ratings | [09-reviews.md](docs/features/09-reviews.md) | M11 | ✅ | Reviews module: eligibility guard (confirmed booking + past concert), one review per passenger/trip, rating aggregation on profiles and trip listings (feeds min-rating filter); Angular review form on passenger dashboard + ratings on trip cards/details and public profile |
 
 ## Tier 1 — Committed (behind feature flags)
