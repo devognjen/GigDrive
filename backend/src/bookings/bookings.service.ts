@@ -9,7 +9,7 @@ import { DataSource, In, Repository } from 'typeorm';
 import { BookingStatus, TripStatus } from '../common/enums';
 import {
   BOOKING_NOTIFICATIONS,
-  BookingNotifications,
+  type BookingNotifications,
 } from '../notifications/booking-notifications.port';
 import { ReviewsService } from '../reviews/reviews.service';
 import { Trip } from '../trips/entities/trip.entity';

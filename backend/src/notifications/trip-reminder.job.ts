@@ -6,7 +6,7 @@ import { TripStatus } from '../common/enums';
 import { Trip } from '../trips/entities/trip.entity';
 import {
   TRIP_NOTIFICATIONS,
-  TripNotifications,
+  type TripNotifications,
 } from './trip-notifications.port';
 
 const HOUR_MS = 60 * 60 * 1000;

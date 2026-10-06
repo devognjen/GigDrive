@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../users/entities/user.entity';
 import { RenderedEmail } from './email-templates';
-import { MAIL_TRANSPORT, MailTransport } from './mail.transport';
+import { MAIL_TRANSPORT, type MailTransport } from './mail.transport';
 
 export interface MailEventContext {
   eventType: string;

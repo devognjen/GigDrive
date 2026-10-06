@@ -11,7 +11,7 @@ import { Booking } from '../bookings/entities/booking.entity';
 import { BookingStatus, TripStatus } from '../common/enums';
 import {
   WAITLIST_NOTIFICATIONS,
-  WaitlistNotifications,
+  type WaitlistNotifications,
 } from '../notifications/waitlist-notifications.port';
 import { Trip } from '../trips/entities/trip.entity';
 import { TripsService } from '../trips/trips.service';

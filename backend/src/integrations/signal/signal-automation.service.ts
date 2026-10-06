@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   TRIP_NOTIFICATIONS,
-  TripNotifications,
+  type TripNotifications,
 } from '../../notifications/trip-notifications.port';
 import { Trip } from '../../trips/entities/trip.entity';
 import { SignalService } from './signal.service';

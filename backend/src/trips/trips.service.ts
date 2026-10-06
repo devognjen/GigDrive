@@ -13,7 +13,7 @@ import { Concert } from '../concerts/entities/concert.entity';
 import { SignalAutomationService } from '../integrations/signal/signal-automation.service';
 import {
   TRIP_NOTIFICATIONS,
-  TripNotifications,
+  type TripNotifications,
 } from '../notifications/trip-notifications.port';
 import { EMPTY_DRIVER_RATING } from '../reviews/driver-rating';
 import { ReviewsService } from '../reviews/reviews.service';

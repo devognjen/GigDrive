@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Currency, PricingMode, TripStatus } from '../../common/enums';
 import { Trip } from '../entities/trip.entity';
 import { TripStop } from '../entities/trip-stop.entity';
-import { LivePrice } from '../pricing.service';
+import type { LivePrice } from '../pricing.service';
 
 export class TripStopOutputDto {
   @ApiProperty()
