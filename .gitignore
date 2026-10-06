@@ -20,6 +20,8 @@ Thumbs.db
 USER_GUIDE.md
 
 # ai tooling
+.agents/
+skills-lock.json
 .claude/
 .cursor/
 .cursorrules
