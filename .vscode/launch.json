@@ -1,0 +1,72 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/backend/node_modules/.bin/nest",
+      "runtimeArgs": ["start", "--debug", "--watch"],
+      "cwd": "${workspaceFolder}/backend",
+      "preLaunchTask": "db: start",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "DB_HOST": "localhost"
+      },
+      "console": "integratedTerminal",
+      "autoAttachChildProcesses": true,
+      "restart": true,
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"],
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Backend (attach)",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "sourceMaps": true,
+      "cwd": "${workspaceFolder}/backend",
+      "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"],
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Frontend",
+      "type": "chrome",
+      "request": "launch",
+      "runtimeExecutable": "/opt/brave.com/brave-origin/brave",
+      "userDataDir": "${userHome}/.cache/gigdrive-brave-debug",
+      "runtimeArgs": ["--new-window", "--ozone-platform=x11"],
+      "preLaunchTask": "frontend: ready",
+      "url": "http://localhost:4200/",
+      "webRoot": "${workspaceFolder}/frontend",
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/frontend/node_modules/**"]
+    },
+    {
+      "name": "Frontend (browser only)",
+      "type": "chrome",
+      "request": "launch",
+      "runtimeExecutable": "/opt/brave.com/brave-origin/brave",
+      "userDataDir": "${userHome}/.cache/gigdrive-brave-debug",
+      "runtimeArgs": ["--new-window", "--ozone-platform=x11"],
+      "url": "http://localhost:4200/",
+      "webRoot": "${workspaceFolder}/frontend",
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/frontend/node_modules/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full stack",
+      "configurations": ["Backend", "Frontend"],
+      "stopAll": true,
+      "presentation": {
+        "hidden": false,
+        "group": "gigdrive",
+        "order": 1
+      }
+    }
+  ]
+}

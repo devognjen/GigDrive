@@ -1,0 +1,60 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "db: start",
+      "type": "shell",
+      "command": "docker compose up -d --wait db",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "close": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "wait for api",
+      "type": "shell",
+      "command": "timeout 90 bash -c 'until curl -sf http://127.0.0.1:3000/api/health >/dev/null; do sleep 0.5; done' || { echo 'Timed out waiting for backend at http://127.0.0.1:3000/api/health' >&2; exit 1; }",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "close": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "frontend: serve",
+      "type": "npm",
+      "script": "start",
+      "path": "frontend/",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Changes detected",
+          "endsPattern": "bundle generation (complete|failed)"
+        }
+      }
+    },
+    {
+      "label": "frontend: ready",
+      "dependsOrder": "sequence",
+      "dependsOn": ["frontend: serve", "wait for api"],
+      "problemMatcher": []
+    }
+  ]
+}

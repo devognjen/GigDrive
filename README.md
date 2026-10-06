@@ -90,6 +90,26 @@ cd backend  && pnpm install && pnpm migration:run && pnpm seed && pnpm start:dev
 cd frontend && pnpm install && pnpm start
 ```
 
+### Debugging (breakpoints in Cursor / VS Code)
+
+Stop the compose **backend** and **frontend** services first if they are using ports 3000/4200 (`docker compose stop backend frontend`, or `docker compose down`). The debugger runs Nest and Angular on the host so breakpoints bind to the TypeScript you have open.
+
+Install dependencies once if you have not already (`cd backend && pnpm install`, same in `frontend`). Frontend breakpoints need a Chromium-based browser; this repo is wired to **Brave Origin** (`/opt/brave.com/brave-origin/brave`).
+
+Then use **Run and Debug** (`Ctrl+Shift+D`):
+
+| Configuration | What it does |
+|---------------|----------------|
+| **Full stack** | Starts Postgres (`docker compose up -d --wait db`), Nest with the inspector, `ng serve`, and Brave |
+| **Backend** | NestJS only (`nest start --debug --watch`) |
+| **Frontend** | `ng serve` + Brave |
+| **Frontend (browser only)** | Brave against an already-running `ng serve` |
+| **Backend (attach)** | Attach to port 9229 after `cd backend && pnpm start:debug` |
+
+Set breakpoints in `backend/src` or `frontend/src`, pick a configuration, and press **F5**. Interact with the app in the Brave window the debugger opened — not a window you opened yourself. The debugger launches a separate Brave profile, so Shields and extensions from your normal profile do not apply.
+
+`DB_HOST` is forced to `localhost` in the Backend launch config so the API talks to the Dockerized Postgres even when `.env` has `DB_HOST=db`.
+
 ### Testing & quality
 
 ```bash

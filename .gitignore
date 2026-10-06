@@ -14,7 +14,10 @@ coverage/
 Thumbs.db
 
 .idea/
-.vscode/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
 
 # personal study / presentation notes (not part of the repo)
 USER_GUIDE.md
