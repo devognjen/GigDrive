@@ -3,6 +3,7 @@ export interface Concert {
   id: string;
   externalId: string | null;
   userSubmitted: boolean;
+  hidden: boolean;
   artist: string;
   title: string;
   venue: string;

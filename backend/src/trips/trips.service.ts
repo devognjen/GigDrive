@@ -278,6 +278,26 @@ export class TripsService {
     return this.hydrateTrips(trips, dto);
   }
 
+  /**
+   * Operator listing: all statuses, optional status filter. Public browse
+   * still hides CANCELLED/COMPLETED via `list`.
+   */
+  async listForAdmin(status?: TripStatus): Promise<TripDto[]> {
+    const qb = this.tripsRepository
+      .createQueryBuilder('trip')
+      .leftJoinAndSelect('trip.vehicle', 'vehicle')
+      .leftJoinAndSelect('trip.driver', 'driver')
+      .leftJoinAndSelect('trip.concert', 'concert')
+      .leftJoinAndSelect('trip.stops', 'stops')
+      .orderBy('trip.departureAt', 'DESC')
+      .take(TRIPS_PAGE_SIZE);
+    if (status) {
+      qb.andWhere('trip.status = :status', { status });
+    }
+    const trips = await qb.getMany();
+    return this.hydrateTrips(trips, {});
+  }
+
   /** Lists the trips organized by the given driver (GET /trips/mine). */
   async listMine(driverId: string): Promise<TripDto[]> {
     const trips = await this.tripsRepository.find({

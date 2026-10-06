@@ -6,7 +6,7 @@ Each feature has a specification file in [docs/features/](docs/features/).
 
 **Status legend:** ⬜ Not started · 🔶 In progress · ✅ Done · ⏸️ Deferred/dropped
 
-Last updated: 2026-09-15
+Last updated: 2026-09-25
 
 ## Tier 0 — MVP (must have)
 
@@ -38,9 +38,15 @@ Last updated: 2026-09-15
 | 14 | Waitlist on full trips | [14-waitlist.md](docs/features/14-waitlist.md) | M13 | ✅ | FR-BOOK-05: join/leave while FULL; notify in join order when a confirmed booking cancels; waitlist never reserves seats |
 | 15 | CSV passenger manifest export | [15-csv-export.md](docs/features/15-csv-export.md) | M13 | ✅ | Driver-only `GET /trips/:id/manifest` (confirmed bookings, RFC 4180 CSV); Export CSV on driver dashboard and trip details when `confirmedSeats > 0` |
 
+## Beyond PRD
+
+| # | Feature | Spec | Milestone | Status | Notes |
+|---|---------|------|-----------|--------|-------|
+| 16 | Admin dashboard | [16-admin-dashboard.md](docs/features/16-admin-dashboard.md) | — | ✅ | Operator console: `isAdmin` overlay, KPIs, user disable, concert hide, force-cancel trips; demo login `admin@gigdrive.demo` |
+
 ## Summary
 
-- **Total:** 15 features · ✅ Done: 15 · 🔶 In progress: 0 · ⬜ Not started: 0 · ⏸️ Deferred: 0
+- **Total:** 16 features · ✅ Done: 16 · 🔶 In progress: 0 · ⬜ Not started: 0 · ⏸️ Deferred: 0
 - **Current focus:** —
 
 ## Working agreements

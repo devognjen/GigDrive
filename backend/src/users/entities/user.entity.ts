@@ -29,6 +29,14 @@ export class User {
   @Column({ default: true })
   emailNotifications: boolean;
 
+  /** Operator overlay; never set by registration. */
+  @Column({ default: false })
+  isAdmin: boolean;
+
+  /** When set, login and JWT validation reject the account. */
+  @Column({ type: 'timestamptz', nullable: true })
+  disabledAt: Date | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 

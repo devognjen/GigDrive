@@ -52,8 +52,11 @@ trip). Disable with `SEED_ON_START=false`. Re-run manually with:
 docker compose exec backend node dist/database/seed.js
 ```
 
-The seed is idempotent — safe to re-run. Demo login: `driver@gigdrive.demo` /
-value of `SEED_DEMO_PASSWORD` (default `demo1234`).
+The seed is idempotent — safe to re-run. Demo logins (password is
+`SEED_DEMO_PASSWORD`, default `demo1234`):
+
+- `driver@gigdrive.demo` — driver / passenger dashboards
+- `admin@gigdrive.demo` — operator console at `/admin`
 
 ### Experimental Signal group automation
 

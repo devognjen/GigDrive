@@ -1,0 +1,44 @@
+<div class="field mb-4 max-w-xs">
+  <label for="trip-status">Status</label>
+  <select id="trip-status" [ngModel]="status()" (ngModelChange)="onStatusChange($event)">
+    <option value="">All statuses</option>
+    @for (option of statuses; track option) {
+      @if (option) {
+        <option [value]="option">{{ option }}</option>
+      }
+    }
+  </select>
+</div>
+
+@if (loading()) {
+  <p class="state">Loading trips…</p>
+} @else if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+} @else if (trips().length === 0) {
+  <p class="state">No trips in this filter.</p>
+} @else {
+  <ul class="m-0 grid list-none gap-3 p-0">
+    @for (trip of trips(); track trip.id) {
+      <li class="card flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <a class="link" [routerLink]="['/trips', trip.id]">
+            {{ trip.concertArtist }} — {{ trip.concertCity }}
+          </a>
+          <p class="state m-0 mt-1">
+            {{ trip.status }} · {{ trip.departureAt | date: 'medium' }} · {{ trip.driverName }}
+          </p>
+        </div>
+        @if (canCancel(trip)) {
+          <button
+            type="button"
+            class="btn btn-danger w-fit"
+            [disabled]="pendingId() === trip.id"
+            (click)="cancel(trip)"
+          >
+            Force cancel
+          </button>
+        }
+      </li>
+    }
+  </ul>
+}

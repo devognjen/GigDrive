@@ -20,6 +20,10 @@ export class Concert {
   @Column({ default: false })
   userSubmitted: boolean;
 
+  /** Soft-hidden from public listings; existing trip details still resolve. */
+  @Column({ default: false })
+  hidden: boolean;
+
   @Column()
   artist: string;
 

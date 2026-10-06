@@ -24,6 +24,9 @@ export class UserDto {
   @ApiProperty()
   emailNotifications: boolean;
 
+  @ApiProperty()
+  isAdmin: boolean;
+
   static fromEntity(user: User): UserDto {
     const dto = new UserDto();
     dto.id = user.id;
@@ -32,6 +35,7 @@ export class UserDto {
     dto.lastName = user.lastName;
     dto.phone = user.phone;
     dto.emailNotifications = user.emailNotifications;
+    dto.isAdmin = user.isAdmin;
     return dto;
   }
 }

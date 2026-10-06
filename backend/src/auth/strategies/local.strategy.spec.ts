@@ -16,6 +16,8 @@ describe('LocalStrategy', () => {
     lastName: 'Lovelace',
     phone: null,
     emailNotifications: true,
+    isAdmin: false,
+    disabledAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

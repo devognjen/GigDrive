@@ -74,7 +74,7 @@ export class ConcertsService {
    */
   async listUpcoming(): Promise<ConcertDto[]> {
     const concerts = await this.concertsRepository.find({
-      where: { startAt: MoreThanOrEqual(new Date()) },
+      where: { startAt: MoreThanOrEqual(new Date()), hidden: false },
       order: { startAt: 'ASC' },
       take: UPCOMING_CONCERTS_LIMIT,
     });
@@ -153,13 +153,44 @@ export class ConcertsService {
       startAt: new Date(dto.startAt),
       externalId: null,
       userSubmitted: true,
+      hidden: false,
     });
+    return ConcertDto.fromEntity(await this.concertsRepository.save(concert));
+  }
+
+  async listForAdmin(filters: {
+    userSubmitted?: boolean;
+    hidden?: boolean;
+  }): Promise<ConcertDto[]> {
+    const qb = this.concertsRepository
+      .createQueryBuilder('concert')
+      .orderBy('concert.startAt', 'DESC')
+      .take(100);
+    if (filters.userSubmitted !== undefined) {
+      qb.andWhere('concert.userSubmitted = :userSubmitted', {
+        userSubmitted: filters.userSubmitted,
+      });
+    }
+    if (filters.hidden !== undefined) {
+      qb.andWhere('concert.hidden = :hidden', { hidden: filters.hidden });
+    }
+    const concerts = await qb.getMany();
+    return concerts.map((concert) => ConcertDto.fromEntity(concert));
+  }
+
+  async setHidden(id: string, hidden: boolean): Promise<ConcertDto> {
+    const concert = await this.concertsRepository.findOneBy({ id });
+    if (!concert) {
+      throw new NotFoundException('Concert not found');
+    }
+    concert.hidden = hidden;
     return ConcertDto.fromEntity(await this.concertsRepository.save(concert));
   }
 
   private searchCache(dto: SearchConcertsDto): Promise<Concert[]> {
     const qb = this.concertsRepository
       .createQueryBuilder('concert')
+      .andWhere('concert.hidden = :hidden', { hidden: false })
       .orderBy('concert.startAt', 'ASC')
       .skip(dto.page * CONCERTS_PAGE_SIZE)
       .take(CONCERTS_PAGE_SIZE);
@@ -198,6 +229,7 @@ export class ConcertsService {
       .select(`MIN(concert.${column})`, 'value')
       .where(`concert.${column} IS NOT NULL`)
       .andWhere(`concert.${column} <> ''`)
+      .andWhere('concert.hidden = :hidden', { hidden: false })
       .groupBy(`LOWER(concert.${column})`)
       .orderBy(`MIN(concert.${column})`, 'ASC')
       .getRawMany<{ value: string }>();

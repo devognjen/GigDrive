@@ -36,6 +36,9 @@
         @if (authService.currentUser(); as user) {
           <a routerLink="/dashboard/driver" routerLinkActive="active" (click)="closeMenu()">Driver</a>
           <a routerLink="/dashboard/passenger" routerLinkActive="active" (click)="closeMenu()">Passenger</a>
+          @if (authService.currentUser()?.isAdmin) {
+            <a routerLink="/admin" routerLinkActive="active" (click)="closeMenu()">Admin</a>
+          }
           <a routerLink="/profile" routerLinkActive="active" (click)="closeMenu()">Profile</a>
           <span class="user-name">{{ user.firstName }}</span>
           <button type="button" class="logout" (click)="logout()">Log out</button>

@@ -619,6 +619,28 @@ describe('TripsService', () => {
     });
   });
 
+  describe('listForAdmin', () => {
+    it('includes cancelled trips and filters by status', async () => {
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([
+          buildTrip({ id: 'cancelled', status: TripStatus.Cancelled }),
+        ]),
+      };
+      tripsRepository.createQueryBuilder.mockReturnValue(qb);
+
+      const result = await service.listForAdmin(TripStatus.Cancelled);
+
+      expect(qb.andWhere).toHaveBeenCalledWith('trip.status = :status', {
+        status: TripStatus.Cancelled,
+      });
+      expect(result[0].status).toBe(TripStatus.Cancelled);
+    });
+  });
+
   describe('getDetailsMany', () => {
     it('returns an empty map for no ids', async () => {
       const result = await service.getDetailsMany([]);

@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ReviewsService } from '../reviews/reviews.service';
@@ -11,6 +11,8 @@ describe('UsersService', () => {
     findOneBy: jest.Mock;
     create: jest.Mock;
     save: jest.Mock;
+    createQueryBuilder: jest.Mock;
+    count: jest.Mock;
   };
   let reviewsService: {
     aggregateForDriver: jest.Mock;
@@ -24,6 +26,8 @@ describe('UsersService', () => {
     lastName: 'Lovelace',
     phone: '+43 664 1234567',
     emailNotifications: true,
+    isAdmin: false,
+    disabledAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -34,6 +38,8 @@ describe('UsersService', () => {
       findOneBy: jest.fn(),
       create: jest.fn((data: Partial<User>) => data),
       save: jest.fn((user: User) => Promise.resolve(user)),
+      createQueryBuilder: jest.fn(),
+      count: jest.fn(),
     };
 
     reviewsService = {
@@ -158,6 +164,50 @@ describe('UsersService', () => {
       await expect(service.getPublicProfile('missing')).rejects.toThrow(
         new NotFoundException('User not found'),
       );
+    });
+  });
+
+  describe('disable', () => {
+    it('sets disabledAt', async () => {
+      const target = buildUser({ id: 'other', isAdmin: false });
+      repository.findOneBy.mockResolvedValue(target);
+
+      const result = await service.disable(target.id, 'admin-id');
+
+      expect(result.disabledAt).toBeInstanceOf(Date);
+      expect(repository.save).toHaveBeenCalledWith(target);
+    });
+
+    it('rejects disabling self', async () => {
+      const target = buildUser({ id: 'admin-id', isAdmin: true });
+      repository.findOneBy.mockResolvedValue(target);
+
+      await expect(service.disable('admin-id', 'admin-id')).rejects.toThrow(
+        ConflictException,
+      );
+      expect(repository.save).not.toHaveBeenCalled();
+    });
+
+    it('rejects disabling the last remaining admin', async () => {
+      const target = buildUser({ id: 'other-admin', isAdmin: true });
+      repository.findOneBy.mockResolvedValue(target);
+      repository.count.mockResolvedValue(0);
+
+      await expect(service.disable(target.id, 'admin-id')).rejects.toThrow(
+        ConflictException,
+      );
+      expect(repository.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('enable', () => {
+    it('clears disabledAt', async () => {
+      const target = buildUser({ disabledAt: new Date() });
+      repository.findOneBy.mockResolvedValue(target);
+
+      const result = await service.enable(target.id);
+
+      expect(result.disabledAt).toBeNull();
     });
   });
 });

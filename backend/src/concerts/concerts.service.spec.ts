@@ -53,6 +53,7 @@ describe('ConcertsService', () => {
     imageUrl: 'https://img.example/1.jpg',
     genre: 'Metal',
     ticketUrl: 'https://ticketmaster.example/event/tm-1',
+    hidden: false,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -209,6 +210,10 @@ describe('ConcertsService', () => {
       );
       expect(queryBuilder.skip).toHaveBeenCalledWith(40);
       expect(queryBuilder.take).toHaveBeenCalledWith(20);
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'concert.hidden = :hidden',
+        { hidden: false },
+      );
     });
   });
 
@@ -228,8 +233,10 @@ describe('ConcertsService', () => {
       );
       const where = concertsRepository.find.mock.calls[0][0].where as {
         startAt: { type: string };
+        hidden: boolean;
       };
       expect(where.startAt.type).toBe('moreThanOrEqual');
+      expect(where.hidden).toBe(false);
     });
   });
 
@@ -459,6 +466,40 @@ describe('ConcertsService', () => {
 
       await expect(service.getWeather('missing')).rejects.toThrow(
         new NotFoundException('Concert not found'),
+      );
+    });
+  });
+
+  describe('setHidden', () => {
+    it('marks a concert hidden', async () => {
+      concertsRepository.findOneBy.mockResolvedValue(buildConcert());
+
+      const result = await service.setHidden('concert-uuid', true);
+
+      expect(result.hidden).toBe(true);
+      expect(concertsRepository.save).toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException for an unknown concert', async () => {
+      concertsRepository.findOneBy.mockResolvedValue(null);
+
+      await expect(service.setHidden('missing', true)).rejects.toThrow(
+        new NotFoundException('Concert not found'),
+      );
+    });
+  });
+
+  describe('listForAdmin', () => {
+    it('filters user-submitted concerts', async () => {
+      queryBuilder.getMany.mockResolvedValue([
+        buildConcert({ userSubmitted: true, externalId: null }),
+      ]);
+
+      await service.listForAdmin({ userSubmitted: true });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'concert.userSubmitted = :userSubmitted',
+        { userSubmitted: true },
       );
     });
   });

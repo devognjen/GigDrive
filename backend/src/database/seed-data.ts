@@ -31,6 +31,7 @@ const daysFromNow = (now: Date, days: number, utcHour: number) => {
 };
 
 export interface SeedData {
+  admin: User;
   driver: User;
   passengers: User[];
   vehicles: Vehicle[];
@@ -52,6 +53,18 @@ export function buildSeedData(now: Date, passwordHash: string): SeedData {
     lastName: 'Driver',
     phone: '+381641234567',
     emailNotifications: true,
+    isAdmin: false,
+  });
+
+  const admin = Object.assign(new User(), {
+    id: uuid(2),
+    email: 'admin@gigdrive.demo',
+    passwordHash,
+    firstName: 'Demo',
+    lastName: 'Admin',
+    phone: null,
+    emailNotifications: true,
+    isAdmin: true,
   });
 
   const passengers = ['Ana', 'Marko', 'Jelena'].map((firstName, i) =>
@@ -63,6 +76,7 @@ export function buildSeedData(now: Date, passwordHash: string): SeedData {
       lastName: 'Passenger',
       phone: null,
       emailNotifications: true,
+      isAdmin: false,
     }),
   );
 
@@ -166,6 +180,23 @@ export function buildSeedData(now: Date, passwordHash: string): SeedData {
       startAt: daysFromNow(now, -30, 19),
       imageUrl: null,
       genre: 'Metal',
+      ticketUrl: null,
+    }),
+    Object.assign(new Concert(), {
+      id: uuid(1005),
+      externalId: null,
+      userSubmitted: true,
+      hidden: false,
+      artist: 'Local Support Act',
+      title: 'Regional hall show (user submitted)',
+      venue: 'Dom omladine',
+      city: 'Belgrade',
+      country: 'Serbia',
+      lat: 44.815,
+      lng: 20.464,
+      startAt: daysFromNow(now, 21, 20),
+      imageUrl: null,
+      genre: 'Rock',
       ticketUrl: null,
     }),
   ];
@@ -316,6 +347,7 @@ export function buildSeedData(now: Date, passwordHash: string): SeedData {
   ];
 
   return {
+    admin,
     driver,
     passengers,
     vehicles,

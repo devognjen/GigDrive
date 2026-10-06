@@ -1,0 +1,49 @@
+@if (loading()) {
+  <p class="state">Loading overview…</p>
+} @else if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+} @else if (stats(); as snapshot) {
+  <ul class="m-0 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4">
+    <li class="card">
+      <h2 class="mt-0">Users</h2>
+      <p class="m-0 text-2xl font-semibold text-foil">{{ snapshot.users }}</p>
+    </li>
+    <li class="card">
+      <h2 class="mt-0">Concerts</h2>
+      <p class="m-0 text-2xl font-semibold text-foil">{{ snapshot.concerts.total }}</p>
+      <p class="state m-0 mt-2">
+        {{ snapshot.concerts.cached }} cached · {{ snapshot.concerts.userSubmitted }} submitted ·
+        {{ snapshot.concerts.hidden }} hidden
+      </p>
+    </li>
+    <li class="card">
+      <h2 class="mt-0">Reviews</h2>
+      <p class="m-0 text-2xl font-semibold text-foil">{{ snapshot.reviews }}</p>
+    </li>
+  </ul>
+
+  <section class="mt-8 grid gap-6 lg:grid-cols-2">
+    <div class="card">
+      <h2 class="mt-0">Trips by status</h2>
+      <ul class="mt-3 m-0 grid list-none gap-2 p-0">
+        @for (row of tripEntries(snapshot); track row.status) {
+          <li class="flex justify-between gap-4">
+            <span>{{ row.status }}</span>
+            <strong>{{ row.count }}</strong>
+          </li>
+        }
+      </ul>
+    </div>
+    <div class="card">
+      <h2 class="mt-0">Bookings by status</h2>
+      <ul class="mt-3 m-0 grid list-none gap-2 p-0">
+        @for (row of bookingEntries(snapshot); track row.status) {
+          <li class="flex justify-between gap-4">
+            <span>{{ row.status }}</span>
+            <strong>{{ row.count }}</strong>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+}

@@ -1,0 +1,68 @@
+<form class="mb-4 flex flex-wrap gap-3" (submit)="$event.preventDefault(); search()">
+  <div class="field min-w-60 flex-1">
+    <label for="user-q">Search</label>
+    <input
+      id="user-q"
+      type="search"
+      name="q"
+      [ngModel]="query()"
+      (ngModelChange)="query.set($event)"
+      placeholder="Name or email"
+    />
+  </div>
+  <button type="submit" class="btn btn-primary self-end">Search</button>
+</form>
+
+@if (loading()) {
+  <p class="state">Loading users…</p>
+} @else if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+} @else if (users().length === 0) {
+  <p class="state">No users match that search.</p>
+} @else {
+  <p class="state mb-3">{{ total() }} user(s)</p>
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse text-left">
+      <thead>
+        <tr class="border-b border-mist">
+          <th class="py-2 pr-3">Name</th>
+          <th class="py-2 pr-3">Email</th>
+          <th class="py-2 pr-3">Joined</th>
+          <th class="py-2 pr-3">Flags</th>
+          <th class="py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of users(); track user.id) {
+          <tr class="border-b border-mist/70">
+            <td class="py-3 pr-3">{{ user.firstName }} {{ user.lastName }}</td>
+            <td class="py-3 pr-3">{{ user.email }}</td>
+            <td class="py-3 pr-3">{{ user.createdAt | date: 'mediumDate' }}</td>
+            <td class="py-3 pr-3">
+              @if (user.isAdmin) {
+                <span class="badge">Admin</span>
+              }
+              @if (user.disabledAt) {
+                <span class="badge-danger">Disabled</span>
+              }
+            </td>
+            <td class="py-3">
+              @if (user.id !== currentUserId()) {
+                <button
+                  type="button"
+                  class="btn"
+                  [class.btn-danger]="!user.disabledAt"
+                  [class.btn-ghost]="user.disabledAt"
+                  [disabled]="pendingId() === user.id"
+                  (click)="toggleDisabled(user)"
+                >
+                  {{ user.disabledAt ? 'Enable' : 'Disable' }}
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

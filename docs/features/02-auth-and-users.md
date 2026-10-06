@@ -6,7 +6,7 @@
 
 ## Overview
 
-Email + password authentication with Passport.js (LocalStrategy → JWT) and bcrypt hashing. Roles (Driver/Passenger) are emergent from actions, not fixed at registration; there is no admin role. Guests may browse concerts and trips read-only.
+Email + password authentication with Passport.js (LocalStrategy → JWT) and bcrypt hashing. Roles (Driver/Passenger) are emergent from actions, not fixed at registration. Platform operators are a separate `isAdmin` overlay (see [16-admin-dashboard.md](16-admin-dashboard.md)); registration never grants it. Guests may browse concerts and trips read-only.
 
 ## Functional requirements
 

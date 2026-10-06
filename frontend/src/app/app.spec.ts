@@ -14,6 +14,7 @@ const mockUser: User = {
   lastName: 'Lovelace',
   phone: null,
   emailNotifications: true,
+  isAdmin: false,
 };
 
 describe('App', () => {
@@ -70,5 +71,20 @@ describe('App', () => {
     expect(authService.isAuthenticated()).toBe(false);
     expect(localStorage.getItem('gigdrive.token')).toBeNull();
     expect(navigateSpy).toHaveBeenCalledWith(['/concerts']);
+  });
+
+  it('shows the Admin link only for operators', async () => {
+    const authService = TestBed.inject(AuthService);
+    authService.login('admin@gigdrive.demo', 'demo1234').subscribe();
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/auth/login')
+      .flush({ accessToken: 'jwt-token', user: { ...mockUser, isAdmin: true } });
+
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const links = [...fixture.nativeElement.querySelectorAll('nav a')].map((a: HTMLAnchorElement) =>
+      a.textContent?.trim(),
+    );
+    expect(links).toEqual(['Concerts', 'Trips', 'Driver', 'Passenger', 'Admin', 'Profile']);
   });
 });

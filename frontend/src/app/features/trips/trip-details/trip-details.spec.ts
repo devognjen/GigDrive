@@ -48,6 +48,7 @@ const driver: User = {
   lastName: 'Driver',
   phone: null,
   emailNotifications: true,
+  isAdmin: false,
 };
 
 const passenger: User = {
@@ -57,6 +58,7 @@ const passenger: User = {
   lastName: 'Passenger',
   phone: null,
   emailNotifications: true,
+  isAdmin: false,
 };
 
 describe('TripDetails', () => {

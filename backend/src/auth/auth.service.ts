@@ -37,6 +37,9 @@ export class AuthService {
     if (!user) {
       return null;
     }
+    if (user.disabledAt) {
+      return null;
+    }
     const passwordMatches = await bcrypt.compare(password, user.passwordHash);
     return passwordMatches ? user : null;
   }

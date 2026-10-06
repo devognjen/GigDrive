@@ -6,6 +6,7 @@ export interface User {
   lastName: string;
   phone: string | null;
   emailNotifications: boolean;
+  isAdmin: boolean;
 }
 
 /** Response of POST /auth/login and POST /auth/register. */

@@ -13,6 +13,7 @@ const mockUser: User = {
   lastName: 'Lovelace',
   phone: '+49 170 1234567',
   emailNotifications: true,
+  isAdmin: false,
 };
 
 describe('Profile', () => {

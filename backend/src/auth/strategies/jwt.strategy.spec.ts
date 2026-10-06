@@ -19,6 +19,8 @@ describe('JwtStrategy', () => {
     lastName: 'Lovelace',
     phone: null,
     emailNotifications: true,
+    isAdmin: false,
+    disabledAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -49,6 +51,17 @@ describe('JwtStrategy', () => {
 
   it('throws UnauthorizedException when the user no longer exists', async () => {
     usersService.findById.mockResolvedValue(null);
+
+    await expect(strategy.validate(payload)).rejects.toThrow(
+      UnauthorizedException,
+    );
+  });
+
+  it('throws UnauthorizedException when the account is disabled', async () => {
+    usersService.findById.mockResolvedValue({
+      ...user,
+      disabledAt: new Date(),
+    });
 
     await expect(strategy.validate(payload)).rejects.toThrow(
       UnauthorizedException,

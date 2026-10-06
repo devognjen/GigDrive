@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
+import { adminGuard } from './core/guards/admin-guard';
 import { dashboardStoreProviders } from './features/dashboards/store/dashboard-store.providers';
 
 export const routes: Routes = [
@@ -25,6 +26,11 @@ export const routes: Routes = [
   },
   { path: 'bookings/driver', redirectTo: '/dashboard/driver' },
   { path: 'bookings', redirectTo: '/dashboard/passenger' },
+  {
+    path: 'admin',
+    canActivate: [authGuard, adminGuard],
+    loadChildren: () => import('./features/admin/admin.routes'),
+  },
   {
     path: 'profile',
     canActivate: [authGuard],

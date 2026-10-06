@@ -31,6 +31,13 @@ export async function applySeed(
   log('Users:');
   await insertIfMissing(
     manager.getRepository('User'),
+    data.admin.id,
+    data.admin as never,
+    `demo admin ${data.admin.email}`,
+    log,
+  );
+  await insertIfMissing(
+    manager.getRepository('User'),
     data.driver.id,
     data.driver as never,
     `demo driver ${data.driver.email}`,

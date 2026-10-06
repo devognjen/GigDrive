@@ -4,18 +4,23 @@ import { buildSeedData } from './seed-data';
 describe('buildSeedData', () => {
   const data = buildSeedData(new Date('2026-08-13T12:00:00Z'), 'hash');
 
-  it('produces a demo driver and passengers with the same password hash', () => {
+  it('produces a demo driver, admin, and passengers with the same password hash', () => {
     expect(data.driver.email).toBe('driver@gigdrive.demo');
+    expect(data.admin.email).toBe('admin@gigdrive.demo');
+    expect(data.admin.isAdmin).toBe(true);
+    expect(data.driver.isAdmin).toBe(false);
     expect(data.passengers).toHaveLength(3);
-    for (const user of [data.driver, ...data.passengers]) {
+    for (const user of [data.admin, data.driver, ...data.passengers]) {
       expect(user.passwordHash).toBe('hash');
     }
   });
 
-  it('creates cached concerts with unique external ids', () => {
+  it('creates cached concerts with unique external ids and one user-submitted row', () => {
     const now = new Date('2026-08-13T12:00:00Z');
-    const externalIds = data.concerts.map((c) => c.externalId);
-    expect(new Set(externalIds).size).toBe(data.concerts.length);
+    const cached = data.concerts.filter((c) => c.externalId !== null);
+    const submitted = data.concerts.filter((c) => c.userSubmitted);
+    expect(new Set(cached.map((c) => c.externalId)).size).toBe(cached.length);
+    expect(submitted).toHaveLength(1);
     const future = data.concerts.filter(
       (c) => c.startAt.getTime() > now.getTime(),
     );

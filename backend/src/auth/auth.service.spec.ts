@@ -23,6 +23,8 @@ describe('AuthService', () => {
     lastName: 'Lovelace',
     phone: null,
     emailNotifications: true,
+    isAdmin: false,
+    disabledAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -114,11 +116,13 @@ describe('AuthService', () => {
       ).resolves.toBeNull();
     });
 
-    it('returns null for an unknown email', async () => {
-      usersService.findByEmail.mockResolvedValue(null);
+    it('returns null for a disabled account', async () => {
+      usersService.findByEmail.mockResolvedValue(
+        buildUser({ disabledAt: new Date() }),
+      );
 
       await expect(
-        service.validateUser('nobody@example.com', 'correct-horse'),
+        service.validateUser('ada@example.com', 'correct-horse'),
       ).resolves.toBeNull();
     });
   });
@@ -141,6 +145,7 @@ describe('AuthService', () => {
         lastName: user.lastName,
         phone: user.phone,
         emailNotifications: user.emailNotifications,
+        isAdmin: false,
       });
       expect(result.user).not.toHaveProperty('passwordHash');
     });

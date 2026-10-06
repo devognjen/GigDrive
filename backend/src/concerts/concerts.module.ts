@@ -10,5 +10,6 @@ import { Concert } from './entities/concert.entity';
   imports: [TypeOrmModule.forFeature([Concert, Trip]), IntegrationsModule],
   controllers: [ConcertsController],
   providers: [ConcertsService],
+  exports: [ConcertsService],
 })
 export class ConcertsModule {}

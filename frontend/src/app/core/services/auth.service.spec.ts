@@ -14,6 +14,7 @@ const mockUser: User = {
   lastName: 'Lovelace',
   phone: null,
   emailNotifications: true,
+  isAdmin: false,
 };
 
 const mockAuthResponse: AuthResponse = {

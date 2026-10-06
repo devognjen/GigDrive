@@ -10,6 +10,7 @@ const mockConcert: Concert = {
   id: 'c-new',
   externalId: null,
   userSubmitted: true,
+  hidden: false,
   artist: 'Metallica',
   title: 'M72 World Tour',
   venue: 'Stade de France',

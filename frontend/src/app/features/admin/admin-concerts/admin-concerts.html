@@ -1,0 +1,45 @@
+<div class="field mb-4 max-w-xs">
+  <label for="concert-filter">Show</label>
+  <select id="concert-filter" [ngModel]="filter()" (ngModelChange)="onFilterChange($event)">
+    <option value="all">All concerts</option>
+    <option value="submitted">User submitted</option>
+    <option value="hidden">Hidden</option>
+  </select>
+</div>
+
+@if (loading()) {
+  <p class="state">Loading concerts…</p>
+} @else if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+} @else if (concerts().length === 0) {
+  <p class="state">No concerts in this filter.</p>
+} @else {
+  <ul class="m-0 grid list-none gap-3 p-0">
+    @for (concert of concerts(); track concert.id) {
+      <li class="card flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <a class="link" [routerLink]="['/concerts', concert.id]">{{ concert.artist }}</a>
+          <p class="state m-0 mt-1">
+            {{ concert.city }}
+            @if (concert.userSubmitted) {
+              · user submitted
+            }
+            @if (concert.hidden) {
+              · hidden
+            }
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn w-fit"
+          [class.btn-ghost]="concert.hidden"
+          [class.btn-danger]="!concert.hidden"
+          [disabled]="pendingId() === concert.id"
+          (click)="toggleHidden(concert)"
+        >
+          {{ concert.hidden ? 'Unhide' : 'Hide' }}
+        </button>
+      </li>
+    }
+  </ul>
+}

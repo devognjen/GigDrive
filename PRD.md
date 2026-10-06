@@ -261,6 +261,7 @@ Guards: JWT globally; ownership rules per resource; review guard checks confirme
 - Signal + in-app chat committed; maps/weather/waitlist/CSV conditional — agreed
 - No payments integration ("paid" flag only) — agreed
 - Backend proxies all external APIs — architectural rule
+- Admin console (feature 16): `isAdmin` overlay on registered users; Driver/Passenger stay emergent; no payments or review moderation
 
 ## 16. Open questions
 - Final product name (working title: GigDrive)

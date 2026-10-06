@@ -13,6 +13,9 @@ export class ConcertDto {
   userSubmitted: boolean;
 
   @ApiProperty()
+  hidden: boolean;
+
+  @ApiProperty()
   artist: string;
 
   @ApiProperty()
@@ -50,6 +53,7 @@ export class ConcertDto {
     dto.id = concert.id;
     dto.externalId = concert.externalId;
     dto.userSubmitted = concert.userSubmitted;
+    dto.hidden = concert.hidden;
     dto.artist = concert.artist;
     dto.title = concert.title;
     dto.venue = concert.venue;

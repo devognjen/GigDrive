@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { ReviewsService } from '../reviews/reviews.service';
 import { PublicProfileDto } from './dto/public-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -60,5 +64,57 @@ export class UsersService {
     dto.averageRating = rating.averageRating;
     dto.reviewCount = rating.reviewCount;
     return dto;
+  }
+
+  async listForAdmin(
+    q: string | undefined,
+    page: number,
+    pageSize: number,
+  ): Promise<{ items: User[]; total: number }> {
+    const qb = this.usersRepository
+      .createQueryBuilder('user')
+      .orderBy('user.createdAt', 'DESC')
+      .skip(page * pageSize)
+      .take(pageSize);
+    if (q) {
+      const term = `%${q.toLowerCase()}%`;
+      qb.andWhere(
+        '(LOWER(user.email) LIKE :term OR LOWER(user.firstName) LIKE :term OR LOWER(user.lastName) LIKE :term)',
+        { term },
+      );
+    }
+    const [items, total] = await qb.getManyAndCount();
+    return { items, total };
+  }
+
+  async disable(targetId: string, actorId: string): Promise<User> {
+    const user = await this.requireById(targetId);
+    if (user.id === actorId) {
+      throw new ConflictException('You cannot disable your own account');
+    }
+    if (user.isAdmin) {
+      const remainingAdmins = await this.usersRepository.count({
+        where: { isAdmin: true, disabledAt: IsNull(), id: Not(user.id) },
+      });
+      if (remainingAdmins === 0) {
+        throw new ConflictException('Cannot disable the last admin');
+      }
+    }
+    user.disabledAt = new Date();
+    return this.usersRepository.save(user);
+  }
+
+  async enable(targetId: string): Promise<User> {
+    const user = await this.requireById(targetId);
+    user.disabledAt = null;
+    return this.usersRepository.save(user);
+  }
+
+  private async requireById(id: string): Promise<User> {
+    const user = await this.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 }
